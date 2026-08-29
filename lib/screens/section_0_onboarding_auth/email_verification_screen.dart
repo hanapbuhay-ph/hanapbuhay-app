@@ -104,15 +104,12 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
         final token = result.data?['token'] ?? '';
         final role = result.data?['user']?['role'] ?? 'client';
         
-        await context.read<AuthProvider>().setAuthenticated(token, role);
+        final authProvider = context.read<AuthProvider>();
+        await authProvider.setAuthenticated(token, role);
 
         if (!mounted) return;
         
-        if (role == 'worker') {
-          context.go(AppRouter.workerHome);
-        } else {
-          context.go(AppRouter.clientHome);
-        }
+        context.go(authProvider.getHomeRoute());
       } else {
         _handleError(result.message);
       }

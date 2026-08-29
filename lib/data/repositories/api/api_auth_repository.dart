@@ -85,25 +85,77 @@ class ApiAuthRepository implements AuthRepository {
 
   @override
   Future<AuthResult> forgotPassword(String identifier) async {
-    // MOCKED: Forgot password endpoint is pending backend implementation.
-    await Future.delayed(const Duration(milliseconds: 800));
-    return AuthResult.success(message: 'Code sent to $identifier');
+    // TODO: This endpoint is not yet live on the backend.
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/password/forgot'),
+        body: {'identifier': identifier},
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return AuthResult.success(message: data['message'] ?? 'Code sent');
+      } else {
+        return AuthResult.failure(message: data['message'] ?? 'Failed to send code');
+      }
+    } catch (e) {
+      return AuthResult.failure(message: 'Network error: $e');
+    }
   }
 
   @override
   Future<AuthResult> verifyForgotPasswordOtp(String identifier, String otp) async {
-    // MOCKED: Verify forgot password OTP endpoint is pending backend implementation.
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (otp == '123456') {
-      return AuthResult.success(message: 'Code verified');
+    // TODO: This endpoint is not yet live on the backend.
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/password/verify-otp'),
+        body: {
+          'identifier': identifier,
+          'otp': otp,
+        },
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return AuthResult.success(message: data['message'] ?? 'Code verified');
+      } else {
+        return AuthResult.failure(message: data['message'] ?? 'Invalid code');
+      }
+    } catch (e) {
+      return AuthResult.failure(message: 'Network error: $e');
     }
-    return AuthResult.failure(message: 'Invalid code');
   }
 
   @override
   Future<AuthResult> resetPassword(String identifier, String newPassword) async {
-    // MOCKED: Reset password endpoint is pending backend implementation.
-    await Future.delayed(const Duration(milliseconds: 800));
-    return AuthResult.success(message: 'Password reset successful');
+    // TODO: This endpoint is not yet live on the backend.
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/password/reset'),
+        body: {
+          'identifier': identifier,
+          'password': newPassword,
+        },
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return AuthResult.success(message: data['message'] ?? 'Password reset successful');
+      } else {
+        return AuthResult.failure(message: data['message'] ?? 'Reset failed');
+      }
+    } catch (e) {
+      return AuthResult.failure(message: 'Network error: $e');
+    }
+  }
+
+  @override
+  Future<AuthResult> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    // TODO: This endpoint is not yet live on the backend.
+    // It will also require the auth token in headers.
+    throw UnimplementedError('Change password endpoint is pending backend implementation.');
   }
 }

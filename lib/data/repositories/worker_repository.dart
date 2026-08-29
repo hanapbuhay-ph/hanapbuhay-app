@@ -1,1 +1,21 @@
-abstract class WorkerRepository {}
+import '../models/worker_model.dart';
+import '../models/auth_result_model.dart';
+
+abstract class WorkerRepository {
+  Future<List<Worker>> getTopRatedWorkers();
+  Future<List<Worker>> getRecentlyViewedWorkers();
+  Future<List<ServiceCategory>> getCategories();
+  Future<Worker?> getWorkerById(String id);
+  Future<AuthResult> submitVerificationDocuments({
+    required String workerId,
+    required String govIdPath,
+    required String brgyCertPath,
+    required String selfiePath,
+  });
+  Future<AuthResult> updateProfile({
+    required String workerId,
+    required List<String> categories,
+    required List<String> photoPaths,
+    required String bio,
+  });
+}

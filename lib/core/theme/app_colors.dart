@@ -23,6 +23,7 @@ class AppColors {
   static const Color surfaceContainerHigh = Color(0xFFE7E8E7);
   static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
   static const Color surfaceContainerHighest = Color(0xFFE1E3E2);
+  static const Color surfaceVariant = Color(0xFFE1E3E2);
 
   static const Color outline = Color(0xFF6E7B69);
   static const Color outlineVariant = Color(0xFFBECAB6);
@@ -33,6 +34,7 @@ class AppColors {
   static const Color onErrorContainer = Color(0xFF93000A);
 
   static const Color success = Color(0xFF006E11); // Reuse primary for success
+  static const Color leafBright = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFF59E0B);
   
   static const Color divider = Color(0xFFBECAB6);

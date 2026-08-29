@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -56,11 +58,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     if (!mounted) return;
     
     // Navigate based on role
-    if (widget.role == 'worker') {
-      context.go(AppRouter.workerHome);
-    } else {
-      context.go(AppRouter.clientHome);
-    }
+    final authProvider = context.read<AuthProvider>();
+    context.go(authProvider.getHomeRoute());
   }
 
   @override

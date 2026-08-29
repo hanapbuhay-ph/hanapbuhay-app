@@ -1,8 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
+
         android:label="hanapbuhayapp"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyDtat3oaOu9F-MZEVf3314w1cgbjNJ1BZw"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

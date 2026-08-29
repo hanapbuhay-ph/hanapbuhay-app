@@ -31,6 +31,14 @@ class AppTypography {
     color: AppColors.onSurface,
   );
 
+  static const TextStyle headlineSmall = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    height: 28 / 20,
+    color: AppColors.onSurface,
+  );
+
   static const TextStyle bodyLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 18,

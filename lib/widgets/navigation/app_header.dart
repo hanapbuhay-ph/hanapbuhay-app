@@ -11,37 +11,42 @@ class AppHeader extends StatelessWidget {
   final bool showBackButton;
   final String title;
   final VoidCallback? onBackPressed;
+  final Color? backgroundColor;
 
   const AppHeader({
     super.key,
     this.showBackButton = true,
     this.title = 'HanapBuhay',
     this.onBackPressed,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (showBackButton)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: AppBackButton(onPressed: onBackPressed),
+    return Container(
+      color: backgroundColor,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (showBackButton)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: AppBackButton(onPressed: onBackPressed),
+                ),
+              Text(
+                title,
+                style: AppTypography.headlineMedium.copyWith(
+                  color: AppColors.primary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            Text(
-              title,
-              style: AppTypography.headlineMedium.copyWith(
-                color: AppColors.primary,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

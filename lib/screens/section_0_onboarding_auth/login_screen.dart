@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/service_locator.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -50,8 +52,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (result.success) {
-        // TODO: Store token and navigate to home
-        context.go(AppRouter.clientHome);
+        final userData = result.data?['user'] as Map<String, dynamic>?;
+        final role = userData?['role'] as String? ?? 'client';
+        final token = result.data?['token'] as String? ?? '';
+        final email = userData?['email'] as String? ?? _identifierController.text.trim();
+
+        if (mounted) {
+          final authProvider = context.read<AuthProvider>();
+          await authProvider.setAuthenticated(token, role, email: email);
+          context.go(authProvider.getHomeRoute());
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result.message), backgroundColor: AppColors.error),

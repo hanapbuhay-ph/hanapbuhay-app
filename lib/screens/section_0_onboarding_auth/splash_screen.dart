@@ -46,8 +46,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     // Navigation logic
     if (authProvider.isAuthenticated) {
-      // TODO: Determine if user is worker or client for correct home route
-      context.go(AppRouter.clientHome);
+      context.go(authProvider.getHomeRoute());
     } else if (authProvider.hasSeenOnboarding) {
       context.go(AppRouter.login);
     } else {

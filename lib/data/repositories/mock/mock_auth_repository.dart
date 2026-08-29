@@ -22,13 +22,17 @@ class MockAuthRepository implements AuthRepository {
   Future<AuthResult> verifyOtp(String email, String otp) async {
     await Future.delayed(const Duration(milliseconds: 800));
     if (otp == '123456') {
+      // Simple heuristic for mock roles
+      final role = email.toLowerCase().contains('worker') ? 'worker' : 'client';
+      
       return AuthResult.success(
         message: 'Verification successful',
         data: {
           'user': {
             'id': 1,
-            'name': 'Test User',
+            'name': role == 'worker' ? 'Ricardo Dalisay' : 'Maria Santos',
             'email': email,
+            'role': role,
           },
           'token': 'mock_token_123',
         },
@@ -41,13 +45,17 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<AuthResult> login(String email, String password) async {
     await Future.delayed(const Duration(milliseconds: 800));
+    // Simple heuristic for mock roles: emails with 'worker' in them get the worker role
+    final role = email.toLowerCase().contains('worker') ? 'worker' : 'client';
+    
     return AuthResult.success(
       message: 'Login successful',
       data: {
         'user': {
           'id': 1,
-          'name': 'Test User',
+          'name': role == 'worker' ? 'Ricardo Dalisay' : 'Maria Santos',
           'email': email,
+          'role': role,
         },
         'token': 'mock_token_123',
       },
@@ -73,5 +81,17 @@ class MockAuthRepository implements AuthRepository {
   Future<AuthResult> resetPassword(String identifier, String newPassword) async {
     await Future.delayed(const Duration(milliseconds: 800));
     return AuthResult.success(message: 'Password reset successful');
+  }
+
+  @override
+  Future<AuthResult> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (currentPassword == 'password123') {
+      return AuthResult.success(message: 'Password changed successfully');
+    }
+    return AuthResult.failure(message: 'Incorrect current password');
   }
 }
