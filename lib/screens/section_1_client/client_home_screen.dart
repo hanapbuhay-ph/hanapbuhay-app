@@ -151,20 +151,27 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 IconButton(
                   icon: const Icon(Icons.notifications_none_outlined, color: AppColors.onSurface),
                   onPressed: () {
-                    // TODO: Navigate to Notifications
+                    context.push(AppRouter.notificationCenter);
                   },
                 ),
                 Positioned(
                   right: 12,
                   top: 12,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: AppColors.error,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
-                    ),
+                  child: StreamBuilder<int>(
+                    stream: notificationRepository.getUnreadCount(),
+                    builder: (context, snapshot) {
+                      final count = snapshot.data ?? 0;
+                      if (count == 0) return const SizedBox.shrink();
+                      return Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../services/service_locator.dart';
 
 class WorkerBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -23,16 +24,13 @@ class WorkerBottomNav extends StatelessWidget {
         context.go(AppRouter.bookingSchedule);
         break;
       case 2:
-        // TODO: Navigate to Messages
-        debugPrint('Navigate to Messages');
+        context.go(AppRouter.chatInbox);
         break;
       case 3:
-        // TODO: Navigate to Alerts
-        debugPrint('Navigate to Alerts');
+        context.go(AppRouter.notificationCenter);
         break;
       case 4:
-        // For now, reuse security settings or go to a worker profile management screen
-        context.go(AppRouter.securitySettings);
+        context.go(AppRouter.profile);
         break;
     }
   }
@@ -41,7 +39,7 @@ class WorkerBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         border: const Border(top: BorderSide(color: AppColors.surfaceContainerHigh, width: 0.5)),
       ),
       child: BottomNavigationBar(
@@ -65,31 +63,38 @@ class WorkerBottomNav extends StatelessWidget {
             activeIcon: Icon(Icons.calendar_today),
             label: 'Schedule',
           ),
-          BottomNavigationBarItem(
-            icon: Stack(
-              children: [
-                const Icon(Icons.chat_bubble_outline),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      color: AppColors.error,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.white, width: 1),
-                    ),
-                    constraints: const BoxConstraints(minWidth: 8, minHeight: 8),
-                  ),
-                ),
-              ],
-            ),
-            activeIcon: const Icon(Icons.chat_bubble),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline),
+            activeIcon: Icon(Icons.chat_bubble),
             label: 'Messages',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none),
-            activeIcon: Icon(Icons.notifications),
+          BottomNavigationBarItem(
+            icon: StreamBuilder<int>(
+              stream: notificationRepository.getUnreadCount(),
+              builder: (context, snapshot) {
+                final count = snapshot.data ?? 0;
+                return Stack(
+                  children: [
+                    const Icon(Icons.notifications_none),
+                    if (count > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.white, width: 1),
+                          ),
+                          constraints: const BoxConstraints(minWidth: 8, minHeight: 8),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            activeIcon: const Icon(Icons.notifications),
             label: 'Alerts',
           ),
           const BottomNavigationBarItem(

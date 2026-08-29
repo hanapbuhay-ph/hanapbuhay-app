@@ -56,10 +56,20 @@ class _LoginScreenState extends State<LoginScreen> {
         final role = userData?['role'] as String? ?? 'client';
         final token = result.data?['token'] as String? ?? '';
         final email = userData?['email'] as String? ?? _identifierController.text.trim();
+        final name = userData?['name'] as String?;
+        final mobile = userData?['mobile_number'] as String?;
+        final avatar = userData?['avatar_url'] as String?;
 
         if (mounted) {
           final authProvider = context.read<AuthProvider>();
-          await authProvider.setAuthenticated(token, role, email: email);
+          await authProvider.setAuthenticated(
+            token, 
+            role, 
+            email: email,
+            name: name,
+            mobile: mobile,
+            avatar: avatar,
+          );
           context.go(authProvider.getHomeRoute());
         }
       } else {

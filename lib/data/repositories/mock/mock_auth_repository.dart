@@ -2,6 +2,22 @@ import '../../models/auth_result_model.dart';
 import '../auth_repository.dart';
 
 class MockAuthRepository implements AuthRepository {
+  // In-memory store to persist user data across registration steps for the session
+  static final Map<String, Map<String, dynamic>> _mockUsers = {
+    'worker@test.com': {
+      'role': 'worker',
+      'name': 'Ricardo Dalisay',
+      'mobile': '09171234567',
+      'avatar': 'https://i.pravatar.cc/150?u=w1',
+    },
+    'client@test.com': {
+      'role': 'client',
+      'name': 'Maria Santos',
+      'mobile': '09171112222',
+      'avatar': 'https://i.pravatar.cc/150?u=client',
+    },
+  };
+
   @override
   Future<AuthResult> register({
     required String name,
@@ -12,6 +28,15 @@ class MockAuthRepository implements AuthRepository {
     required String barangay,
   }) async {
     await Future.delayed(const Duration(milliseconds: 800));
+    
+    // Persist the data for this email
+    _mockUsers[email.toLowerCase()] = {
+      'role': role,
+      'name': name,
+      'mobile': mobileNumber,
+      'avatar': role == 'worker' ? 'https://i.pravatar.cc/150?u=w1' : 'https://i.pravatar.cc/150?u=client',
+    };
+    
     return AuthResult.success(
       message: 'OTP sent to $email',
       data: {'email': email},
@@ -21,18 +46,24 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<AuthResult> verifyOtp(String email, String otp) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    if (otp == '123456') {
-      // Simple heuristic for mock roles
-      final role = email.toLowerCase().contains('worker') ? 'worker' : 'client';
+    if (otp == '123456' || otp == '111111') { // Allowing a few common test OTPs
+      final userData = _mockUsers[email.toLowerCase()] ?? {
+        'role': 'client',
+        'name': 'Mock User',
+        'mobile': '09123456789',
+        'avatar': 'https://i.pravatar.cc/150?u=mock',
+      };
       
       return AuthResult.success(
         message: 'Verification successful',
         data: {
           'user': {
             'id': 1,
-            'name': role == 'worker' ? 'Ricardo Dalisay' : 'Maria Santos',
+            'name': userData['name'],
             'email': email,
-            'role': role,
+            'role': userData['role'],
+            'mobile_number': userData['mobile'],
+            'avatar_url': userData['avatar'],
           },
           'token': 'mock_token_123',
         },
@@ -45,17 +76,24 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<AuthResult> login(String email, String password) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    // Simple heuristic for mock roles: emails with 'worker' in them get the worker role
-    final role = email.toLowerCase().contains('worker') ? 'worker' : 'client';
     
+    final userData = _mockUsers[email.toLowerCase()] ?? {
+      'role': 'client',
+      'name': 'Maria Santos',
+      'mobile': '09171234567',
+      'avatar': 'https://i.pravatar.cc/150?u=client',
+    };
+
     return AuthResult.success(
       message: 'Login successful',
       data: {
         'user': {
           'id': 1,
-          'name': role == 'worker' ? 'Ricardo Dalisay' : 'Maria Santos',
+          'name': userData['name'],
           'email': email,
-          'role': role,
+          'role': userData['role'],
+          'mobile_number': userData['mobile'],
+          'avatar_url': userData['avatar'],
         },
         'token': 'mock_token_123',
       },
@@ -93,5 +131,15 @@ class MockAuthRepository implements AuthRepository {
       return AuthResult.success(message: 'Password changed successfully');
     }
     return AuthResult.failure(message: 'Incorrect current password');
+  }
+
+  @override
+  Future<AuthResult> updateProfile({
+    required String name,
+    required String mobileNumber,
+    String? avatarPath,
+  }) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return AuthResult.success(message: 'Profile updated successfully!');
   }
 }

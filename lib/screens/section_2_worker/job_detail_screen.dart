@@ -181,8 +181,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           ),
           IconButton(
             onPressed: () {
-              // TODO: Navigate to chat
-              debugPrint('Navigate to chat with client');
+              context.push('${AppRouter.chatThread}/c1'); // Mock ID
             },
             icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
             style: IconButton.styleFrom(

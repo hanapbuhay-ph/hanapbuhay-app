@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../screens/section_0_onboarding_auth/splash_screen.dart';
 import '../../screens/section_0_onboarding_auth/onboarding_slides_screen.dart';
@@ -27,6 +28,13 @@ import '../../screens/section_2_worker/portfolio_skills_screen.dart';
 import '../../screens/section_2_worker/booking_schedule_screen.dart';
 import '../../screens/section_2_worker/job_detail_screen.dart';
 import '../../screens/section_2_worker/rate_client_screen.dart';
+import '../../screens/section_3_shared/chat_inbox_screen.dart';
+import '../../screens/section_3_shared/chat_thread_screen.dart';
+import '../../screens/section_3_shared/notification_center_screen.dart';
+import '../../screens/section_3_shared/help_faq_screen.dart';
+import '../../screens/section_3_shared/profile_tab_screen.dart';
+import '../../screens/section_3_shared/edit_profile_screen.dart';
+import '../../screens/section_3_shared/notification_preferences_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -57,6 +65,13 @@ class AppRouter {
   static const String bookingSchedule = '/booking-schedule';
   static const String jobDetail = '/job-detail';
   static const String rateClient = '/rate-client';
+  static const String chatInbox = '/messages';
+  static const String chatThread = '/chat';
+  static const String notificationCenter = '/notifications';
+  static const String help = '/help';
+  static const String profile = '/profile';
+  static const String editProfile = '/edit-profile';
+  static const String notificationPreferences = '/notification-preferences';
   
   // Section 1 & 2 Home (Placeholder destinations)
   static const String clientHome = '/client-home';
@@ -171,6 +186,37 @@ class AppRouter {
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
           return RateClientScreen(bookingId: id);
+        },
+      ),
+      GoRoute(
+        path: chatInbox,
+        builder: (context, state) => const ChatInboxScreen(),
+      ),
+      GoRoute(
+        path: notificationCenter,
+        builder: (context, state) => const NotificationCenterScreen(),
+      ),
+      GoRoute(
+        path: help,
+        builder: (context, state) => const HelpFaqScreen(),
+      ),
+      GoRoute(
+        path: profile,
+        builder: (context, state) => const ProfileTabScreen(),
+      ),
+      GoRoute(
+        path: editProfile,
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: notificationPreferences,
+        builder: (context, state) => const NotificationPreferencesScreen(),
+      ),
+      GoRoute(
+        path: '$chatThread/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return ChatThreadScreen(conversationId: id);
         },
       ),
       GoRoute(

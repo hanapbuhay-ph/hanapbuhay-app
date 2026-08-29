@@ -17,6 +17,15 @@ class AuthProvider extends ChangeNotifier {
   String? _userRole;
   String? get userRole => _userRole;
 
+  String? _userName;
+  String? get userName => _userName;
+
+  String? _userMobile;
+  String? get userMobile => _userMobile;
+
+  String? _userAvatar;
+  String? get userAvatar => _userAvatar;
+
   bool _hasSeenOnboarding = false;
   bool get hasSeenOnboarding => _hasSeenOnboarding;
 
@@ -33,6 +42,9 @@ class AuthProvider extends ChangeNotifier {
     _hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
     _userEmail = prefs.getString('user_email');
     _userRole = prefs.getString('user_role');
+    _userName = prefs.getString('user_name');
+    _userMobile = prefs.getString('user_mobile');
+    _userAvatar = prefs.getString('user_avatar');
 
     notifyListeners();
   }
@@ -44,16 +56,44 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setAuthenticated(String token, String role, {String? email}) async {
+  Future<void> setAuthenticated(String token, String role, {String? email, String? name, String? mobile, String? avatar}) async {
     await _storage.saveToken(token);
     final prefs = await SharedPreferences.getInstance();
+    
     await prefs.setString('user_role', role);
     _userRole = role;
+
     if (email != null) {
       await prefs.setString('user_email', email);
       _userEmail = email;
     }
+    if (name != null) {
+      await prefs.setString('user_name', name);
+      _userName = name;
+    }
+    if (mobile != null) {
+      await prefs.setString('user_mobile', mobile);
+      _userMobile = mobile;
+    }
+    if (avatar != null) {
+      await prefs.setString('user_avatar', avatar);
+      _userAvatar = avatar;
+    }
+
     _isAuthenticated = true;
+    notifyListeners();
+  }
+
+  Future<void> updateLocalProfile({required String name, required String mobile, String? avatar}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', name);
+    _userName = name;
+    await prefs.setString('user_mobile', mobile);
+    _userMobile = mobile;
+    if (avatar != null) {
+      await prefs.setString('user_avatar', avatar);
+      _userAvatar = avatar;
+    }
     notifyListeners();
   }
 
@@ -62,11 +102,17 @@ class AuthProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_role');
     await prefs.remove('user_email');
+    await prefs.remove('user_name');
+    await prefs.remove('user_mobile');
+    await prefs.remove('user_avatar');
+    
     _isAuthenticated = false;
     _userEmail = null;
     _userRole = null;
+    _userName = null;
+    _userMobile = null;
+    _userAvatar = null;
+    
     notifyListeners();
   }
-  
-  // Login, Register, Logout methods would go here...
 }

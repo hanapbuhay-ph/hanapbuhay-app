@@ -131,19 +131,33 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
               ),
             ),
             const Spacer(),
-            Stack(
-              children: [
-                const Icon(Icons.notifications_none, color: AppColors.onSurfaceVariant),
-                Positioned(
-                  right: 2,
-                  top: 2,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(color: AppColors.error, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.5)),
+            GestureDetector(
+              onTap: () => context.push(AppRouter.notificationCenter),
+              child: Stack(
+                children: [
+                  const Icon(Icons.notifications_none, color: AppColors.onSurfaceVariant),
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    child: StreamBuilder<int>(
+                      stream: notificationRepository.getUnreadCount(),
+                      builder: (context, snapshot) {
+                        final count = snapshot.data ?? 0;
+                        if (count == 0) return const SizedBox.shrink();
+                        return Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(width: 16),
             CircleAvatar(radius: 16, backgroundImage: NetworkImage(worker.avatarUrl)),

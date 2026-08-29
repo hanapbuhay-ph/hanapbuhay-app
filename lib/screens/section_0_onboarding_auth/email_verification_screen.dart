@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/routing/app_router.dart';
 import '../../services/service_locator.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -101,11 +100,22 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
       if (!mounted) return;
 
       if (result.success) {
+        final userData = result.data?['user'] as Map<String, dynamic>?;
         final token = result.data?['token'] ?? '';
-        final role = result.data?['user']?['role'] ?? 'client';
+        final role = userData?['role'] ?? 'client';
+        final name = userData?['name'];
+        final mobile = userData?['mobile_number'];
+        final avatar = userData?['avatar_url'];
         
         final authProvider = context.read<AuthProvider>();
-        await authProvider.setAuthenticated(token, role);
+        await authProvider.setAuthenticated(
+          token, 
+          role, 
+          email: widget.email,
+          name: name,
+          mobile: mobile,
+          avatar: avatar,
+        );
 
         if (!mounted) return;
         

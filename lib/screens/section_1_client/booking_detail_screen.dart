@@ -150,8 +150,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           ),
           IconButton(
             onPressed: () {
-              // TODO: Navigate to chat
-              debugPrint('Navigate to chat with ${worker.name}');
+              context.push('${AppRouter.chatThread}/c1'); // Mock ID
             },
             icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
             style: IconButton.styleFrom(

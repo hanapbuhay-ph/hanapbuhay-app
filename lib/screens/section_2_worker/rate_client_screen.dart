@@ -4,7 +4,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../services/service_locator.dart';
 import '../../data/models/booking_model.dart';
-import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 
 class RateClientScreen extends StatefulWidget {
@@ -71,7 +70,7 @@ class _RateClientScreenState extends State<RateClientScreen> {
         bookingId: widget.bookingId,
         clientId: _booking!.clientId,
         rating: _selectedRating,
-        comment: _commentController.text.trim(),
+        comment: _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
       );
 
       if (!mounted) return;
@@ -164,7 +163,7 @@ class _RateClientScreenState extends State<RateClientScreen> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Maria Santos', // In real app, pull from Client model
+          'Maria Santos', 
           style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800),
         ),
         Text(

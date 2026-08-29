@@ -158,4 +158,14 @@ class ApiAuthRepository implements AuthRepository {
     // It will also require the auth token in headers.
     throw UnimplementedError('Change password endpoint is pending backend implementation.');
   }
+
+  @override
+  Future<AuthResult> updateProfile({
+    required String name,
+    required String mobileNumber,
+    String? avatarPath,
+  }) async {
+    // TODO: POST /api/profile/update
+    throw UnimplementedError();
+  }
 }

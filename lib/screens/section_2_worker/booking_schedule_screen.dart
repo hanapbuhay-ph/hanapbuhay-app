@@ -291,8 +291,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                 ),
                 child: IconButton(
                   onPressed: () {
-                    // TODO: Navigate to chat
-                    debugPrint('Chat with client');
+                    context.push('${AppRouter.chatThread}/c1'); // Mock ID
                   },
                   icon: const Icon(Icons.chat_bubble_outline, color: AppColors.outline, size: 20),
                 ),

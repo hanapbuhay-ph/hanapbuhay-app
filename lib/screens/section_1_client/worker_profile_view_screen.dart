@@ -464,6 +464,18 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
             ),
           ),
           const SizedBox(width: 24),
+          IconButton(
+            onPressed: () {
+              context.push('${AppRouter.chatThread}/c1'); // Mock conversation ID
+            },
+            icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.primary.withOpacity(0.1),
+              padding: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             flex: 2,
             child: PrimaryButton(

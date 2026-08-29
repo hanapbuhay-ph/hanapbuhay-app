@@ -164,7 +164,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   ],
                 ),
               ),
-              _buildIconButton(Icons.chat_bubble_outline, () {}),
+              _buildIconButton(Icons.chat_bubble_outline, () {
+                context.push('${AppRouter.chatThread}/c1'); // Mock ID
+              }),
               const SizedBox(width: 12),
               _buildIconButton(Icons.call_outlined, () {}),
             ],
