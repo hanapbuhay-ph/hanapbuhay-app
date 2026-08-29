@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>File a Report - HanapBuhay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "primary-fixed-dim": "#6cdf64",
+                        "surface-tint": "#006e11",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#88fc7d",
+                        "on-tertiary-fixed": "#2a1800",
+                        "tertiary-container": "#ca8400",
+                        "tertiary": "#835400",
+                        "secondary": "#2a6b2c",
+                        "primary": "#006e11",
+                        "on-surface": "#191c1c",
+                        "tertiary-fixed": "#ffddb5",
+                        "primary-container": "#34a835",
+                        "inverse-primary": "#6cdf64",
+                        "on-primary-container": "#003404",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "on-primary-fixed": "#002202",
+                        "surface-container": "#edeeed",
+                        "surface-cream": "#FEFDFB",
+                        "outline-variant": "#becab6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#3f4a3b",
+                        "secondary-container": "#acf4a4",
+                        "on-background": "#191c1c",
+                        "surface-container-highest": "#e1e3e2",
+                        "inverse-surface": "#2e3131",
+                        "leaf-bright": "#4CAF50",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#00530a",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f9f9f8",
+                        "surface-variant": "#e1e3e2",
+                        "inverse-on-surface": "#f0f1f0",
+                        "earth-brown": "#5D4037",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#002203",
+                        "on-secondary-container": "#307231",
+                        "surface-container-low": "#f3f4f3",
+                        "background": "#f9f9f8",
+                        "surface": "#f9f9f8",
+                        "outline": "#6e7b69",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#3f2600",
+                        "charcoal-soft": "#2D312E",
+                        "surface-container-high": "#e7e8e7",
+                        "secondary-fixed-dim": "#91d78a",
+                        "surface-dim": "#d9dad9",
+                        "secondary-fixed": "#acf4a4",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "body-xl": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .tactile-button {
+            transition: all 0.2s ease;
+            box-shadow: inset 0 -2px 0 0 rgba(0, 0, 0, 0.1);
+        }
+        .tactile-button:active {
+            transform: translateY(1px);
+            box-shadow: inset 0 0 0 0 rgba(0, 0, 0, 0);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-cream text-on-surface antialiased font-body-md min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full bg-surface/90 backdrop-blur-md shadow-sm dark:shadow-none z-50 flex items-center justify-between px-margin-mobile h-16">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition-colors text-on-surface-variant active:scale-95 duration-100">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary font-bold tracking-tight">File a Report</h1>
+<div class="w-10 h-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow p-margin-mobile md:px-margin-desktop md:py-8 max-w-container-max mx-auto w-full pb-32">
+<!-- Context Card -->
+<section class="bg-surface-container-lowest rounded-lg p-6 mb-8 shadow-[0_4px_12px_rgba(52,168,53,0.08)]">
+<h2 class="font-label-lg text-label-lg text-on-surface-variant mb-4">Report Details Regarding:</h2>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-surface-container">
+<img alt="Ricardo Dalisay" class="w-full h-full object-cover" data-alt="A portrait of a male plumbing professional wearing a neat uniform, smiling confidently in a modern, well-lit environment. The lighting is soft and natural, emphasizing a trustworthy and approachable persona. The overall aesthetic is friendly and professional, aligned with a modern service application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDg0ciVlhk_M91tNjVoxGxGR24O6DM-62O7UMkbRkQnK_YkR364bKkGGh_5ZC2EP97jFAlTDZR6zNcy7HwZJnZlvnL2Yt6u9PDXRRda2iJ5TjgpBcT1INDkAlxpGDWGeR55q7bw4sj2xh6Cf9c4kQsRNl5wuYcRs1SR-kH3u0rD4lGUbWVmjropA7vDZdo9nVEVoKUhfC3BkmL2WhYmMnqK1zlUgK5cFVwqZLU7TQdx5jOmGK1Yy9DZvg"/>
+</div>
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface font-bold">Ricardo Dalisay</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Master Plumber</p>
+<div class="mt-2 flex flex-wrap gap-2">
+<span class="inline-flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">build</span>
+                            General Plumbing Repair
+                        </span>
+<span class="inline-flex items-center gap-1 bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                            Oct 24, 2023
+                        </span>
+</div>
+</div>
+</div>
+</section>
+<!-- Form Area -->
+<form class="space-y-6">
+<!-- Reason Dropdown -->
+<div class="flex flex-col gap-2">
+<label class="font-label-lg text-label-lg text-on-surface" for="report-reason">Reason for Report</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-colors" id="report-reason" name="reason">
+<option disabled="" selected="" value="">Select a reason</option>
+<option value="no-show">No-show</option>
+<option value="unsatisfactory">Unsatisfactory work</option>
+<option value="misconduct">Misconduct</option>
+<option value="other">Other</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Description Text Area -->
+<div class="flex flex-col gap-2">
+<label class="font-label-lg text-label-lg text-on-surface" for="report-description">Description</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-colors resize-y" id="report-description" name="description" placeholder="Please describe the issue in detail..." rows="5"></textarea>
+</div>
+<!-- Photo Evidence Section -->
+<div class="flex flex-col gap-2">
+<label class="font-label-lg text-label-lg text-on-surface">Attach Photo Evidence (Optional)</label>
+<p class="font-body-md text-sm text-on-surface-variant mb-2">Upload up to 3 photos to support your report.</p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Thumbnail 1 -->
+<div class="relative aspect-square rounded-lg overflow-hidden border border-outline-variant bg-surface-container">
+<img alt="Attached photo 1" class="w-full h-full object-cover" data-alt="A close-up, slightly blurry image showing a leaking pipe under a sink. Water droplets are visible on the metal surface. The lighting is dim, suggesting an under-sink environment. The overall mood is frustrating, representing a household plumbing issue." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2CyRFEhWpVIICZhkZmWJ7rwxSS8qiwDqA48WVeiZ2LA5Ra5uxx1za2TpYGY--IxRZyUpLs5Tp05Rb1MF3s6EPrQyw2AwjzKhOkd7Cdhb8FUCLHju06tFGJFSNB7xdlxZ0RI6l_wihlTTsoZPCnPGXTlfEurIIMQQ6997IUCGpmTQW4VtBCUfRP1kjF0xhNIk6dhQhvx1g0SAQGDfG2vefa2ImbbxkVnnch1czjQwaC0vPIQonhUSmWA"/>
+<button aria-label="Remove photo" class="absolute top-1 right-1 w-6 h-6 bg-surface-container-highest/80 backdrop-blur-sm rounded-full flex items-center justify-center text-on-surface-variant hover:text-error transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<!-- Upload Button -->
+<button class="aspect-square rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 transition-colors flex flex-col items-center justify-center gap-2 text-primary" type="button">
+<span class="material-symbols-outlined text-3xl">add_a_photo</span>
+<span class="font-label-sm text-label-sm">Add Photo</span>
+</button>
+</div>
+</div>
+</form>
+</main>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest shadow-[0_-4px_12px_rgba(0,0,0,0.05)] p-margin-mobile z-40 border-t border-outline-variant/20">
+<div class="max-w-container-max mx-auto">
+<button class="tactile-button w-full bg-primary text-on-primary font-label-lg text-label-lg py-4 rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">send</span>
+                Submit Report
+            </button>
+</div>
+</div>
+</body></html>

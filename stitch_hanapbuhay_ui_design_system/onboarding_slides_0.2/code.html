@@ -1,0 +1,248 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>HanapBuhay Onboarding</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style type="text/tailwindcss">
+        @layer utilities {
+            .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#34a835",
+                        "on-tertiary-fixed": "#2a1800",
+                        "tertiary": "#835400",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "primary": "#006e11",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#6e7b69",
+                        "on-primary-fixed": "#002202",
+                        "surface-variant": "#e1e3e2",
+                        "on-primary-container": "#003404",
+                        "primary-fixed": "#88fc7d",
+                        "on-tertiary-container": "#3f2600",
+                        "leaf-bright": "#4CAF50",
+                        "tertiary-container": "#ca8400",
+                        "background": "#f9f9f8",
+                        "secondary-fixed-dim": "#91d78a",
+                        "secondary-fixed": "#acf4a4",
+                        "on-secondary-fixed": "#002203",
+                        "surface-dim": "#d9dad9",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "tertiary-fixed": "#ffddb5",
+                        "on-background": "#191c1c",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f0f1f0",
+                        "primary-fixed-dim": "#6cdf64",
+                        "secondary": "#2a6b2c",
+                        "surface-container-high": "#e7e8e7",
+                        "surface-container-highest": "#e1e3e2",
+                        "earth-brown": "#5D4037",
+                        "secondary-container": "#acf4a4",
+                        "inverse-surface": "#2e3131",
+                        "on-surface": "#191c1c",
+                        "on-secondary-container": "#307231",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f9f9f8",
+                        "surface-container": "#edeeed",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#3f4a3b",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#6cdf64",
+                        "surface-tint": "#006e11",
+                        "surface-cream": "#FEFDFB",
+                        "surface-bright": "#f9f9f8",
+                        "charcoal-soft": "#2D312E",
+                        "surface-container-low": "#f3f4f3",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#00530a",
+                        "outline-variant": "#becab6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-sans antialiased h-screen w-screen overflow-hidden">
+<!-- Mobile Onboarding Container - Swipeable -->
+<div class="flex w-full h-full overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+<!-- Slide 1 -->
+<section class="w-full h-full flex-shrink-0 snap-center flex flex-col relative">
+<!-- Top 60%: Illustration -->
+<div class="h-[60%] w-full relative bg-surface-container-lowest">
+<a class="absolute top-margin-mobile right-margin-mobile z-20 font-label-lg text-primary bg-surface/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm" href="#">Skip</a>
+<img class="w-full h-full object-cover" alt="A high-quality 3D-style illustration representing a community skill exchange marketplace with friendly Filipino characters collaborating in a sunlit neighborhood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKNz99miJdNVTMmTRcRMfWv2vFbVnk_v3rSDSs4Gd35tWW7SXmSUvaX9haVgzk-M5e7amKHEqulQnx5scriV9UY0jF_sp9tZt_5WVRDOgRVRS0hvo5h3bwM9qXD0gqdyVK0_BPxLqvX5_SKkCtLFz9V8anXxVJHpoqrXEGWgjdUmWONIAXsqLajd7Ou41Sp_Nc42_qW2mHYwP76raKUkJR5eZh_s-pTpfe7dcwlXRj-F0lGdUq0vQa4w">
+</div>
+<!-- Bottom 40%: Text & Nav -->
+<div class="h-[40%] w-full bg-surface-cream rounded-t-[32px] -mt-8 relative z-10 p-6 flex flex-col justify-between shadow-[0_-8px_24px_rgba(52,168,53,0.08)]">
+<div class="text-center mt-4">
+<h1 class="font-headline-lg-mobile text-on-surface mb-3 tracking-tight text-[36px] font-bold">What is HanapBuhay?</h1>
+<p class="font-body-md text-on-surface-variant max-w-sm mx-auto">Find skilled workers in your community — verified and trusted through your local barangay.</p>
+</div>
+<div class="flex items-center justify-between w-full pb-4">
+<!-- Pagination -->
+<div class="flex gap-2 pl-2">
+<div class="w-6 h-2 rounded-full bg-primary-container"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+</div>
+<!-- Next Button -->
+<button class="bg-primary-container text-white font-label-lg rounded-full px-6 py-3 shadow-[0_4px_12px_rgba(52,168,53,0.3)] hover:shadow-lg active:translate-y-[1px] active:shadow-sm transition-all flex items-center gap-2">
+                        Next
+                        <span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Slide 2 -->
+<section class="w-full h-full flex-shrink-0 snap-center flex flex-col relative">
+<div class="h-[60%] w-full relative bg-surface-container-lowest">
+<a class="absolute top-margin-mobile right-margin-mobile z-20 font-label-lg text-primary bg-surface/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm" href="#">Skip</a>
+<img class="w-full h-full object-cover" data-alt="A colorful, approachable 3D illustration showing a happy homeowner standing by their house, looking relieved as a friendly, uniformed plumber holding a wrench arrives. The scene is lit with soft, high-key lighting characteristic of a friendly digital naturalist style. Lush green plants decorate the foreground. The mood is helpful, reliable, and convenient, using a palette of pure whites, soft grays, and vibrant primary greens." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXl0_ADFFu7ciijNzWf3cB_-7imsSgHzVNDXL_Y5ikrhsH2D6jeYl1iqwHC3KqZB4-T-nfg33Ml8zkB1DyHCfFtY5d-DTtD1SDGUoFqeX5GACmDn_6ZIYAt64hjpcbpvBMmHh5l0j1Wi-9OjbBlyijGT8JzxxBwglhTGzF5PYr6kos3DfE6QCMPFOpXzR1VUmU3A7RXDIJpTxnoLkswkyI9457VoAz37HiVFshlCdVBQQAiNsK53JLsA">
+</div>
+<div class="h-[40%] w-full bg-surface-cream rounded-t-[32px] -mt-8 relative z-10 p-6 flex flex-col justify-between shadow-[0_-8px_24px_rgba(52,168,53,0.08)]">
+<div class="text-center mt-4">
+<h1 class="font-headline-lg-mobile text-on-surface mb-3 tracking-tight">For Clients</h1>
+<p class="font-body-md text-on-surface-variant max-w-sm mx-auto">Book electricians, plumbers, tutors, cleaners, and more — right in your neighborhood.</p>
+</div>
+<div class="flex items-center justify-between w-full pb-4">
+<div class="flex gap-2 pl-2">
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-6 h-2 rounded-full bg-primary-container"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+</div>
+<button class="bg-primary-container text-white font-label-lg rounded-full px-6 py-3 shadow-[0_4px_12px_rgba(52,168,53,0.3)] hover:shadow-lg active:translate-y-[1px] active:shadow-sm transition-all flex items-center gap-2">
+                        Next
+                        <span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Slide 3 -->
+<section class="w-full h-full flex-shrink-0 snap-center flex flex-col relative">
+<div class="h-[60%] w-full relative bg-surface-container-lowest">
+<a class="absolute top-margin-mobile right-margin-mobile z-20 font-label-lg text-primary bg-surface/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm" href="#">Skip</a>
+<img class="w-full h-full object-cover" data-alt="A vibrant 3D illustration of a proud, smiling Filipino worker wearing a toolbelt and holding a glowing smartphone that displays a rising chart and five gold stars. The background features soft, rounded shapes suggesting a thriving local economy and community growth. The lighting is bright and optimistic. The aesthetic is tactile and modern, utilizing deep greens, warm earth browns, and clean white backgrounds." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5CEgpBk6f955RKsG6DQLxPNxx9EUJBga1yfHo1DwBLC7akSEIDwdZC9cejdXQl2_eZcgzH7fxOnAQTqXtv50SOkTEXUZrGxu-N2tlbpKwZwsGe58Kh0xq0FEspYDtZqVGWze7NoBSrY2XEtlTz7TH3aNKdZUx4mxzKZZkwAxHlJ6Ax8bZxKIx_AJ7VqdhIurGarkYpWeYwnYWz33rsr9YGUq5GKwUaYuvY12F9iY5lUVbCTf27p9Yog">
+</div>
+<div class="h-[40%] w-full bg-surface-cream rounded-t-[32px] -mt-8 relative z-10 p-6 flex flex-col justify-between shadow-[0_-8px_24px_rgba(52,168,53,0.08)]">
+<div class="text-center mt-4">
+<h1 class="font-headline-lg-mobile text-on-surface mb-3 tracking-tight">For Workers</h1>
+<p class="font-body-md text-on-surface-variant max-w-sm mx-auto">Offer your skills, grow your reputation, and earn from what you do best.</p>
+</div>
+<div class="flex items-center justify-between w-full pb-4">
+<div class="flex gap-2 pl-2">
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-6 h-2 rounded-full bg-primary-container"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+</div>
+<button class="bg-primary-container text-white font-label-lg rounded-full px-6 py-3 shadow-[0_4px_12px_rgba(52,168,53,0.3)] hover:shadow-lg active:translate-y-[1px] active:shadow-sm transition-all flex items-center gap-2">
+                        Next
+                        <span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Slide 4 -->
+<section class="w-full h-full flex-shrink-0 snap-center flex flex-col relative">
+<div class="h-[60%] w-full relative bg-surface-container-lowest">
+<!-- No Skip link on last slide -->
+<img class="w-full h-full object-cover" data-alt="A stylized 3D illustration of a glowing, translucent green digital shield floating over an official-looking document, symbolizing safety and verification. In the soft-focus background, a friendly, modernized representation of a local barangay hall stands peacefully. The lighting is crisp, clean, and assuring, emphasizing a light-mode aesthetic with high contrast between the vibrant primary greens and pristine white surfaces." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-1pmgOtZ6qK8o8DLcf64APINQBc_4OrQpnHt3YdVzsCN6sCTofVHLvOare3D0LN_FV05aa8RY8uRniBIi0kPGgEjWYCsCYLihKelMyduwPMwcGLreUw9pE-PME5NsR7BcW0rLtuHWV_o7zeXzs0gZUdcUIKtZMG4LJK-et-Rs_Nwy0wLtDBqy_j_k2ZDkrC7qCAh2OQoQ_m1D9ol2nSGRu2PeyyEFet6d48d_FeVI1WQw_pbue5reSg">
+</div>
+<div class="h-[40%] w-full bg-surface-cream rounded-t-[32px] -mt-8 relative z-10 p-6 flex flex-col justify-between shadow-[0_-8px_24px_rgba(52,168,53,0.08)]">
+<div class="text-center mt-4">
+<h1 class="font-headline-lg-mobile text-on-surface mb-3 tracking-tight">Safe &amp; Verified</h1>
+<p class="font-body-md text-on-surface-variant max-w-sm mx-auto">Every worker is barangay-document verified — so you always know who you're hiring.</p>
+</div>
+<div class="flex flex-col items-center justify-end w-full pb-2">
+<div class="flex gap-2 mb-6">
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-6 h-2 rounded-full bg-primary-container"></div>
+</div>
+<button class="w-full bg-primary-container text-white font-label-lg rounded-full py-4 shadow-[0_4px_16px_rgba(52,168,53,0.3)] hover:shadow-lg active:translate-y-[1px] active:shadow-sm transition-all text-center">
+                        Get Started
+                    </button>
+</div>
+</div>
+</section>
+</div>
+
+
+
+
+</body></html>

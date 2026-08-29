@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Verification Status Screen - HanapBuhay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f4f3",
+                    "secondary-fixed": "#acf4a4",
+                    "surface-dim": "#d9dad9",
+                    "on-primary-fixed": "#002202",
+                    "outline": "#6e7b69",
+                    "primary": "#006e11",
+                    "secondary-fixed-dim": "#91d78a",
+                    "on-secondary-fixed-variant": "#0c5216",
+                    "on-surface-variant": "#3f4a3b",
+                    "primary-fixed": "#88fc7d",
+                    "tertiary-fixed": "#ffddb5",
+                    "leaf-bright": "#4CAF50",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#006e11",
+                    "surface-container": "#edeeed",
+                    "on-secondary-container": "#307231",
+                    "primary-container": "#34a835",
+                    "surface-container-high": "#e7e8e7",
+                    "surface-bright": "#f9f9f8",
+                    "background": "#f9f9f8",
+                    "on-background": "#191c1c",
+                    "inverse-primary": "#6cdf64",
+                    "secondary-container": "#acf4a4",
+                    "inverse-on-surface": "#f0f1f0",
+                    "secondary": "#2a6b2c",
+                    "on-tertiary-container": "#3f2600",
+                    "on-primary-container": "#003404",
+                    "tertiary-fixed-dim": "#ffb957",
+                    "on-tertiary-fixed": "#2a1800",
+                    "on-primary-fixed-variant": "#00530a",
+                    "on-tertiary": "#ffffff",
+                    "surface-cream": "#FEFDFB",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#6cdf64",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#becab6",
+                    "tertiary": "#835400",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#002203",
+                    "tertiary-container": "#ca8400",
+                    "inverse-surface": "#2e3131",
+                    "surface-variant": "#e1e3e2",
+                    "on-error-container": "#93000a",
+                    "charcoal-soft": "#2D312E",
+                    "on-tertiary-fixed-variant": "#643f00",
+                    "surface": "#f9f9f8",
+                    "surface-container-highest": "#e1e3e2",
+                    "earth-brown": "#5D4037",
+                    "on-surface": "#191c1c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "container-max": "1280px",
+                    "margin-desktop": "48px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "label-lg": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "body-xl": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-xl": ["20px", {"lineHeight": "30px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface-cream text-on-surface antialiased min-h-screen flex flex-col items-center">
+<!-- Top App Bar -->
+<header class="sticky top-0 w-full bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md shadow-sm dark:shadow-none flex items-center justify-between px-margin-mobile h-16 z-50 max-w-container-max mx-auto">
+<button class="text-primary dark:text-primary-fixed active:scale-95 duration-100 p-2 -ml-2 rounded-full hover:bg-surface-variant/50 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chevron_left</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary dark:text-primary-fixed tracking-tight">Verification Status</h1>
+<button class="text-primary dark:text-primary-fixed active:scale-95 duration-100 p-2 -mr-2 rounded-full hover:bg-surface-variant/50 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">more_vert</span>
+</button>
+</header>
+<main class="flex-1 w-full max-w-container-max mx-auto px-margin-mobile py-8 flex flex-col gap-8 md:px-margin-desktop md:py-12">
+<p class="font-body-md text-body-md text-on-surface-variant text-center max-w-2xl mx-auto mb-4">
+            Select a state below to preview the verification status variations.
+        </p>
+<!-- State Toggles (For Preview Purposes) -->
+<div class="flex justify-center gap-4 mb-8 flex-wrap">
+<button class="px-4 py-2 rounded-full font-label-lg text-label-lg bg-tertiary-fixed-dim/20 text-on-tertiary-fixed border border-tertiary-fixed-dim hover:bg-tertiary-fixed-dim/30 transition-colors" onclick="showState('pending')">Show Pending</button>
+<button class="px-4 py-2 rounded-full font-label-lg text-label-lg bg-primary-container/20 text-on-primary-container border border-primary-container hover:bg-primary-container/30 transition-colors" onclick="showState('approved')">Show Approved</button>
+<button class="px-4 py-2 rounded-full font-label-lg text-label-lg bg-error-container/50 text-on-error-container border border-error-container hover:bg-error-container/70 transition-colors" onclick="showState('rejected')">Show Rejected</button>
+</div>
+<!-- PENDING STATE -->
+<div class="w-full max-w-md mx-auto bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(52,168,53,0.05)] border border-surface-variant p-8 flex flex-col items-center text-center transition-all duration-300" id="state-pending">
+<div class="w-20 h-20 bg-tertiary-fixed/30 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-4xl text-tertiary-container" style="font-variation-settings: 'FILL' 1;">schedule</span>
+</div>
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface mb-2">Documents Under Review</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                Your verification documents have been received and are currently being reviewed by our team. This usually takes 24-48 hours.
+            </p>
+<div class="w-full h-1 bg-surface-variant rounded-full overflow-hidden mb-6">
+<div class="h-full bg-tertiary-container rounded-full w-1/2 animate-pulse"></div>
+</div>
+<button class="w-full py-3 px-6 rounded-lg font-label-lg text-label-lg border border-outline text-on-surface-variant hover:bg-surface-variant/50 transition-colors active:translate-y-px">
+                Contact Support
+            </button>
+</div>
+<!-- APPROVED STATE -->
+<div class="hidden w-full max-w-md mx-auto bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(52,168,53,0.08)] border border-primary/20 p-8 flex flex-col items-center text-center transition-all duration-300" id="state-approved">
+<div class="w-20 h-20 bg-primary-container/20 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface mb-2">Verification Approved</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8">
+                Congratulations! Your identity has been verified. You now have full access to worker features.
+            </p>
+<div class="w-full bg-surface-container-low rounded-lg p-6 flex flex-col items-center border border-surface-variant mb-6">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-4">Badge Preview</h3>
+<div class="relative mb-4">
+<img class="w-24 h-24 rounded-full object-cover border-4 border-surface-container-lowest shadow-sm" data-alt="A professional, bright portrait photograph of a young Filipino man smiling warmly against a soft, blurred green outdoor background. The lighting is soft and natural, emphasizing approachability and trust. The mood is highly positive, aligning perfectly with a modern, high-quality digital naturalist UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKbZmTEeS73r_wxRB3_jy6_F7-UuXnNL4K31he4OdB9ywtDkLhogKO01QUv_d4EoLuNAf7I392LUQtSHkFlmkje8uDaJaeut3GbabtnFWVmFHLWdzb7I9M2gaE4XBbaehX8VfYkXVrj_8UAmjg4bPg0N4ed2iGp0j6PELvLncJGnpqig7uiaPUeni2fdHhh8x5TptFm8qUwj0WleI15oOqXQMJqbJup4FNrClCUVxI6YlF6d_oY_v9_Q"/>
+<div class="absolute bottom-0 right-0 bg-primary-container text-on-primary rounded-full w-8 h-8 flex items-center justify-center shadow-md border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="font-headline-lg text-headline-lg-mobile text-on-surface mb-1">Ricardo Dalisay</div>
+<div class="bg-primary/10 text-primary font-label-sm text-label-sm px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+                    Trust Tier: Verified
+                </div>
+</div>
+<button class="w-full py-3 px-6 rounded-lg font-label-lg text-label-lg bg-primary text-on-primary hover:shadow-md hover:bg-surface-tint transition-all active:translate-y-px">
+                Go to Dashboard
+            </button>
+</div>
+<!-- REJECTED STATE -->
+<div class="hidden w-full max-w-md mx-auto bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(186,26,26,0.05)] border border-error/20 p-8 flex flex-col items-center text-center transition-all duration-300" id="state-rejected">
+<div class="w-20 h-20 bg-error-container/50 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-4xl text-error" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</div>
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface mb-2">Verification Rejected</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                We couldn't verify your identity with the provided documents. Please review the reason below and try again.
+            </p>
+<div class="w-full bg-error-container/20 border border-error/20 rounded-lg p-4 mb-8 text-left">
+<h3 class="font-label-sm text-label-sm text-error uppercase tracking-widest mb-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                    Reason for Rejection
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    The uploaded ID was blurry and unreadable. Please ensure the document is clearly visible and well-lit.
+                </p>
+</div>
+<button class="w-full py-3 px-6 rounded-lg font-label-lg text-label-lg bg-primary text-on-primary hover:shadow-md hover:bg-surface-tint transition-all active:translate-y-px mb-3">
+                Resubmit Documents
+            </button>
+<button class="w-full py-3 px-6 rounded-lg font-label-lg text-label-lg border border-outline text-on-surface-variant hover:bg-surface-variant/50 transition-colors active:translate-y-px">
+                Contact Support
+            </button>
+</div>
+</main>
+<script>
+        function showState(state) {
+            document.getElementById('state-pending').classList.add('hidden');
+            document.getElementById('state-approved').classList.add('hidden');
+            document.getElementById('state-rejected').classList.add('hidden');
+
+            document.getElementById('state-' + state).classList.remove('hidden');
+        }
+    </script>
+</body></html>

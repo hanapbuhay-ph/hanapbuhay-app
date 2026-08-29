@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>HanapBuhay - Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-primary": "#6cdf64",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#2a6b2c",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "background": "#f9f9f8",
+                        "primary-fixed-dim": "#6cdf64",
+                        "secondary-container": "#acf4a4",
+                        "on-tertiary-container": "#3f2600",
+                        "primary-container": "#34a835",
+                        "on-surface": "#191c1c",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#003404",
+                        "outline": "#6e7b69",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#006e11",
+                        "surface": "#f9f9f8",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "surface-variant": "#e1e3e2",
+                        "tertiary-container": "#ca8400",
+                        "outline-variant": "#becab6",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#835400",
+                        "charcoal-soft": "#2D312E",
+                        "surface-bright": "#f9f9f8",
+                        "earth-brown": "#5D4037",
+                        "surface-cream": "#FEFDFB",
+                        "on-background": "#191c1c",
+                        "surface-container-low": "#f3f4f3",
+                        "on-surface-variant": "#3f4a3b",
+                        "secondary-fixed": "#acf4a4",
+                        "inverse-surface": "#2e3131",
+                        "on-secondary-fixed": "#002203",
+                        "on-tertiary-fixed": "#2a1800",
+                        "on-primary-fixed": "#002202",
+                        "surface-dim": "#d9dad9",
+                        "on-primary-fixed-variant": "#00530a",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "leaf-bright": "#4CAF50",
+                        "secondary-fixed-dim": "#91d78a",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "surface-container-high": "#e7e8e7",
+                        "primary": "#006e11",
+                        "primary-fixed": "#88fc7d",
+                        "tertiary-fixed": "#ffddb5",
+                        "surface-container-highest": "#e1e3e2",
+                        "inverse-on-surface": "#f0f1f0",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-container": "#edeeed",
+                        "on-secondary-container": "#307231"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "container-max": "1280px",
+                        "margin-desktop": "48px",
+                        "safe-area": "env(safe-area-inset-bottom, 20px)"
+                    },
+                    fontFamily: {
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        "body-xl": ["20px", { lineHeight: "30px", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }],
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24 font-body-md">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 backdrop-blur-md bg-surface-cream/90 shadow-sm flex justify-between items-center px-margin-mobile h-16">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform duration-200 text-on-surface-variant hover:bg-surface-variant/20 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">Messages</h1>
+</div>
+<div>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden active:scale-95 transition-transform duration-200 shadow-sm border border-surface-variant">
+<img alt="User Profile Photo" class="w-full h-full object-cover" data-alt="A close up, high-quality professional headshot of a friendly young asian woman smiling warmly, bathed in soft, natural daylight against a blurred natural green background. The style is modern, approachable, and trustworthy, matching a digital naturalist community platform aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2HBa8H7mGf0rFud-kg26jeh4L4jfTpN52mHR8LQlkLC6dIGwkcOMg1IxmfBAQ9HJf9RzdH3ydMe5HpVC1_F_LyjJUILnSijy0MPNmmFpZ1IfQslJdwuRAFMA1utME7TT2E9sKnS-p91QSh2tWMvDSFh1Gwi0qkwqoTLxYkcXCDmcvqx937tEo7HVDRS0cPneNqF1Ttpia6fQFET74Ja_qDXAF1wh_dOcKNeNGFhxKNAxJHsKhRxGsBg"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-margin-mobile md:px-margin-desktop md:max-w-container-max mx-auto space-y-3">
+<!-- Search Bar -->
+<div class="relative w-full mb-6 mt-2">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-surface-variant rounded-full py-3 pl-12 pr-4 font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors placeholder:text-on-surface-variant/60 shadow-[0_2px_8px_rgba(52,168,53,0.04)]" placeholder="Search messages..." type="text"/>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
+<button class="px-4 py-1.5 rounded-full bg-primary/10 text-primary-fixed-dim border border-primary/20 font-label-lg whitespace-nowrap">All Messages</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container border border-surface-variant text-on-surface-variant font-label-lg whitespace-nowrap hover:bg-surface-variant/50 transition-colors">Unread</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container border border-surface-variant text-on-surface-variant font-label-lg whitespace-nowrap hover:bg-surface-variant/50 transition-colors">Bookings</button>
+</div>
+<!-- Conversation List -->
+<div class="space-y-unit">
+<!-- Conversation Row 1 (Unread) -->
+<button class="w-full text-left bg-surface-container-lowest rounded-xl p-4 shadow-[0_2px_8px_rgba(52,168,53,0.06)] hover:bg-surface-container-low/50 transition-colors relative flex items-start gap-4 active:scale-[0.99]">
+<div class="relative flex-shrink-0">
+<img class="w-14 h-14 rounded-full object-cover border-2 border-surface-cream shadow-sm" data-alt="A portrait of an older, reliable male carpenter with a gentle smile, wearing a slightly dusty work shirt, set against a bright, airy workshop background. The lighting is warm and natural, emphasizing a trustworthy and friendly community artisan aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuIpmiUAcp2M4NWDOK46lybskJ9zL6U9PeeBdLmJlMfwj3gp0lIO6NNpUb3ShExx4ak_LER6meeS3yK4jpx0RWisU3L21tuwMKr1QaE3D2NfKkk3L_UHwTDqLFswC49FWFQlh4CNAlwZeKoLdGryYYJz_KJNlvlBWfwMH0bu42F3RSYt_uEX-_pK1iGlMZk9_v7Dj3p3fLHippArPh7X5Rfh3IQhaoP8w64-6KyPgYaWc1UpRgk8csQQ"/>
+<div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-inverse-primary border-2 border-surface-container-lowest rounded-full"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h3 class="font-label-lg text-on-surface font-bold truncate pr-2">Mang Jun (Carpenter)</h3>
+<span class="font-label-sm text-primary flex-shrink-0">2m ago</span>
+</div>
+<p class="font-body-md text-on-surface font-semibold truncate mb-1.5">Yes po, I can drop by tomorrow morning around 9 AM to check the cabinets.</p>
+<div class="inline-flex items-center gap-1 bg-secondary-container/30 text-on-secondary-container px-2 py-0.5 rounded text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px]">home_repair_service</span>
+                        Re: Booking #HB-1042
+                    </div>
+</div>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full shadow-[0_0_4px_rgba(52,168,53,0.5)]"></div>
+</button>
+<!-- Conversation Row 2 -->
+<button class="w-full text-left bg-surface-container-lowest rounded-xl p-4 shadow-[0_2px_8px_rgba(52,168,53,0.06)] hover:bg-surface-container-low/50 transition-colors relative flex items-start gap-4 active:scale-[0.99]">
+<div class="relative flex-shrink-0">
+<img class="w-14 h-14 rounded-full object-cover border border-surface-variant" data-alt="A cheerful young woman with glasses, smiling brightly in a sunny outdoor park setting. She looks like a friendly, energetic dog walker. The image is bright, high-key, and aligned with a warm digital naturalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbaHlhx03Lzqs5Ls68RTsfSwrGH_z1BqP-Yh01k896cuy4Jzq33meSYCQ1_MOzvkQFwQqpmAP9BAXLlTjkpu7ftOkj3xu24beC1zckfcBu2OWeFCjEfL_6XKXOKJEnj08nGl7yR4geglIMQfjCejqa-YgZ_YDXiZRQ1gB5dwKNvaeycxwgU01o_6Jy6awK2jQsav2bAR7eMXi8-ujLCwuaxNg6Un3BOWDvZuer79ZdoeTS93Shkq5Xog"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h3 class="font-label-lg text-on-surface truncate pr-2">Aya Santos (Pet Sitter)</h3>
+<span class="font-label-sm text-on-surface-variant flex-shrink-0">1h ago</span>
+</div>
+<p class="font-body-md text-on-surface-variant truncate mb-1.5">Thank you! Bantay was a very good boy today. Sent you some photos!</p>
+<div class="inline-flex items-center gap-1 bg-surface-variant/40 text-on-surface-variant px-2 py-0.5 rounded text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">pets</span>
+                        Re: Booking #HB-0988
+                    </div>
+</div>
+</button>
+<!-- Conversation Row 3 -->
+<button class="w-full text-left bg-surface-container-lowest rounded-xl p-4 shadow-[0_2px_8px_rgba(52,168,53,0.06)] hover:bg-surface-container-low/50 transition-colors relative flex items-start gap-4 active:scale-[0.99]">
+<div class="relative flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-full bg-tertiary-container/20 border border-tertiary-container/30">
+<span class="material-symbols-outlined text-tertiary text-2xl">support_agent</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h3 class="font-label-lg text-on-surface truncate pr-2">HanapBuhay Support</h3>
+<span class="font-label-sm text-on-surface-variant flex-shrink-0">Yesterday</span>
+</div>
+<p class="font-body-md text-on-surface-variant truncate">Your verification request has been approved. You can now start accepting tasks.</p>
+</div>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe-area bg-surface-cream/95 shadow-[0_-4px_12px_rgba(52,168,53,0.08)] rounded-t-xl z-50 md:hidden backdrop-blur-sm">
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 py-1 px-3">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 py-1 px-3">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="work">work</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</button>
+<!-- Active Tab: Messages -->
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1.5 shadow-sm active:translate-y-0.5 transition-all duration-150">
+<span class="material-symbols-outlined fill-icon text-2xl mb-0.5" data-icon="chat" data-weight="fill">chat</span>
+<span class="font-label-sm text-label-sm font-bold">Messages</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 py-1 px-3 relative">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="notifications">notifications</span>
+<span class="font-label-sm text-label-sm">Notifications</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 py-1 px-3">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</button>
+</nav>
+</body></html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>HanapBuhay - Role Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#f9f9f8",
+                    "on-primary-fixed": "#002202",
+                    "on-tertiary-fixed-variant": "#643f00",
+                    "charcoal-soft": "#2D312E",
+                    "primary-fixed-dim": "#6cdf64",
+                    "secondary-fixed-dim": "#91d78a",
+                    "surface-cream": "#FEFDFB",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#acf4a4",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#6cdf64",
+                    "error": "#ba1a1a",
+                    "surface": "#f9f9f8",
+                    "tertiary-container": "#ca8400",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#191c1c",
+                    "tertiary-fixed-dim": "#ffb957",
+                    "surface-bright": "#f9f9f8",
+                    "on-secondary-fixed-variant": "#0c5216",
+                    "inverse-surface": "#2e3131",
+                    "surface-container": "#edeeed",
+                    "on-surface-variant": "#3f4a3b",
+                    "primary-container": "#34a835",
+                    "on-secondary-fixed": "#002203",
+                    "on-primary-fixed-variant": "#00530a",
+                    "tertiary": "#835400",
+                    "surface-tint": "#006e11",
+                    "error-container": "#ffdad6",
+                    "earth-brown": "#5D4037",
+                    "surface-container-low": "#f3f4f3",
+                    "on-background": "#191c1c",
+                    "on-tertiary-fixed": "#2a1800",
+                    "leaf-bright": "#4CAF50",
+                    "surface-variant": "#e1e3e2",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#d9dad9",
+                    "tertiary-fixed": "#ffddb5",
+                    "primary-fixed": "#88fc7d",
+                    "primary": "#006e11",
+                    "on-secondary-container": "#307231",
+                    "inverse-on-surface": "#f0f1f0",
+                    "outline-variant": "#becab6",
+                    "on-tertiary-container": "#3f2600",
+                    "surface-container-highest": "#e1e3e2",
+                    "surface-container-high": "#e7e8e7",
+                    "secondary-container": "#acf4a4",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "outline": "#6e7b69",
+                    "secondary": "#2a6b2c",
+                    "on-primary-container": "#003404"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "unit": "4px",
+                    "container-max": "1280px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "48px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-xl": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-xl": [
+                            "20px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-lg": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        /* Custom overrides or specific additions if needed beyond Tailwind config */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .role-card {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .role-card.active {
+            border-color: #34a835; /* Primary Green */
+            background-color: rgba(52, 168, 53, 0.05);
+            box-shadow: 0 4px 12px rgba(52, 168, 53, 0.1);
+        }
+        
+        .role-card.active .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .check-icon {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface-cream text-on-surface h-screen flex flex-col antialiased">
+<!-- Top Section (60%) -->
+<div class="flex-grow flex flex-col items-center justify-start relative bg-surface-container-low rounded-b-[48px] shadow-[0_8px_32px_rgba(52,168,53,0.08)] pt-8 px-6">
+<!-- Header -->
+<header class="w-full flex justify-center py-4 relative mb-6">
+<button aria-label="Go back" class="absolute left-0 top-1/2 transform -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">HanapBuhay</h1>
+</header>
+<div class="text-center space-y-3 mb-8">
+<p class="text-primary font-label-lg text-label-lg mb-1">Step 1 of 2</p><h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">
+            How will you use HanapBuhay?
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto">
+            Select your primary role to customize your experience.
+        </p>
+</div>
+<!-- Selection Area -->
+<div class="flex flex-col gap-4 w-full max-w-md mx-auto relative z-10">
+<!-- Client Role Card -->
+<button class="role-card relative w-full flex items-center p-6 bg-surface border-2 border-outline-variant rounded-xl text-left group hover:border-primary-container/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white shadow-sm" id="card-client" onclick="selectRole('client')" type="button">
+<div class="w-14 h-14 flex-shrink-0 bg-secondary-container rounded-full flex items-center justify-center mr-5 text-on-secondary-container">
+<span class="material-symbols-outlined text-[32px]">search</span>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">I want to hire</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Find skilled workers for your tasks and projects.</p>
+</div>
+<div class="check-icon absolute top-4 right-4 w-7 h-7 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: &quot;FILL&quot; 1;">check</span>
+</div>
+</button>
+<!-- Worker Role Card -->
+<button class="role-card relative w-full flex items-center p-6 bg-surface border-2 border-outline-variant rounded-xl text-left group hover:border-primary-container/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-sm active" id="card-worker" onclick="selectRole('worker')" type="button">
+<div class="w-14 h-14 flex-shrink-0 bg-tertiary-container rounded-full flex items-center justify-center mr-5 text-on-primary">
+<span class="material-symbols-outlined text-[32px]">build</span>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">I want to work</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Offer your skills and find job opportunities.</p>
+</div>
+<div class="check-icon absolute top-4 right-4 w-7 h-7 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: &quot;FILL&quot; 1;">check</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Bottom Content Card (40%) -->
+<div class="flex flex-col px-margin-mobile md:px-margin-desktop py-8 bg-surface-cream relative z-20 pt-8">
+<div class="flex items-center justify-center w-full max-w-2xl mx-auto pb-4 pt-8 flex-col">
+<button class="w-full md:w-auto min-w-[200px] py-4 px-8 font-label-lg text-label-lg rounded-full transition-all duration-200 flex items-center justify-center gap-2 bg-primary text-on-primary hover:shadow-[0_6px_24px_rgba(52,168,53,0.3)] hover:-translate-y-0.5 active:translate-y-[1px] cursor-pointer shadow-[0_4px_16px_rgba(52,168,53,0.2)] border border-primary-container" id="continue-btn">
+<span class="">Continue</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button><div class="flex items-center w-full my-4">
+  <div class="flex-grow border-t border-outline-variant"></div>
+  <span class="px-4 text-label-sm text-on-surface-variant font-label-lg">or</span>
+  <div class="flex-grow border-t border-outline-variant"></div>
+</div><button class="w-full md:w-auto min-w-[200px] py-4 px-8 font-label-lg text-label-lg rounded-full transition-all duration-200 flex items-center justify-center gap-2 bg-white text-on-surface border border-outline-variant hover:bg-surface-container-low hover:border-primary-container/50 active:translate-y-[1px] cursor-pointer shadow-sm" id="google-continue-btn"><svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path></svg><span class="">Continue with Google</span></button>
+</div>
+</div>
+<script>
+        let selectedRole = null;
+
+        function selectRole(role) {
+            selectedRole = role;
+            
+            // Reset all cards
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Activate selected card
+            document.getElementById(`card-${role}`).classList.add('active');
+            
+            // Enable button
+            const btn = document.getElementById('continue-btn');
+            btn.disabled = false;
+            btn.classList.remove('bg-surface-variant', 'text-on-surface-variant', 'cursor-not-allowed');
+            btn.classList.add('bg-primary', 'text-on-primary', 'hover:shadow-[0_6px_24px_rgba(52,168,53,0.3)]', 'hover:-translate-y-0.5', 'active:translate-y-[1px]', 'cursor-pointer', 'shadow-[0_4px_16px_rgba(52,168,53,0.2)]', 'border', 'border-primary-container');
+        }
+    </script>
+
+
+
+
+
+
+</body></html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Booking Details - HanapBuhay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#006e11",
+                        "secondary": "#2a6b2c",
+                        "outline-variant": "#becab6",
+                        "surface": "#f9f9f8",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#006e11",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "tertiary-container": "#ca8400",
+                        "background": "#f9f9f8",
+                        "on-surface": "#191c1c",
+                        "primary-fixed-dim": "#6cdf64",
+                        "inverse-surface": "#2e3131",
+                        "on-background": "#191c1c",
+                        "on-tertiary-container": "#3f2600",
+                        "on-secondary-fixed": "#002203",
+                        "on-tertiary-fixed": "#2a1800",
+                        "primary-fixed": "#88fc7d",
+                        "inverse-on-surface": "#f0f1f0",
+                        "charcoal-soft": "#2D312E",
+                        "on-primary-fixed-variant": "#00530a",
+                        "surface-dim": "#d9dad9",
+                        "tertiary": "#835400",
+                        "outline": "#6e7b69",
+                        "on-primary-fixed": "#002202",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-cream": "#FEFDFB",
+                        "surface-container-highest": "#e1e3e2",
+                        "on-surface-variant": "#3f4a3b",
+                        "secondary-container": "#acf4a4",
+                        "secondary-fixed-dim": "#91d78a",
+                        "on-primary-container": "#003404",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e7e8e7",
+                        "surface-variant": "#e1e3e2",
+                        "tertiary-fixed": "#ffddb5",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#edeeed",
+                        "surface-bright": "#f9f9f8",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3f4f3",
+                        "secondary-fixed": "#acf4a4",
+                        "primary-container": "#34a835",
+                        "leaf-bright": "#4CAF50",
+                        "earth-brown": "#5D4037",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#6cdf64",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#307231"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "unit": "4px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .soft-shadow {
+            box-shadow: 0 4px 20px rgba(52, 168, 53, 0.08);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-24 font-body-md text-body-md antialiased">
+<!-- Top App Bar (Mobile optimized, hiding on md for layout structure, though task says details screen usually hides bottom nav, instructions say to use bottom nav. Following instructions to show bottom nav and top bar.) -->
+<header class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md shadow-sm dark:shadow-none transition-colors">
+<div class="flex items-center justify-between px-margin-mobile h-16 w-full z-50">
+<button class="text-primary dark:text-primary-fixed p-2 rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary dark:text-primary-fixed tracking-tight font-bold">Booking Details</h1>
+<button class="text-primary dark:text-primary-fixed p-2 rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</header>
+<main class="max-w-md mx-auto px-margin-mobile py-6 space-y-6">
+<!-- Worker Profile Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 soft-shadow flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<div class="relative w-16 h-16">
+<img class="w-16 h-16 rounded-full object-cover border-2 border-surface-variant" data-alt="A professional portrait of a Filipino male plumber wearing a clean, green polo shirt. He is smiling warmly. The background is a brightly lit, modern home interior softly blurred out. High-key lighting, vibrant colors, reflecting a friendly and reliable service persona in a modern digital naturalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCk5gTy56qqGLC5REWKiTdxIKCz3rU7FJHxv_OVryieD3jG1kYGrobdNIADI9w1BdcDWt2qgump7n4dCjyFy1yK7Ha9yBR9HRgDRgrmDZ8ophpNoNw4lGFJF7mJyw3dc7nBHo9DUdzlvCwt5HrbQKLDxdXX_3LDsSYQ9DMuDfSLH611J-LGA3urvicbEaLWQZh6oPCBi-1HuDw1x20skTig9fHzCRmfvhApqdp3P9AYJJ710sEZsFTbJA"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-primary-fixed-dim rounded-full border-2 border-white"></div>
+</div>
+<div>
+<h2 class="font-label-lg text-label-lg text-on-surface">Ricardo Dalisay</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Master Plumber</p>
+<div class="flex items-center mt-1 space-x-1 text-tertiary-container">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4.9 (120 reviews)</span>
+</div>
+</div>
+</div>
+<button class="bg-secondary-container/30 text-primary p-3 rounded-full hover:bg-secondary-container/50 transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+</button>
+</div>
+<!-- Live Map Area (En Route State) -->
+<div class="relative w-full h-64 rounded-2xl overflow-hidden soft-shadow bg-surface-variant">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A stylized, flat vector illustration of a city map (Makati, Philippines) viewed from a top-down perspective. The map uses a soft, light-mode color palette with cream roads, pale green parks, and light grey buildings. A distinct blue route line traces a path to a destination pin. The style is clean, modern UI mapping with no text labels, emphasizing a clean 'Digital Naturalist' aesthetic." data-location="Makati, Philippines" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBi6-m_88tPM-h3-9hplTrkoM72vd1Hqhvgifbv1gBappH8Fb9p1BuwXMiW0QDGFZaLZ2c7VkBpjd7fWs4r9imp9Z8M7uhoIwwdeFkYv-QO966ZZvbI50KSrC_zev_TaOnB9yth6-8az07F7bbxer1E-W7orFZigX5dxBUym4Nu06hkfKEpjXVOxsDHD8NuVZACwidhzJlmfhBS3dKxggJFifBici9vEFMI4uFUYWjbAj223Omv0DcwDw')"></div>
+<!-- ETA Overlay -->
+<div class="absolute top-4 left-4 right-4 glass-panel rounded-xl p-4 flex items-center justify-between z-10">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Status</p>
+<h3 class="font-headline-md text-body-xl text-primary font-bold">En Route</h3>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">ETA</p>
+<h3 class="font-headline-md text-body-xl text-on-surface font-bold">8 mins</h3>
+</div>
+</div>
+<!-- Worker Pin (Simulated) -->
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+<div class="bg-primary text-white p-2 rounded-full shadow-lg relative">
+<span class="material-symbols-outlined text-[20px]">directions_car</span>
+<div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary rotate-45"></div>
+</div>
+</div>
+</div>
+<!-- Booking Details Block -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 soft-shadow space-y-4">
+<h3 class="font-label-lg text-label-lg text-on-surface-variant uppercase tracking-wider mb-2">Job Details</h3>
+<div class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-outline mt-0.5">plumbing</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Service</p>
+<p class="font-body-md text-body-md text-on-surface font-semibold">General Plumbing Repair</p>
+</div>
+</div>
+<div class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-outline mt-0.5">calendar_today</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Date &amp; Time</p>
+<p class="font-body-md text-body-md text-on-surface">Oct 24, 2023 • 9:00 AM</p>
+</div>
+</div>
+<div class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-outline mt-0.5">location_on</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Address</p>
+<p class="font-body-md text-body-md text-on-surface">123 Mabini St, Brgy. San Lorenzo, Makati</p>
+</div>
+</div>
+<div class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-outline mt-0.5">notes</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Notes</p>
+<p class="font-body-md text-body-md text-on-surface bg-surface-container-low p-3 rounded-lg mt-1 italic text-on-surface-variant">"Leaking pipe under kitchen sink, water pooling quickly."</p>
+</div>
+</div>
+</div>
+<!-- Status Timeline / Stepper -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 soft-shadow">
+<h3 class="font-label-lg text-label-lg text-on-surface-variant uppercase tracking-wider mb-6">Timeline</h3>
+<div class="relative border-l-2 border-surface-variant ml-3 space-y-6">
+<!-- Step 1: Requested (Completed) -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center ring-4 ring-white">
+<span class="material-symbols-outlined text-white text-[10px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="font-label-lg text-label-lg text-on-surface">Requested</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Oct 23, 2:30 PM</p>
+</div>
+<!-- Step 2: Accepted (Completed) -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center ring-4 ring-white">
+<span class="material-symbols-outlined text-white text-[10px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="font-label-lg text-label-lg text-on-surface">Accepted</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Oct 23, 2:45 PM</p>
+</div>
+<!-- Step 3: En Route (Active) -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white border-2 border-primary ring-4 ring-white">
+<div class="absolute inset-0 m-auto w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+</div>
+<p class="font-label-lg text-label-lg text-primary font-bold">En Route</p>
+<p class="font-label-sm text-label-sm text-primary-container">Estimated arrival in 8 mins</p>
+</div>
+<!-- Step 4: In Progress (Pending) -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface-variant border-2 border-surface-variant ring-4 ring-white"></div>
+<p class="font-label-lg text-label-lg text-on-surface-variant/50">In Progress</p>
+</div>
+<!-- Step 5: Completed (Pending) -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface-variant border-2 border-surface-variant ring-4 ring-white"></div>
+<p class="font-label-lg text-label-lg text-on-surface-variant/50">Completed</p>
+</div>
+</div>
+</div>
+<!-- Actions / Footer Links -->
+<div class="flex justify-center pt-4 pb-8">
+<button class="text-error font-label-lg text-label-lg flex items-center space-x-1 hover:underline active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">report</span>
+<span>File an Issue Report</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface/90 backdrop-blur-md shadow-[0_-2px_10px_rgba(52,168,53,0.08)] rounded-t-xl md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-sm text-[10px] mt-1 font-semibold">Explore</span>
+</button>
+<!-- Active Tab: Bookings -->
+<button class="flex flex-col items-center justify-center text-primary bg-secondary-container/30 rounded-full px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="event_note" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="font-label-sm text-[10px] mt-1 font-semibold">Bookings</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-label-sm text-[10px] mt-1 font-semibold">Inbox</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-[10px] mt-1 font-semibold">Profile</span>
+</button>
+</nav>
+</body></html>

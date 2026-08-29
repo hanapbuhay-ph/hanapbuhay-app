@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>HanapBuhay - Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#acf4a4",
+                        "on-surface": "#191c1c",
+                        "secondary-fixed": "#acf4a4",
+                        "inverse-primary": "#6cdf64",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f0f1f0",
+                        "surface-variant": "#e1e3e2",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffddb5",
+                        "surface-container-highest": "#e1e3e2",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "tertiary-container": "#ca8400",
+                        "on-tertiary-fixed": "#2a1800",
+                        "secondary-fixed-dim": "#91d78a",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "surface-tint": "#006e11",
+                        "surface-dim": "#d9dad9",
+                        "background": "#f9f9f8",
+                        "inverse-surface": "#2e3131",
+                        "surface-container-lowest": "#ffffff",
+                        "earth-brown": "#5D4037",
+                        "surface-cream": "#FEFDFB",
+                        "primary-container": "#34a835",
+                        "outline": "#6e7b69",
+                        "primary": "#006e11",
+                        "secondary": "#2a6b2c",
+                        "primary-fixed-dim": "#6cdf64",
+                        "primary-fixed": "#88fc7d",
+                        "tertiary": "#835400",
+                        "on-tertiary-container": "#3f2600",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#becab6",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#003404",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeeed",
+                        "on-background": "#191c1c",
+                        "on-primary-fixed-variant": "#00530a",
+                        "on-secondary-fixed": "#002203",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#002202",
+                        "surface": "#f9f9f8",
+                        "surface-container-high": "#e7e8e7",
+                        "on-secondary-container": "#307231",
+                        "surface-container-low": "#f3f4f3",
+                        "surface-bright": "#f9f9f8",
+                        "leaf-bright": "#4CAF50",
+                        "charcoal-soft": "#2D312E",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#3f4a3b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-desktop": "48px",
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "safe-area": "env(safe-area-inset-bottom, 20px)"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface-cream text-on-surface font-body-md min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 backdrop-blur-md bg-surface-cream/90 shadow-sm transition-colors md:hidden">
+<div class="flex justify-between items-center w-full px-margin-mobile h-16">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/20 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">Notifications</h1>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="User Profile Photo" class="w-full h-full object-cover" data-alt="A close up portrait of a friendly young Filipino professional smiling warmly, bathed in bright, natural light against a soft, blurred green background. High quality, crisp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgFvItlKVY68ABuixnm63_mXC0cLfjxPIZAVaYKJA7zFKMd0MI3A0hAnH2lIRjbQvNo3rXFh5-X1bLff2BoBYl-X40-MOmqzNP64MUHz0cxznJrBZD7dfwVzBtGqb8ytO-aCtzc7NlQppbTlzHnyFd7VBCwTcvKZF2Mt0Ej6Tg-0GDNKWx0dkWRZm28o7Kt1zjKKTA5eGaLBFWLxiGEA5FYNlC647ABEN5Uvyl07sXwDcZ_TTEQ_r_ew"/>
+</div>
+</div>
+</header>
+<!-- Desktop Header -->
+<header class="hidden md:flex fixed top-0 w-full z-50 backdrop-blur-md bg-surface-cream/90 shadow-sm justify-center items-center h-20 px-margin-desktop border-b border-surface-container-high">
+<div class="max-w-container-max w-full flex justify-between items-center">
+<h1 class="font-display-lg text-display-lg text-primary font-bold">HanapBuhay</h1>
+<nav class="flex gap-8">
+<a class="text-on-surface-variant font-label-lg text-label-lg hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-on-surface-variant font-label-lg text-label-lg hover:text-primary transition-colors" href="#">Bookings</a>
+<a class="text-on-surface-variant font-label-lg text-label-lg hover:text-primary transition-colors" href="#">Messages</a>
+<a class="text-primary font-bold font-label-lg text-label-lg relative after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-lg" href="#">Notifications</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-container shadow-sm">
+<img alt="User Profile Photo" class="w-full h-full object-cover" data-alt="A close up portrait of a friendly young Filipino professional smiling warmly, bathed in bright, natural light against a soft, blurred green background. High quality, crisp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB44rSXeP83taQj4bcZtwraJNlQQtot_vntLyAJqqdMerO6fU5ic2V2MtV8LgypBtVDQUMn6ox94EnLgU0fq-xGbC-RVQUDsvzMnFiW1k_LZeFW5cLSTci7fJAlsPg_owUFK2ldnscbFZ_Y5_NHSFB5uEgZNkk7Lwdfhn_mCKeQQ_VubjimiQHUQFr0aYOsGZfVXQgnGtrNvm3JEfGxZ-ko2XqEL1Jm_vkPfg2rNscZC4nuYj4CDfnqTQ"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow pt-20 md:pt-28 pb-32 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
+<div class="md:grid md:grid-cols-12 md:gap-gutter">
+<div class="md:col-span-8 md:col-start-3 space-y-8">
+<!-- Today Section -->
+<section>
+<h2 class="font-label-lg text-label-lg text-on-surface-variant mb-4 pl-2">Today</h2>
+<div class="flex flex-col gap-unit">
+<!-- Unread Notification 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-[0_2px_8px_rgba(52,168,53,0.04)] relative overflow-hidden group hover:shadow-[0_4px_12px_rgba(52,168,53,0.08)] transition-all cursor-pointer border border-surface-variant/30 flex gap-4 items-start">
+<div class="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<div class="w-12 h-12 rounded-full bg-secondary-container/30 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+</div>
+<div class="flex-grow pr-6">
+<p class="font-body-md text-body-md text-on-surface font-medium leading-tight">Your booking for <span class="font-bold">Plumbing Repair</span> was accepted by <span class="font-bold">Roberto Cruz</span></p>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-2 inline-block">2m ago</span>
+</div>
+</div>
+<!-- Unread Notification 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-[0_2px_8px_rgba(52,168,53,0.04)] relative overflow-hidden group hover:shadow-[0_4px_12px_rgba(52,168,53,0.08)] transition-all cursor-pointer border border-surface-variant/30 flex gap-4 items-start">
+<div class="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center shrink-0 text-tertiary">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+</div>
+<div class="flex-grow pr-6">
+<p class="font-body-md text-body-md text-on-surface font-medium leading-tight">New message from <span class="font-bold">Maria Santos</span> regarding Home Cleaning</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-2 inline-block">1h ago</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Earlier Section -->
+<section>
+<h2 class="font-label-lg text-label-lg text-on-surface-variant mb-4 pl-2 mt-8">Earlier</h2>
+<div class="flex flex-col gap-unit opacity-80">
+<!-- Read Notification 1 -->
+<div class="bg-surface-container-low rounded-xl p-4 shadow-none border border-transparent hover:bg-surface-container-lowest hover:border-surface-variant/30 transition-all cursor-pointer flex gap-4 items-start">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center shrink-0 text-primary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md text-on-surface leading-tight">Your account verification is successful! You can now start accepting jobs.</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-2 inline-block">Yesterday</span>
+</div>
+</div>
+<!-- Read Notification 2 -->
+<div class="bg-surface-container-low rounded-xl p-4 shadow-none border border-transparent hover:bg-surface-container-lowest hover:border-surface-variant/30 transition-all cursor-pointer flex gap-4 items-start">
+<div class="w-12 h-12 rounded-full bg-surface-variant/50 flex items-center justify-center shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md text-on-surface leading-tight">Booking completed: <span class="font-medium">Electrical Fix</span> on Oct 28</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-2 inline-block">Oct 28</span>
+</div>
+</div>
+<!-- Read Notification 3 -->
+<div class="bg-surface-container-low rounded-xl p-4 shadow-none border border-transparent hover:bg-surface-container-lowest hover:border-surface-variant/30 transition-all cursor-pointer flex gap-4 items-start">
+<div class="w-12 h-12 rounded-full bg-surface-variant/50 flex items-center justify-center shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="star">star</span>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md text-on-surface leading-tight">You received a 5-star rating from <span class="font-medium">Juan Dela Cruz</span></p>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-2 inline-block">Oct 25</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe-area bg-surface-cream/95 z-50 rounded-t-xl shadow-[0_-4px_12px_rgba(52,168,53,0.08)] md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 py-1 px-2" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 py-1 px-2" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="work">work</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 py-1 px-2" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="chat">chat</span>
+<span class="font-label-sm text-label-sm">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150" href="#">
+<div class="relative">
+<span class="material-symbols-outlined mb-1" data-icon="notifications" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-surface-cream"></div>
+</div>
+<span class="font-label-sm text-label-sm font-bold">Notifications</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 py-1 px-2" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

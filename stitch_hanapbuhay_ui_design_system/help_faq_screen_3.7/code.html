@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HanapBuhay - Help Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#acf4a4",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f3f4f3",
+                    "background": "#f9f9f8",
+                    "primary-fixed-dim": "#6cdf64",
+                    "on-secondary-fixed": "#002203",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#91d78a",
+                    "on-secondary-container": "#307231",
+                    "on-surface": "#191c1c",
+                    "surface-container": "#edeeed",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#2a1800",
+                    "tertiary-fixed-dim": "#ffb957",
+                    "outline": "#6e7b69",
+                    "on-error": "#ffffff",
+                    "leaf-bright": "#4CAF50",
+                    "inverse-surface": "#2e3131",
+                    "surface-bright": "#f9f9f8",
+                    "primary": "#006e11",
+                    "surface-tint": "#006e11",
+                    "inverse-primary": "#6cdf64",
+                    "inverse-on-surface": "#f0f1f0",
+                    "tertiary-container": "#ca8400",
+                    "surface-cream": "#FEFDFB",
+                    "tertiary": "#835400",
+                    "on-primary-container": "#003404",
+                    "error": "#ba1a1a",
+                    "primary-fixed": "#88fc7d",
+                    "on-tertiary-container": "#3f2600",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#acf4a4",
+                    "on-secondary-fixed-variant": "#0c5216",
+                    "surface-container-highest": "#e1e3e2",
+                    "secondary": "#2a6b2c",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-dim": "#d9dad9",
+                    "earth-brown": "#5D4037",
+                    "on-surface-variant": "#3f4a3b",
+                    "on-tertiary-fixed-variant": "#643f00",
+                    "on-primary-fixed-variant": "#00530a",
+                    "outline-variant": "#becab6",
+                    "on-primary-fixed": "#002202",
+                    "primary-container": "#34a835",
+                    "surface-variant": "#e1e3e2",
+                    "on-background": "#191c1c",
+                    "tertiary-fixed": "#ffddb5",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#e7e8e7",
+                    "surface": "#f9f9f8",
+                    "charcoal-soft": "#2D312E"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "container-max": "1280px",
+                    "margin-desktop": "48px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "label-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-xl": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-xl": ["20px", {"lineHeight": "30px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Smooth height transition for accordions */
+        .accordion-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-out, padding 0.3s ease-out;
+        }
+        .accordion-content[aria-expanded="true"] {
+            grid-template-rows: 1fr;
+            padding-bottom: 16px; /* Match standard padding */
+        }
+        .accordion-inner {
+            overflow: hidden;
+        }
+        .chevron {
+            transition: transform 0.3s ease-in-out;
+        }
+        .chevron.rotate {
+            transform: rotate(180deg);
+        }
+        
+        /* Webkit scrollbar styling for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #d9dad9;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col md:items-center">
+<!-- Mobile Container Wrapper -->
+<div class="w-full max-w-md mx-auto bg-surface-cream min-h-screen shadow-lg relative flex flex-col pb-24 md:pb-0">
+<!-- Top App Bar (Custom Sub-page variant) -->
+<header class="bg-surface-container/90 backdrop-blur-md text-primary font-headline-4xl text-headline-4xl fixed top-0 w-full max-w-md z-50 shadow-sm transition-colors duration-200 flex justify-between items-center px-4 h-16">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-bright/10 active:scale-95 transition-all text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back_ios</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-on-surface flex-1 text-center pr-10">Help Center</h1>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 mt-16 px-4 pt-6 flex flex-col gap-8">
+<!-- Search Section -->
+<section class="w-full">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="w-full h-14 pl-12 pr-4 bg-surface rounded-full border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body-lg text-body-lg text-on-surface placeholder:text-on-surface-variant/70 shadow-sm" placeholder="Search for help..." type="text"/>
+</div>
+</section>
+<!-- FAQ Categories -->
+<section class="flex flex-col gap-6">
+<!-- Category: Account -->
+<div class="faq-group">
+<h2 class="font-label-lg text-label-lg text-secondary mb-3 pl-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">manage_accounts</span>
+                        Account &amp; Profile
+                    </h2>
+<div class="bg-surface rounded-xl shadow-[0px_2px_8px_rgba(52,168,53,0.04)] border border-surface-container overflow-hidden flex flex-col">
+<button class="accordion-trigger w-full flex justify-between items-center p-4 text-left hover:bg-surface-container-lowest transition-colors group">
+<span class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">How do I verify my account?</span>
+<span class="material-symbols-outlined text-on-surface-variant chevron">expand_more</span>
+</button>
+<div aria-expanded="false" class="accordion-content px-4 pt-0">
+<div class="accordion-inner">
+<p class="font-body-md text-body-md text-on-surface-variant pt-2">To verify your account, navigate to your Profile tab, tap on "Verification Settings", and follow the prompts to upload a valid government-issued ID and a clear selfie. Verification typically takes 24 hours.</p>
+</div>
+</div>
+<div class="h-px bg-surface-container mx-4"></div>
+<button class="accordion-trigger w-full flex justify-between items-center p-4 text-left hover:bg-surface-container-lowest transition-colors group">
+<span class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">I forgot my password</span>
+<span class="material-symbols-outlined text-on-surface-variant chevron">expand_more</span>
+</button>
+<div aria-expanded="false" class="accordion-content px-4 pt-0">
+<div class="accordion-inner">
+<p class="font-body-md text-body-md text-on-surface-variant pt-2">On the login screen, tap "Forgot Password". Enter your registered email address or mobile number to receive a secure reset link.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Category: Bookings -->
+<div class="faq-group">
+<h2 class="font-label-lg text-label-lg text-secondary mb-3 pl-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">assignment_turned_in</span>
+                        Bookings &amp; Jobs
+                    </h2>
+<div class="bg-surface rounded-xl shadow-[0px_2px_8px_rgba(52,168,53,0.04)] border border-surface-container overflow-hidden flex flex-col">
+<button class="accordion-trigger w-full flex justify-between items-center p-4 text-left hover:bg-surface-container-lowest transition-colors group">
+<span class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">What happens if a worker doesn't show up?</span>
+<span class="material-symbols-outlined text-on-surface-variant chevron">expand_more</span>
+</button>
+<div aria-expanded="false" class="accordion-content px-4 pt-0">
+<div class="accordion-inner">
+<p class="font-body-md text-body-md text-on-surface-variant pt-2">If a worker misses a scheduled booking without notice, please report the issue immediately through the "Bookings" tab. You will be fully refunded, and our team will assist you in finding a replacement worker.</p>
+</div>
+</div>
+<div class="h-px bg-surface-container mx-4"></div>
+<button class="accordion-trigger w-full flex justify-between items-center p-4 text-left hover:bg-surface-container-lowest transition-colors group">
+<span class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">How do I cancel a booking?</span>
+<span class="material-symbols-outlined text-on-surface-variant chevron">expand_more</span>
+</button>
+<div aria-expanded="false" class="accordion-content px-4 pt-0">
+<div class="accordion-inner">
+<p class="font-body-md text-body-md text-on-surface-variant pt-2">Navigate to your active bookings, select the specific job, and tap "Cancel Booking". Please note that cancellations made within 24 hours of the start time may be subject to a cancellation fee.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Category: Safety & Data -->
+<div class="faq-group">
+<h2 class="font-label-lg text-label-lg text-secondary mb-3 pl-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">security</span>
+                        Safety &amp; Privacy
+                    </h2>
+<div class="bg-surface rounded-xl shadow-[0px_2px_8px_rgba(52,168,53,0.04)] border border-surface-container overflow-hidden flex flex-col">
+<button class="accordion-trigger w-full flex justify-between items-center p-4 text-left hover:bg-surface-container-lowest transition-colors group">
+<span class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">Is my data safe?</span>
+<span class="material-symbols-outlined text-on-surface-variant chevron">expand_more</span>
+</button>
+<div aria-expanded="false" class="accordion-content px-4 pt-0">
+<div class="accordion-inner">
+<p class="font-body-md text-body-md text-on-surface-variant pt-2">Absolutely. We use industry-standard end-to-end encryption to protect your personal and payment information. We never share your data with third parties without your explicit consent.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Action Area -->
+<section class="mt-8 mb-12 flex flex-col items-center text-center px-4">
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Can't find what you're looking for?</p>
+<button class="w-full max-w-[280px] bg-primary text-on-primary font-label-lg text-label-lg py-4 px-6 rounded-full flex items-center justify-center gap-3 shadow-[0px_4px_12px_rgba(52,168,53,0.15)] hover:shadow-[0px_6px_16px_rgba(52,168,53,0.25)] hover:-translate-y-[1px] active:translate-y-[1px] transition-all border border-transparent">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">headset_mic</span>
+                    Contact Support
+                </button>
+</section>
+</main>
+<!-- BottomNavBar (from JSON, Profile set as active as Help is usually under Profile) -->
+<nav class="bg-surface-container dark:bg-surface-container text-primary dark:text-primary font-label-xs text-label-xs fixed bottom-0 w-full max-w-md z-50 rounded-t-lg shadow-[0px_-2px_10px_rgba(0,0,0,0.3)] fixed bottom-0 left-1/2 -translate-x-1/2 w-full flex justify-around items-center px-4 pb-4 pt-2 md:hidden">
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant active:scale-95 transition-transform duration-150 rounded-xl cursor-pointer">
+<span class="material-symbols-outlined mb-1">home</span>
+<span>Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant active:scale-95 transition-transform duration-150 rounded-xl cursor-pointer">
+<span class="material-symbols-outlined mb-1">assignment</span>
+<span>Bookings</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant active:scale-95 transition-transform duration-150 rounded-xl cursor-pointer">
+<span class="material-symbols-outlined mb-1">chat_bubble</span>
+<span>Messages</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant active:scale-95 transition-transform duration-150 rounded-xl cursor-pointer">
+<span class="material-symbols-outlined mb-1">notifications</span>
+<span>Alerts</span>
+</div>
+<!-- Active State: Profile -->
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-5 py-2 active:scale-95 transition-transform duration-150 cursor-pointer">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-bold">Profile</span>
+</div>
+</nav>
+</div>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const triggers = document.querySelectorAll('.accordion-trigger');
+            
+            triggers.forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    const content = trigger.nextElementSibling;
+                    const chevron = trigger.querySelector('.chevron');
+                    const isExpanded = content.getAttribute('aria-expanded') === 'true';
+                    
+                    // Optional: Close other open accordions in the same group
+                    const group = trigger.closest('.bg-surface');
+                    const otherTriggers = group.querySelectorAll('.accordion-trigger');
+                    
+                    otherTriggers.forEach(other => {
+                        if (other !== trigger) {
+                            const otherContent = other.nextElementSibling;
+                            const otherChevron = other.querySelector('.chevron');
+                            otherContent.setAttribute('aria-expanded', 'false');
+                            otherChevron.classList.remove('rotate');
+                            other.querySelector('.font-medium').classList.remove('text-primary');
+                        }
+                    });
+
+                    // Toggle current accordion
+                    if (isExpanded) {
+                        content.setAttribute('aria-expanded', 'false');
+                        chevron.classList.remove('rotate');
+                        trigger.querySelector('.font-medium').classList.remove('text-primary');
+                    } else {
+                        content.setAttribute('aria-expanded', 'true');
+                        chevron.classList.add('rotate');
+                        trigger.querySelector('.font-medium').classList.add('text-primary');
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

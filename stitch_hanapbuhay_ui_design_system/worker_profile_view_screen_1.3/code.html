@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Worker Profile - HanapBuhay</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#3f4a3b",
+                        "surface-dim": "#d9dad9",
+                        "on-tertiary-container": "#3f2600",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#edeeed",
+                        "surface-container-high": "#e7e8e7",
+                        "surface-bright": "#f9f9f8",
+                        "inverse-surface": "#2e3131",
+                        "on-primary-fixed": "#002202",
+                        "primary-fixed-dim": "#6cdf64",
+                        "on-primary-fixed-variant": "#00530a",
+                        "surface-cream": "#FEFDFB",
+                        "on-background": "#191c1c",
+                        "secondary-fixed-dim": "#91d78a",
+                        "surface-variant": "#e1e3e2",
+                        "secondary": "#2a6b2c",
+                        "tertiary": "#835400",
+                        "primary-fixed": "#88fc7d",
+                        "on-secondary-fixed": "#002203",
+                        "inverse-primary": "#6cdf64",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#2a1800",
+                        "on-surface": "#191c1c",
+                        "on-secondary-container": "#307231",
+                        "primary": "#006e11",
+                        "primary-container": "#34a835",
+                        "background": "#f9f9f8",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f9f9f8",
+                        "outline": "#6e7b69",
+                        "tertiary-fixed": "#ffddb5",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "on-primary-container": "#003404",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "secondary-fixed": "#acf4a4",
+                        "surface-container-low": "#f3f4f3",
+                        "surface-tint": "#006e11",
+                        "outline-variant": "#becab6",
+                        "charcoal-soft": "#2D312E",
+                        "error-container": "#ffdad6",
+                        "leaf-bright": "#4CAF50",
+                        "tertiary-container": "#ca8400",
+                        "earth-brown": "#5D4037",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#acf4a4",
+                        "surface-container-highest": "#e1e3e2",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "inverse-on-surface": "#f0f1f0",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col relative pb-[88px]"> <!-- pb-[88px] to account for sticky bottom bar -->
+<!-- TopAppBar (From JSON) -->
+<header class="sticky top-0 w-full bg-surface/90 backdrop-blur-md shadow-sm z-50">
+<div class="flex items-center justify-between px-margin-mobile h-16 w-full z-50">
+<button aria-label="Go back" class="flex items-center justify-center p-2 rounded-full text-on-surface-variant hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chevron_left</span>
+</button>
+<h1 class="font-display-lg text-headline-md text-primary tracking-tight">HanapBuhay</h1>
+<button aria-label="More options" class="flex items-center justify-center p-2 rounded-full text-on-surface-variant hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">more_vert</span>
+</button>
+</div>
+</header>
+<main class="flex-1 w-full max-w-container-max mx-auto md:px-gutter">
+<!-- Cover/Header Area -->
+<section class="relative flex flex-col items-center pt-8 pb-6 px-margin-mobile bg-gradient-to-b from-surface-container-low to-surface rounded-b-3xl shadow-[0_4px_24px_rgba(52,168,53,0.03)] md:rounded-3xl md:mt-6">
+<!-- Profile Photo -->
+<div class="relative mb-4">
+<img class="w-32 h-32 rounded-full object-cover border-4 border-surface shadow-sm relative z-10" data-alt="A high-quality, professional headshot of a friendly Filipino male worker in his mid-30s. He is wearing a clean, dark green uniform polo shirt. The lighting is soft and bright, creating a welcoming and reliable mood. The background is a slightly out-of-focus modern workshop environment, adhering to a clean, light-mode aesthetic with natural skin tones and vibrant green accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzwOXnIk_wSQiJZ8deeR_i_IfVEuiq9VuedSj7Mwi3pci2yO3cC8o-6_aYbbR08NLYpy1OpKigkMZKLZEPpG9zRwhGAegnE_O7ZnEOsBOYmkIlU2OsNwCD2l8IG5pdxEtSVlK3nt8OWX4u_tDZirBhp6Ed26LtTBPmTVyQgSCx5Ta3Jmqrcb4VKndoZoztpJOxcAwi1E7BIZ3JBYbxURYselNbZzgK20DmrwSs2CZiWJOApAS12_1y0g"/>
+<!-- Decorative background ring -->
+<div class="absolute inset-[-4px] rounded-full bg-gradient-to-tr from-primary-container to-secondary-fixed opacity-50 blur-sm z-0"></div>
+</div>
+<!-- Name & Verification -->
+<div class="flex items-center gap-2 mb-1">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface md:font-headline-lg md:text-headline-lg">Ricardo Dalisay</h2>
+<div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary-container text-on-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<!-- Trust Tier Label -->
+<div class="flex items-center gap-1.5 px-3 py-1 bg-secondary-container/30 rounded-full mb-3">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="font-label-sm text-label-sm text-primary">Verified Professional</span>
+</div>
+<!-- Star Rating Summary -->
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-lg text-label-lg text-on-surface">4.9</span>
+<span class="font-body-md text-body-md text-on-surface-variant ml-1">(120 reviews)</span>
+</div>
+</section>
+<!-- Tab Row -->
+<nav class="flex px-margin-mobile border-b border-surface-container mt-2 sticky top-16 bg-surface/95 backdrop-blur-sm z-40">
+<!-- Active Tab: About -->
+<button class="flex-1 pb-3 pt-4 border-b-2 border-primary text-primary font-label-lg text-label-lg relative group">
+                About
+                <!-- Subtle indicator blob -->
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-t-full opacity-0 group-active:opacity-100 transition-opacity"></div>
+</button>
+<!-- Inactive Tab: Portfolio -->
+<button class="flex-1 pb-3 pt-4 border-b-2 border-transparent text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors">
+                Portfolio
+            </button>
+<!-- Inactive Tab: Reviews -->
+<button class="flex-1 pb-3 pt-4 border-b-2 border-transparent text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors">
+                Reviews
+            </button>
+</nav>
+<!-- Content Area (About tab active) -->
+<section class="px-margin-mobile py-6 flex flex-col gap-8 animate-[fadeIn_0.3s_ease-out]">
+<!-- Bio Section -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_2px_12px_rgba(52,168,53,0.04)] border border-surface-container-low">
+<h3 class="font-label-lg text-label-lg text-on-surface mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">person_book</span>
+                    Professional Summary
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                    With over 8 years of experience in residential plumbing and general maintenance, I specialize in quick, reliable pipe repairs and complete fixture installations. I take pride in leaving every workspace cleaner than I found it, ensuring your home systems run smoothly and safely.
+                </p>
+</div>
+<!-- Services Section -->
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">handyman</span>
+                    Services Offered
+                </h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-2 bg-primary/10 text-on-primary-fixed-variant font-label-sm text-label-sm rounded-full border border-primary/20 shadow-sm">Pipe Repair</span>
+<span class="px-4 py-2 bg-primary/10 text-on-primary-fixed-variant font-label-sm text-label-sm rounded-full border border-primary/20 shadow-sm">Installation</span>
+<span class="px-4 py-2 bg-primary/10 text-on-primary-fixed-variant font-label-sm text-label-sm rounded-full border border-primary/20 shadow-sm">Leak Detection</span>
+<span class="px-4 py-2 bg-surface-container text-on-surface-variant font-label-sm text-label-sm rounded-full border border-surface-variant hover:bg-surface-container-high transition-colors cursor-default">+3 more</span>
+</div>
+</div>
+<!-- Availability Status -->
+<div class="flex items-center justify-between p-4 bg-secondary-container/20 rounded-xl border border-secondary-container/50">
+<div class="flex items-center gap-3">
+<div class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-fixed-dim opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">Currently Available</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant">Responds in ~15 mins</span>
+</div>
+<!-- Spacer for visual balance -->
+<div class="h-4"></div>
+</section>
+</main>
+<!-- Sticky Bottom Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/95 backdrop-blur-md px-margin-mobile py-4 shadow-[0_-4px_16px_rgba(52,168,53,0.1)] border-t border-surface-container-low z-50 md:px-gutter md:py-6">
+<div class="max-w-container-max mx-auto flex items-center justify-between gap-4">
+<div class="hidden md:flex flex-col">
+<span class="font-body-md text-body-md text-on-surface-variant">Starting from</span>
+<span class="font-headline-md text-headline-md text-on-surface">₱500 <span class="font-body-md text-body-md text-on-surface-variant font-normal">/ hr</span></span>
+</div>
+<!-- Primary 'Book Now' Button -->
+<button class="flex-1 w-full bg-primary-container text-on-primary-container font-label-lg text-label-lg py-4 rounded-xl flex justify-center items-center gap-2 shadow-sm border border-b-[3px] border-primary-container hover:bg-primary hover:text-on-primary active:border-b active:translate-y-[2px] transition-all duration-150 relative overflow-hidden group">
+<!-- Subtle tactile highlight -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none group-hover:opacity-0 transition-opacity"></div>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+                Book Now
+            </button>
+</div>
+</div>
+<style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</body></html>

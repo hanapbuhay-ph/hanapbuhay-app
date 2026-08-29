@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HanapBuhay - Chat Thread</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#191c1c",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#3f4a3b",
+                        "secondary-container": "#acf4a4",
+                        "inverse-primary": "#6cdf64",
+                        "surface-container": "#edeeed",
+                        "surface-container-low": "#f3f4f3",
+                        "on-primary-container": "#003404",
+                        "surface-dim": "#d9dad9",
+                        "inverse-surface": "#2e3131",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "secondary": "#2a6b2c",
+                        "surface-cream": "#FEFDFB",
+                        "primary-fixed-dim": "#6cdf64",
+                        "surface-tint": "#006e11",
+                        "tertiary-fixed": "#ffddb5",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#191c1c",
+                        "on-tertiary-fixed": "#2a1800",
+                        "on-secondary-container": "#307231",
+                        "background": "#f9f9f8",
+                        "secondary-fixed-dim": "#91d78a",
+                        "outline-variant": "#becab6",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e1e3e2",
+                        "on-primary-fixed": "#002202",
+                        "tertiary": "#835400",
+                        "primary-container": "#34a835",
+                        "surface-container-high": "#e7e8e7",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "leaf-bright": "#4CAF50",
+                        "on-primary-fixed-variant": "#00530a",
+                        "primary-fixed": "#88fc7d",
+                        "surface": "#f9f9f8",
+                        "surface-variant": "#e1e3e2",
+                        "on-tertiary-container": "#3f2600",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "outline": "#6e7b69",
+                        "charcoal-soft": "#2D312E",
+                        "tertiary-container": "#ca8400",
+                        "on-secondary-fixed": "#002203",
+                        "inverse-on-surface": "#f0f1f0",
+                        "earth-brown": "#5D4037",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "secondary-fixed": "#acf4a4",
+                        "surface-bright": "#f9f9f8",
+                        "error-container": "#ffdad6",
+                        "primary": "#006e11"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }]
+                    }
+                },
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        /* Chat bubble specific shapes */
+        .bubble-sent { border-radius: 16px 16px 4px 16px; }
+        .bubble-received { border-radius: 16px 16px 16px 4px; }
+        
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+</head>
+<body class="bg-surface-cream text-on-surface h-screen flex flex-col antialiased">
+<!-- Top Navigation Header - Transactional, no global nav -->
+<header class="bg-surface-cream/90 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between px-margin-mobile py-4 border-b border-surface-container-high/50">
+<div class="flex items-center gap-3">
+<button aria-label="Go back" class="text-primary hover:bg-surface-variant/20 p-2 rounded-full transition-colors active:scale-95 flex items-center justify-center -ml-2">
+<span class="material-symbols-outlined text-[28px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<div class="flex items-center gap-3">
+<div class="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border border-surface-container shadow-sm">
+<img alt="Maria Santos" class="object-cover w-full h-full" data-alt="Close up portrait photo of a friendly middle-aged Filipina woman named Maria Santos, smiling warmly. She is wearing a professional yet casual dark green polo shirt, consistent with the Digital Naturalist aesthetic. The lighting is soft and natural, suggesting approachability and reliability in a light-mode environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzuaxPldbGtvPL7JZEPdAiHvdZ8nmJsasL4ysBJtaF2MvyD_oiSysvix3gCJJ6hAGgwDfKlHLq4WcUUTli78BkZtZ3ns8jtjepCvqwl6E3D5X1bW4UHdFo7W5biIlvM16d25GflWA8TRmftR9veBLaVMO-copVGMtR6e-geGjk0JF_ue_KjP3EMil9LWBO2ZMlTRRtaITAV46aVOu5WChN44-eXdjyKMTFwAeTDtiPxQ8abYPU4M0Xaw"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-surface-cream"></div>
+</div>
+<div class="flex flex-col">
+<h1 class="font-label-lg text-label-lg text-on-surface">Maria Santos</h1>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-primary-container/10 text-primary font-label-sm text-[10px] whitespace-nowrap">
+                            Re: Electrical Fix #HB-1042
+                        </span>
+</div>
+</div>
+</div>
+</div>
+<button aria-label="More options" class="text-on-surface-variant hover:text-primary transition-colors p-2 -mr-2">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</header>
+<!-- Main Chat Canvas -->
+<main class="flex-1 overflow-y-auto px-margin-mobile py-6 flex flex-col gap-6 bg-surface">
+<!-- Date Divider -->
+<div class="flex justify-center w-full my-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full shadow-sm">Today, 9:41 AM</span>
+</div>
+<!-- Received Message Block -->
+<div class="flex flex-col gap-1 w-full max-w-[85%] self-start">
+<div class="flex gap-2 items-end">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 mb-1 border border-surface-container">
+<img alt="Maria Santos" class="object-cover w-full h-full" data-alt="Small thumbnail portrait of Maria Santos, a friendly Filipina service provider in a green polo, softly lit against a bright background, matching the overall warm, community-focused design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPp0u5MGOS-6emxCdLdGIP80XFgxwQ2iF3IjYUtHDdopaHT07-lL5u450XBsimnYkbKyLD6qFQX1HWmHPYYzvCmeQte4R_2gtLp_9ThjkWBk5E7rhvDz2f_8tRH8pehomtM3S86xuBcXuL8Ux4a4fkpSpZ0_jtRUCMdX8kPdjb9AZbwt-QIo3lv5UERdByPC8KITDFrZTm0VHSl-tZp0g5Q7WEUvXiOiH11PNqiDgC_3KrH0Ug6HbuKw"/>
+</div>
+<div class="bubble-received bg-surface-container-highest text-on-surface p-3 shadow-sm border border-surface-container">
+<p class="font-body-md text-body-md">Hi! I'm on my way to your location for the electrical checkup.</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant ml-10">9:41 AM</span>
+</div>
+<!-- Received Message Block 2 -->
+<div class="flex flex-col gap-1 w-full max-w-[85%] self-start mt-[-16px]">
+<div class="flex gap-2 items-end">
+<!-- Spacer for avatar -->
+<div class="w-8 h-8 shrink-0 mb-1"></div>
+<div class="bubble-received rounded-xl bg-surface-container-highest text-on-surface p-3 shadow-sm border border-surface-container">
+<p class="font-body-md text-body-md">Could you please confirm if the main breaker is easily accessible?</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant ml-10">9:42 AM</span>
+</div>
+<!-- Sent Message Block -->
+<div class="flex flex-col gap-1 w-full max-w-[85%] self-end">
+<div class="flex gap-2 items-end justify-end">
+<div class="bubble-sent bg-primary text-on-primary p-3 shadow-[0_2px_8px_rgba(52,168,53,0.2)]">
+<p class="font-body-md text-body-md">Hello Maria! Yes, the main breaker is right by the front door in the hallway.</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant self-end mr-1 flex items-center gap-1">
+                9:45 AM
+                <span class="material-symbols-outlined text-[14px] text-primary" data-icon="done_all">done_all</span>
+</span>
+</div>
+<!-- Sent Message Block with Image (Simulated) -->
+<div class="flex flex-col gap-1 w-full max-w-[85%] self-end mt-2">
+<div class="flex gap-2 items-end justify-end">
+<div class="bubble-sent bg-primary text-on-primary p-1 shadow-[0_2px_8px_rgba(52,168,53,0.2)] w-48 h-32 overflow-hidden relative group cursor-pointer">
+<img alt="Breaker location" class="object-cover w-full h-full rounded-[12px] rounded-br-[2px]" data-alt="A brightly lit photo of an electrical breaker box mounted on a white wall near a wooden front door. The scene is practical and clear, showing home infrastructure in a modern, well-lit environment, consistent with the functional visual tokens of the design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAO3cYuApfpvaU8z1yJReynH01vyCGGeGs4A4BqKxu51gVna_VMPqu0J2sQOgzd1KSnmCiS4PRIF_kWsB_uYkH_s-N5JJexOL3MBIL0OGtPYhGm2gRIBN7OO7vmhkkiga7SPzRd0Z3syM8OhmqqKtrPlKrgnQbteE6tqaVR34CHi-HIGFO7Cdh9mKdSvJgmIH1tKNdS49kJojkOus2e3mrysXLZDp4-w6nuX8DUWnWLxeRjhRYlZlo1_Q"/>
+<div class="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors rounded-[12px] rounded-br-[2px]"></div>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant self-end mr-1 flex items-center gap-1">
+                9:46 AM
+                <span class="material-symbols-outlined text-[14px] text-primary" data-icon="done_all">done_all</span>
+</span>
+</div>
+<!-- Received Message Block 3 -->
+<div class="flex flex-col gap-1 w-full max-w-[85%] self-start mt-2">
+<div class="flex gap-2 items-end">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 mb-1 border border-surface-container">
+<img alt="Maria Santos" class="object-cover w-full h-full" data-alt="Small thumbnail portrait of Maria Santos, friendly Filipina service provider in a green polo, matching the overall warm, community-focused design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXpQFZvcBlnm_vG8N1vyRkfR44ghWw3D8a_jrC9CpZRSXiDasGhftPan3XfnKjQPUMvipWfQtH_l-O9bvYZiWdXIeAm-NJPihfVTz-aNEN9sf1QmHZrlGOzAZWO9KSiatdehcMy7ojbMYdYGjVZ9t8wwBktmhOA2VFGfRWd-ajcUIuYZNQQ2MfZEteV_wKhlAUHl_-Ep0wVRYeNGjecRrusLxzck12gtzEbrjB9fsZxzIfTKXjCM6hHw"/>
+</div>
+<div class="bubble-received bg-surface-container-highest text-on-surface p-3 shadow-sm border border-surface-container">
+<p class="font-body-md text-body-md">Perfect, I see it. See you in about 10 minutes!</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant ml-10">9:48 AM</span>
+</div>
+<!-- Typing Indicator (Ambient Effect) -->
+<div class="flex flex-col gap-1 w-full max-w-[85%] self-start mt-2 opacity-70">
+<div class="flex gap-2 items-end">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 mb-1 border border-surface-container">
+<img alt="Maria Santos" class="object-cover w-full h-full" data-alt="Small thumbnail portrait of Maria Santos, friendly Filipina service provider." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvj9M7asTu2fEFwea4cTGn0070iGuQpbP47rsld86S2ZKWNFK6k4whqTwq1_tDliy34MKoDlRsdGKM-L2EJ8MHJL6LNCsG1AAUcrTtJ_AfAK3NgGA9U13cdaTLexV4JqyGa0Ihe6DCREYDwzCkoPKVN7-KlLSaGxjDXEAawZAU-44PlwsBFPS4hQO7486eqrskXwwz13tgZjx0kQo_x-2N48AIkwPyEoj6AHySuGtY2C0fNemn2sFK6Q"/>
+</div>
+<div class="bubble-received bg-surface-container-highest text-on-surface px-4 py-3 shadow-sm border border-surface-container flex items-center gap-1 h-[44px]">
+<div class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+<div class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+<div class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+</div>
+</div>
+</div>
+<!-- Empty space to ensure scrolling past input -->
+<div class="h-4 w-full"></div>
+</main>
+<!-- Bottom Input Bar -->
+<div class="bg-surface-cream/95 backdrop-blur-md border-t border-surface-container-high/50 p-3 pb-safe-area shadow-[0_-4px_12px_rgba(52,168,53,0.05)] sticky bottom-0 z-50">
+<div class="flex items-end gap-2 max-w-container-max mx-auto">
+<button aria-label="Attach file" class="text-on-surface-variant hover:text-primary transition-colors p-2 shrink-0 active:scale-95 bg-surface-container-low rounded-full h-10 w-10 flex items-center justify-center mb-1">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<button aria-label="Camera" class="text-on-surface-variant hover:text-primary transition-colors p-2 shrink-0 active:scale-95 bg-surface-container-low rounded-full h-10 w-10 flex items-center justify-center mb-1">
+<span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
+</button>
+<div class="flex-1 bg-white border border-surface-container-high rounded-[20px] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all overflow-hidden flex items-end min-h-[44px]">
+<textarea aria-label="Message input field" class="w-full bg-transparent border-none focus:ring-0 resize-none py-2.5 px-4 font-body-md text-on-surface placeholder:text-outline-variant max-h-[120px] outline-none" placeholder="Type a message..." rows="1" style="min-height: 44px;"></textarea>
+</div>
+<button aria-label="Send message" class="bg-primary text-on-primary hover:opacity-90 transition-all p-2 shrink-0 active:scale-95 active:translate-y-[1px] rounded-full h-11 w-11 flex items-center justify-center shadow-sm mb-[2px]">
+<span class="material-symbols-outlined icon-fill ml-0.5" data-icon="send">send</span>
+</button>
+</div>
+</div>
+<!-- Script to handle textarea auto-resize -->
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.querySelector('textarea');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if(this.value.trim() === '') {
+                     this.style.height = '44px';
+                }
+            });
+        });
+    </script>
+</body></html>

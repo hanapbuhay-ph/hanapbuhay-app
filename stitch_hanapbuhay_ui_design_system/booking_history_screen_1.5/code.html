@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Bookings - HanapBuhay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#acf4a4",
+                        "on-tertiary-fixed": "#2a1800",
+                        "secondary": "#2a6b2c",
+                        "surface-dim": "#d9dad9",
+                        "on-secondary-fixed": "#002203",
+                        "secondary-fixed-dim": "#91d78a",
+                        "error": "#ba1a1a",
+                        "charcoal-soft": "#2D312E",
+                        "primary-fixed-dim": "#6cdf64",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1c",
+                        "on-primary-fixed-variant": "#00530a",
+                        "earth-brown": "#5D4037",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#2e3131",
+                        "leaf-bright": "#4CAF50",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#6e7b69",
+                        "surface-container": "#edeeed",
+                        "surface-container-highest": "#e1e3e2",
+                        "surface-container-low": "#f3f4f3",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#3f4a3b",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "on-surface": "#191c1c",
+                        "surface-container-high": "#e7e8e7",
+                        "inverse-primary": "#6cdf64",
+                        "primary-fixed": "#88fc7d",
+                        "surface-tint": "#006e11",
+                        "primary": "#006e11",
+                        "surface-bright": "#f9f9f8",
+                        "primary-container": "#34a835",
+                        "tertiary-fixed": "#ffddb5",
+                        "surface": "#f9f9f8",
+                        "on-primary-fixed": "#002202",
+                        "surface-variant": "#e1e3e2",
+                        "on-tertiary-container": "#3f2600",
+                        "tertiary-container": "#ca8400",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "background": "#f9f9f8",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#acf4a4",
+                        "on-secondary-container": "#307231",
+                        "surface-cream": "#FEFDFB",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#835400",
+                        "on-primary-container": "#003404",
+                        "outline-variant": "#becab6",
+                        "inverse-on-surface": "#f0f1f0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "body-xl": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #f9f9f8;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface antialiased flex flex-col min-h-screen">
+<!-- Top Navigation -->
+<header class="sticky top-0 w-full bg-surface/90 backdrop-blur-md shadow-sm z-50 flex items-center justify-between px-margin-mobile h-16 w-full">
+<button class="p-2 -ml-2 rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chevron_left</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary tracking-tight">My Bookings</h1>
+<button class="p-2 -mr-2 rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 text-on-surface-variant relative">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col pt-4 pb-24">
+<!-- Segmented Control -->
+<div class="px-margin-mobile mb-6">
+<div class="flex overflow-x-auto hide-scrollbar gap-2 bg-surface-container-highest p-1 rounded-full border border-outline-variant/30">
+<button class="flex-1 min-w-[80px] py-2 px-4 rounded-full bg-surface shadow-sm text-primary font-label-lg text-label-lg transition-all text-center">
+                    Upcoming
+                </button>
+<button class="flex-1 min-w-[80px] py-2 px-4 rounded-full text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-variant/50 transition-all text-center">
+                    Ongoing
+                </button>
+<button class="flex-1 min-w-[80px] py-2 px-4 rounded-full text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-variant/50 transition-all text-center">
+                    Completed
+                </button>
+<button class="flex-1 min-w-[80px] py-2 px-4 rounded-full text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-variant/50 transition-all text-center">
+                    Cancelled
+                </button>
+</div>
+</div>
+<!-- Bookings List -->
+<div class="flex-grow px-margin-mobile space-y-4">
+<!-- Booking Card 1 (Upcoming) -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_12px_rgba(52,168,53,0.04)] border border-surface-container-high hover:shadow-[0_6px_16px_rgba(52,168,53,0.08)] transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<img alt="Worker" class="w-full h-full object-cover" data-alt="A close-up portrait of a friendly male plumber in a green uniform, lit by soft natural light, conveying a sense of reliability and warmth in a modern, light-mode setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAApPTdSu5Kz-DuEYeTzzi8WqsTLLL1q_tsKvbq-efVLNUgBELBwCgF6xPQ2l6mYiRhJQcKR0g_u33xxTkkX2iepktH6xdFO3gaHdXCXcqX27fjwsbvQAt7XA2I3ynsJn04U9i-Ljz1pLegQ1j_aprjYhdiT1NZkZ_fGjO9Ub8kKCCQH9hafsnycZMF8Vh7kaUznlWcRhy7z5HvJ1oAKW3uBUI2joo_7lykVgk0TY2bjHWffkzkXpwNVg"/>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold leading-tight">Juan dela Cruz</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Plumbing Services</p>
+</div>
+</div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-tertiary-fixed text-on-tertiary-fixed">
+                        Upcoming
+                    </span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant bg-surface-container-low p-2.5 rounded-lg mb-3">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">event</span>
+<span class="font-body-md text-sm">Oct 24, 2023 • 9:00 AM</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-2 px-4 rounded-lg border border-outline-variant text-on-surface font-label-lg text-label-lg hover:bg-surface-container transition-colors">Reschedule</button>
+<button class="flex-1 py-2 px-4 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-sm hover:shadow-md hover:-translate-y-[1px] active:translate-y-[1px] transition-all">Details</button>
+</div>
+</div>
+<!-- Booking Card 2 (Upcoming) -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_12px_rgba(52,168,53,0.04)] border border-surface-container-high hover:shadow-[0_6px_16px_rgba(52,168,53,0.08)] transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<img alt="Worker" class="w-full h-full object-cover" data-alt="A portrait of a female electrician with a confident smile, wearing safety gear in a well-lit modern environment, embodying the vibrant, character-driven aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2UDZavHwwX-TQDct9sm9OEZnBzOFBnp4891gMd9eOQEMkWb7nC05vmIumTwrtFBE1-gtCk5nSfOx3fsxir4gEoM7KDpcFW8UPY0V13UTCbZG2p1YvAr1N7nyzOQkpj6aMoY219fPFrFeS_Eh7rCWgRiWO6IIuvL1vJYW4GQz7HNIxZ7lWEFG4LrS4OMgUvc58B4FGHTPZvREa1cQFLTRmRst8oSKI3vUoPW3ON9nJXN6JGT1NmRWeKQ"/>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold leading-tight">Maria Santos</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Electrical Repair</p>
+</div>
+</div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-tertiary-fixed text-on-tertiary-fixed">
+                        Upcoming
+                    </span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant bg-surface-container-low p-2.5 rounded-lg mb-3">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">event</span>
+<span class="font-body-md text-sm">Oct 26, 2023 • 2:00 PM</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-2 px-4 rounded-lg border border-outline-variant text-on-surface font-label-lg text-label-lg hover:bg-surface-container transition-colors">Reschedule</button>
+<button class="flex-1 py-2 px-4 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-sm hover:shadow-md hover:-translate-y-[1px] active:translate-y-[1px] transition-all">Details</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface/90 backdrop-blur-md shadow-[0_-2px_10px_rgba(52,168,53,0.08)] rounded-t-xl hidden md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">search</span>
+<span class="font-label-sm text-label-sm">Explore</span>
+</button>
+<!-- Active Tab -->
+<button class="flex flex-col items-center justify-center text-primary bg-secondary-container/30 rounded-full px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="font-label-sm text-label-sm font-bold">Bookings</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200 relative">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">chat_bubble</span>
+<span class="font-label-sm text-label-sm">Inbox</span>
+<span class="absolute top-1 right-3 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</button>
+</nav>
+<!-- Mobile Bottom Nav override for preview -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex md:hidden justify-around items-center px-4 pb-4 pt-2 bg-surface/90 backdrop-blur-md shadow-[0_-2px_10px_rgba(52,168,53,0.08)] rounded-t-xl">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">search</span>
+<span class="font-label-sm text-label-sm">Explore</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary bg-secondary-container/30 rounded-full px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="font-label-sm text-label-sm font-bold">Bookings</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200 relative">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">chat_bubble</span>
+<span class="font-label-sm text-label-sm">Inbox</span>
+<span class="absolute top-1 right-3 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</button>
+</nav>
+<script>
+        // Simple tab switching logic for demonstration
+        document.querySelectorAll('.flex.overflow-x-auto button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Reset all tabs
+                document.querySelectorAll('.flex.overflow-x-auto button').forEach(btn => {
+                    btn.classList.remove('bg-surface', 'shadow-sm', 'text-primary');
+                    btn.classList.add('text-on-surface-variant');
+                });
+                
+                // Set active tab
+                this.classList.remove('text-on-surface-variant');
+                this.classList.add('bg-surface', 'shadow-sm', 'text-primary');
+            });
+        });
+    </script>
+</body></html>

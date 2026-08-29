@@ -1,0 +1,387 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>HanapBuhay - Worker Dashboard</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#2a6b2c",
+                        "primary-container": "#34a835",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "primary": "#006e11",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "primary-fixed-dim": "#6cdf64",
+                        "tertiary-container": "#ca8400",
+                        "surface-tint": "#006e11",
+                        "on-surface": "#191c1c",
+                        "outline": "#6e7b69",
+                        "inverse-surface": "#2e3131",
+                        "surface-container": "#edeeed",
+                        "surface-cream": "#FEFDFB",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#ffddb5",
+                        "leaf-bright": "#4CAF50",
+                        "secondary-container": "#acf4a4",
+                        "inverse-primary": "#6cdf64",
+                        "on-secondary-container": "#307231",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#e7e8e7",
+                        "secondary-fixed": "#acf4a4",
+                        "outline-variant": "#becab6",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#002203",
+                        "surface-container-highest": "#e1e3e2",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f0",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "on-background": "#191c1c",
+                        "surface-bright": "#f9f9f8",
+                        "on-primary-fixed": "#002202",
+                        "background": "#f9f9f8",
+                        "charcoal-soft": "#2D312E",
+                        "secondary-fixed-dim": "#91d78a",
+                        "surface-variant": "#e1e3e2",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#2a1800",
+                        "on-primary-container": "#003404",
+                        "tertiary": "#835400",
+                        "on-primary-fixed-variant": "#00530a",
+                        "on-tertiary-container": "#3f2600",
+                        "surface": "#f9f9f8",
+                        "primary-fixed": "#88fc7d",
+                        "on-surface-variant": "#3f4a3b",
+                        "surface-dim": "#d9dad9",
+                        "surface-container-low": "#f3f4f3",
+                        "earth-brown": "#5D4037"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #FEFDFB; /* surface-cream Level 0 */
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Soft Ambient Shadows for Cards */
+        .card-shadow {
+            box-shadow: 0 4px 12px rgba(52, 168, 53, 0.08);
+        }
+        
+        /* Custom Toggle Switch Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #34a835; /* primary-container */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #34a835;
+        }
+        
+        /* Verification Banner Animation */
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md text-on-surface pb-[90px]"> <!-- Padding for Bottom Nav -->
+<!-- TopAppBar -->
+<header class="bg-surface-container shadow-sm fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-6 h-16 transition-colors duration-200">
+<div class="flex items-center gap-4">
+<button class="text-primary hover:bg-surface-bright/10 p-2 rounded-full flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">HanapBuhay</h1>
+</div>
+<!-- Desktop Nav Items (Hidden on Mobile) -->
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-label-lg text-label-lg text-primary flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+                Home
+            </a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="assignment">assignment</span>
+                Bookings
+            </a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="chat_bubble">chat_bubble</span>
+                Messages
+            </a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="notifications">notifications</span>
+                Alerts
+            </a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="person">person</span>
+                Profile
+            </a>
+</nav>
+<div class="flex items-center">
+<button class="hover:bg-surface-bright/10 p-1 rounded-full transition-colors">
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-surface-container-high">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A close-up portrait of a friendly Southeast Asian man in his 30s, smiling warmly at the camera. He is wearing a clean, casual green polo shirt. The lighting is soft and natural, evoking a welcoming and reliable mood consistent with a modern, high-energy community platform. The background is a slightly blurred, bright indoor setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDud4ICt_-0faNq7YJL_AaCIpjypfCqByEtm7fkxeCsTtOvkO4ZlSerdFe2kTz1rW_DQjylUDk1W0ELjPTElEeNpxVyMjduHW2Ri-d54v1GMZZIYj884c9-85FEfJtmfruLcGyLOJaCyL3inPx6qd-pFGJhomuYnMt1O8IJDIVF8Y9KXd3urpFFVbzOrnGaMVgi039pzjYP9VXJEO1ByKbjJ2n_KqYQ4ohOIkMrlwmZgBmInRSl1Gxj8A">
+</div>
+</button>
+</div>
+</header>
+<main class="pt-[80px] max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-4 md:grid-cols-12 gap-gutter relative">
+<!-- Verification Banner (Spans full width of content area) -->
+<div class="col-span-4 md:col-span-12 mb-6 bg-tertiary-fixed border border-tertiary-container/30 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 card-shadow relative overflow-hidden" id="verification-banner">
+<!-- Subtle background pattern for visual interest -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 10px 10px, #ca8400 1.5px, transparent 1.5px); background-size: 20px 20px;"></div>
+<div class="flex items-start sm:items-center gap-3 relative z-10">
+<div class="text-tertiary-container flex-shrink-0 mt-1 sm:mt-0">
+<span class="material-symbols-outlined text-2xl" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold mb-1">Verification Required</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Your account isn't verified yet — verified workers get more bookings.</p>
+</div>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto relative z-10 pl-9 sm:pl-0">
+<button class="flex-grow sm:flex-grow-0 bg-primary hover:bg-secondary text-on-primary font-label-lg text-label-lg px-4 py-2 rounded-lg transition-all duration-200 shadow-sm active:scale-95 border-b border-primary-fixed-dim whitespace-nowrap">
+                    Complete Verification
+                </button>
+<button aria-label="Dismiss banner" class="text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-tertiary-fixed-dim/30 transition-colors flex-shrink-0" onclick="dismissBanner()">
+<span class="material-symbols-outlined text-xl" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- Greeting Section -->
+<div class="col-span-4 md:col-span-12 mb-2">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Hi, Juan</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Here's your overview for today.</p>
+</div>
+<!-- Left Column: Status & Stats -->
+<div class="col-span-4 md:col-span-4 flex flex-col gap-6">
+<!-- Availability Toggle Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 card-shadow">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-label-lg text-label-lg text-on-surface">Current Status</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="circle" style="font-variation-settings: 'FILL' 1;">circle</span>
+<span class="font-label-sm text-label-sm">Online</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 text-sm">Set your availability to let clients know if you can accept new jobs right now.</p>
+<!-- Custom Large Toggle -->
+<div class="relative w-full bg-surface-container rounded-full h-12 flex items-center p-1 cursor-pointer" onclick="toggleStatus(this)">
+<!-- Active Indicator Background -->
+<div class="absolute left-1 bg-primary-container h-10 w-1/3 rounded-full shadow-sm transition-all duration-300 ease-in-out" id="status-indicator"></div>
+<!-- Labels -->
+<div class="relative z-10 flex-1 text-center">
+<span class="font-label-lg text-label-lg text-on-primary select-none transition-colors duration-300" id="label-available">Available</span>
+</div>
+<div class="relative z-10 flex-1 text-center">
+<span class="font-label-lg text-label-lg text-on-surface-variant select-none transition-colors duration-300" id="label-busy">Busy</span>
+</div>
+<div class="relative z-10 flex-1 text-center">
+<span class="font-label-lg text-label-lg text-on-surface-variant select-none transition-colors duration-300" id="label-offline">Offline</span>
+</div>
+</div>
+</div>
+<!-- Quick Stats Bento Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest rounded-xl p-4 card-shadow flex flex-col justify-between">
+<div class="flex items-center gap-2 text-outline mb-2">
+<span class="material-symbols-outlined text-lg" data-icon="verified">verified</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Trust Tier</span>
+</div>
+<div>
+<span class="font-headline-md text-headline-md text-on-surface">Unverified</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-4 card-shadow flex flex-col justify-between">
+<div class="flex items-center gap-2 text-outline mb-2">
+<span class="material-symbols-outlined text-lg" data-icon="star">star</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Rating</span>
+</div>
+<div>
+<span class="font-headline-md text-headline-md text-on-surface">--</span>
+</div>
+</div>
+<div class="col-span-2 bg-surface-container-lowest rounded-xl p-4 card-shadow flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 opacity-[0.03] transform group-hover:scale-110 transition-transform duration-500 pointer-events-none">
+<span class="material-symbols-outlined" data-icon="work" style="font-size: 120px;">work</span>
+</div>
+<div class="flex justify-between items-center w-full relative z-10">
+<div class="flex items-center gap-2 text-outline mb-2">
+<span class="material-symbols-outlined text-lg" data-icon="work">work</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Completed Jobs</span>
+</div>
+<a class="text-primary hover:text-secondary font-label-sm text-label-sm flex items-center" href="#">
+                            History <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+<div class="relative z-10">
+<span class="font-display-lg text-display-lg text-primary">0</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Incoming Requests (Empty State) -->
+<div class="col-span-4 md:col-span-8 flex flex-col">
+<div class="flex justify-between items-end mb-4">
+<h3 class="font-headline-md text-headline-md text-on-surface">Incoming Requests</h3>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-8 card-shadow flex-grow flex flex-col items-center justify-center text-center min-h-[400px] relative overflow-hidden">
+<!-- Decorative background blob -->
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-surface-container rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col items-center max-w-sm mx-auto">
+<!-- Illustration Placeholder -->
+<div class="w-40 h-40 mb-6 bg-surface-container rounded-full flex items-center justify-center relative shadow-inner">
+<span class="material-symbols-outlined text-outline/40" data-icon="inbox" style="font-size: 80px;">inbox</span>
+<!-- Notification dot style accent -->
+<div class="absolute top-4 right-4 w-4 h-4 bg-tertiary-fixed rounded-full shadow-sm"></div>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-2">No new requests yet</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8">Complete verification to start getting booked! Verified workers appear higher in search results and build trust faster.</p>
+<button class="bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg px-6 py-3 rounded-lg transition-all duration-200 flex items-center gap-2 border border-outline-variant shadow-sm">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+                        Start Verification Process
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-end px-2 pb-6 pt-2 bg-surface/70 backdrop-blur-md border-t border-outline-variant/30 z-50">
+  <!-- Home (Active) -->
+  <a class="flex flex-col items-center justify-center flex-1 gap-1 transition-colors duration-200" href="#">
+    <span class="material-symbols-outlined text-[28px] text-primary" style="font-variation-settings: 'FILL' 1, 'wght' 300;">home</span>
+    <span class="font-label-sm text-[10px] text-primary">Home</span>
+  </a>
+  <!-- Bookings -->
+  <a class="flex flex-col items-center justify-center flex-1 gap-1 transition-colors duration-200" href="#">
+    <span class="material-symbols-outlined text-[28px] text-on-surface-variant/60" style="font-variation-settings: 'FILL' 0, 'wght' 300;">assignment</span>
+    <span class="font-label-sm text-[10px] text-on-surface-variant/60">Bookings</span>
+  </a>
+  <!-- Messages -->
+  <a class="flex flex-col items-center justify-center flex-1 gap-1 transition-colors duration-200" href="#">
+    <span class="material-symbols-outlined text-[28px] text-on-surface-variant/60" style="font-variation-settings: 'FILL' 0, 'wght' 300;">chat_bubble</span>
+    <span class="font-label-sm text-[10px] text-on-surface-variant/60">Messages</span>
+  </a>
+  <!-- Alerts -->
+  <a class="flex flex-col items-center justify-center flex-1 gap-1 transition-colors duration-200 relative" href="#">
+    <span class="material-symbols-outlined text-[28px] text-on-surface-variant/60" style="font-variation-settings: 'FILL' 0, 'wght' 300;">notifications</span>
+    <span class="absolute top-0 right-[30%] w-1.5 h-1.5 bg-error rounded-full"></span>
+    <span class="font-label-sm text-[10px] text-on-surface-variant/60">Alerts</span>
+  </a>
+  <!-- Profile -->
+  <a class="flex flex-col items-center justify-center flex-1 gap-1 transition-colors duration-200" href="#">
+    <span class="material-symbols-outlined text-[28px] text-on-surface-variant/60" style="font-variation-settings: 'FILL' 0, 'wght' 300;">person</span>
+    <span class="font-label-sm text-[10px] text-on-surface-variant/60">Profile</span>
+  </a>
+</nav>
+<script>
+        // Dismiss Banner Logic
+        function dismissBanner() {
+            const banner = document.getElementById('verification-banner');
+            banner.classList.add('fade-out');
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 300);
+        }
+
+        // Custom Toggle Status Logic
+        let currentStatusIndex = 0; // 0: Available, 1: Busy, 2: Offline
+        const positions = ['left-1', 'left-[33.33%]', 'left-[66.66%]'];
+        const indicator = document.getElementById('status-indicator');
+        const labelAvailable = document.getElementById('label-available');
+        const labelBusy = document.getElementById('label-busy');
+        const labelOffline = document.getElementById('label-offline');
+
+        function toggleStatus(container) {
+            // Remove current position class
+            indicator.classList.remove(positions[currentStatusIndex]);
+            
+            // Cycle status
+            currentStatusIndex = (currentStatusIndex + 1) % 3;
+            
+            // Add new position class
+            indicator.classList.add(positions[currentStatusIndex]);
+            
+            // Update Colors based on status
+            updateToggleColors();
+        }
+        
+        function updateToggleColors() {
+            // Reset all to unselected
+            labelAvailable.classList.replace('text-on-primary', 'text-on-surface-variant');
+            labelBusy.classList.replace('text-on-primary', 'text-on-surface-variant');
+            labelOffline.classList.replace('text-on-primary', 'text-on-surface-variant');
+            
+            // Set active color and indicator color based on status
+            if (currentStatusIndex === 0) {
+                // Available
+                labelAvailable.classList.replace('text-on-surface-variant', 'text-on-primary');
+                indicator.className = `absolute ${positions[0]} bg-primary-container h-10 w-1/3 rounded-full shadow-sm transition-all duration-300 ease-in-out`;
+            } else if (currentStatusIndex === 1) {
+                // Busy
+                labelBusy.classList.replace('text-on-surface-variant', 'text-on-primary');
+                indicator.className = `absolute ${positions[1]} bg-tertiary-container h-10 w-1/3 rounded-full shadow-sm transition-all duration-300 ease-in-out`;
+            } else {
+                // Offline
+                labelOffline.classList.replace('text-on-surface-variant', 'text-on-primary');
+                indicator.className = `absolute ${positions[2]} bg-surface-dim h-10 w-1/3 rounded-full shadow-sm transition-all duration-300 ease-in-out`;
+            }
+        }
+        
+        // Initialize toggle
+        updateToggleColors();
+    </script>
+
+
+</body></html>

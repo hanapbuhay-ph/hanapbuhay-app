@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Job Details</title>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "surface-bright": "#f9f9f8",
+                        "on-surface-variant": "#3f4a3b",
+                        "tertiary-fixed": "#ffddb5",
+                        "surface-container-high": "#e7e8e7",
+                        "surface-container": "#edeeed",
+                        "surface": "#f9f9f8",
+                        "inverse-surface": "#2e3131",
+                        "on-surface": "#191c1c",
+                        "background": "#f9f9f8",
+                        "on-primary-fixed": "#002202",
+                        "tertiary-container": "#ca8400",
+                        "primary-container": "#34a835",
+                        "secondary-fixed-dim": "#91d78a",
+                        "secondary-container": "#acf4a4",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d9dad9",
+                        "on-secondary-container": "#307231",
+                        "surface-container-highest": "#e1e3e2",
+                        "secondary-fixed": "#acf4a4",
+                        "secondary": "#2a6b2c",
+                        "on-primary-container": "#003404",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#006e11",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e1e3e2",
+                        "primary-fixed-dim": "#6cdf64",
+                        "on-tertiary-fixed": "#2a1800",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f3f4f3",
+                        "earth-brown": "#5D4037",
+                        "on-primary-fixed-variant": "#00530a",
+                        "leaf-bright": "#4CAF50",
+                        "outline-variant": "#becab6",
+                        "on-tertiary-container": "#3f2600",
+                        "on-background": "#191c1c",
+                        "primary-fixed": "#88fc7d",
+                        "surface-cream": "#FEFDFB",
+                        "inverse-on-surface": "#f0f1f0",
+                        "inverse-primary": "#6cdf64",
+                        "outline": "#6e7b69",
+                        "tertiary": "#835400",
+                        "error-container": "#ffdad6",
+                        "charcoal-soft": "#2D312E",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#006e11",
+                        "on-secondary-fixed": "#002203"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "label-sm": ["Plus Jakarta Sans", "sans-serif"],
+                        "label-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-md": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-md": ["Plus Jakarta Sans", "sans-serif"],
+                        "display-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-xl": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f9f9f8; /* surface */
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Hide scrollbar for clean look but keep functionality */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col md:hidden pb-[80px]"> <!-- md:hidden because it's a mobile screen, pb for bottom nav -->
+<!-- Top App Bar -->
+<header class="sticky top-0 w-full bg-surface/90 backdrop-blur-md shadow-sm dark:shadow-none flex items-center justify-between px-margin-mobile h-16 w-full z-50">
+<button aria-label="Go back" class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-on-surface tracking-tight truncate flex-1 text-center">Job Details</h1>
+<button aria-label="More options" class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 p-2 rounded-full opacity-0 pointer-events-none">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</header>
+<main class="flex-1 px-margin-mobile py-6 flex flex-col gap-6">
+<!-- Client Summary Card -->
+<section class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_4px_12px_rgba(52,168,53,0.08)] flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="relative w-16 h-16 rounded-full overflow-hidden shrink-0 border-2 border-surface-variant">
+<img alt="Maria Santos" class="w-full h-full object-cover" data-alt="A portrait photograph of a friendly middle-aged woman, smiling warmly. She is in a well-lit indoor environment with soft, natural lighting. The scene feels welcoming and reliable, fitting a modern digital naturalist brand aesthetic with warm tones and soft edges." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkAS4rgFmYM-hoKrOe1ZvDgR9X4-N-fg5WaMw-dsH6T40arQQrzq9nm8NV0fAQn_icXihao_0HOmXc3_isS98jx6tsIFZ5XhnalxbUYnES5tpH_SvTOmjoAllBQpd7_OLZDkjzcWz9wKGHEH6ADwbi-1d2SS88oSO_nPE9OI47N5qULjzRnh2tFA80umVu7lOz_k7hnT9PMY9jbLFqw0rZWxEtU1baPIxdiVonMchr6Cf2JWROaNyPuQ"/>
+</div>
+<div>
+<h2 class="font-headline-md text-body-lg text-on-surface">Maria Santos</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Client</p>
+</div>
+</div>
+<button aria-label="Message Maria" class="bg-primary/10 text-primary hover:bg-primary/20 active:scale-95 transition-all duration-200 p-3 rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined" data-icon="chat_bubble" data-weight="fill" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+</button>
+</section>
+<!-- Booking Details Block -->
+<section class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_4px_12px_rgba(52,168,53,0.08)] flex flex-col gap-5">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="build">build</span>
+<div>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Service Type</h3>
+<p class="font-body-md text-body-md text-on-surface font-semibold mt-1">Plumbing Repair</p>
+</div>
+</div>
+<div class="w-full h-px bg-surface-variant"></div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="schedule">schedule</span>
+<div>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Date &amp; Time</h3>
+<p class="font-body-md text-body-md text-on-surface font-semibold mt-1">Oct 28, 2023 • 9:00 AM</p>
+</div>
+</div>
+<div class="w-full h-px bg-surface-variant"></div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="location_on">location_on</span>
+<div>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Address</h3>
+<p class="font-body-md text-body-md text-on-surface font-semibold mt-1">Quezon City (Brgy. Diliman)</p>
+<a class="text-primary font-label-lg text-label-lg mt-2 inline-block hover:underline" href="#">View on Map</a>
+</div>
+</div>
+<div class="w-full h-px bg-surface-variant"></div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="description">description</span>
+<div>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Notes</h3>
+<p class="font-body-md text-body-md text-on-surface mt-1 bg-surface-container-low p-3 rounded-md border border-surface-variant/50 italic">
+                        "Leaking pipe under kitchen sink. Please bring necessary tools."
+                    </p>
+</div>
+</div>
+</section>
+<!-- Status Timeline -->
+<section class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_4px_12px_rgba(52,168,53,0.08)]">
+<h3 class="font-headline-md text-body-xl text-on-surface mb-6">Job Status</h3>
+<div class="relative pl-6 border-l-2 border-surface-variant space-y-8 ml-3">
+<!-- Requested (Completed) -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-on-primary text-[14px]" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-on-surface font-bold">Requested</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Oct 26, 2:30 PM</p>
+</div>
+</div>
+<!-- Accepted (Completed) -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-on-primary text-[14px]" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-on-surface font-bold">Accepted</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Oct 26, 3:15 PM</p>
+</div>
+</div>
+<!-- En Route (Current/Next Action) -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0.5 w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-primary flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-primary font-bold">En Route</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Pending start</p>
+</div>
+</div>
+<!-- In Progress (Future) -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0.5 w-6 h-6 rounded-full bg-surface-container-low border-2 border-surface-variant flex items-center justify-center">
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-on-surface-variant opacity-60">In Progress</h4>
+</div>
+</div>
+<!-- Completed (Future) -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0.5 w-6 h-6 rounded-full bg-surface-container-low border-2 border-surface-variant flex items-center justify-center">
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-on-surface-variant opacity-60">Completed</h4>
+</div>
+</div>
+</div>
+</section>
+<!-- Conditional Action Area -->
+<section class="mt-4 mb-2">
+<button class="w-full bg-primary text-on-primary font-label-lg text-body-md py-4 rounded-lg shadow-[0_4px_12px_rgba(0,110,17,0.2)] hover:shadow-[0_6px_16px_rgba(0,110,17,0.3)] active:translate-y-[1px] active:shadow-none transition-all duration-200 flex items-center justify-center gap-2 font-bold">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+                Start Traveling
+            </button>
+</section>
+<!-- Footer Action -->
+<section class="text-center mt-2 pb-6">
+<a class="font-label-lg text-label-lg text-error hover:underline opacity-80 transition-opacity flex items-center justify-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="report_problem">report_problem</span>
+                File a Report
+            </a>
+</section>
+</main>
+<!-- BottomNavBar (Hidden on md, visible on mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface/90 backdrop-blur-md shadow-[0_-2px_10px_rgba(52,168,53,0.08)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="search">search</span>
+<span class="font-label-sm text-label-sm">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-secondary-container/30 rounded-full px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="event_note" data-weight="fill" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-label-sm text-label-sm">Inbox</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

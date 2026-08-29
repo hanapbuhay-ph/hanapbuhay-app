@@ -1,0 +1,248 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>HanapBuhay - Splash Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-container-lowest": "#ffffff",
+                "on-primary": "#ffffff",
+                "secondary-fixed": "#acf4a4",
+                "on-tertiary": "#ffffff",
+                "tertiary": "#835400",
+                "tertiary-fixed-dim": "#ffb957",
+                "surface-container-highest": "#e1e3e2",
+                "on-primary-fixed": "#002202",
+                "outline-variant": "#becab6",
+                "on-secondary": "#ffffff",
+                "error": "#ba1a1a",
+                "primary-container": "#34a835",
+                "inverse-primary": "#6cdf64",
+                "on-surface": "#191c1c",
+                "outline": "#6e7b69",
+                "inverse-on-surface": "#f0f1f0",
+                "inverse-surface": "#2e3131",
+                "secondary-container": "#acf4a4",
+                "surface-variant": "#e1e3e2",
+                "surface-bright": "#f9f9f8",
+                "primary-fixed": "#88fc7d",
+                "on-error-container": "#93000a",
+                "tertiary-container": "#ca8400",
+                "tertiary-fixed": "#ffddb5",
+                "secondary-fixed-dim": "#91d78a",
+                "surface-dim": "#d9dad9",
+                "on-tertiary-fixed-variant": "#643f00",
+                "on-primary-fixed-variant": "#00530a",
+                "charcoal-soft": "#2D312E",
+                "surface-container": "#edeeed",
+                "surface-tint": "#006e11",
+                "error-container": "#ffdad6",
+                "on-tertiary-container": "#3f2600",
+                "leaf-bright": "#4CAF50",
+                "primary": "#006e11",
+                "on-background": "#191c1c",
+                "surface": "#f9f9f8",
+                "primary-fixed-dim": "#6cdf64",
+                "surface-cream": "#FEFDFB",
+                "on-secondary-fixed": "#002203",
+                "on-primary-container": "#003404",
+                "on-surface-variant": "#3f4a3b",
+                "background": "#f9f9f8",
+                "surface-container-high": "#e7e8e7",
+                "secondary": "#2a6b2c",
+                "surface-container-low": "#f3f4f3",
+                "on-secondary-fixed-variant": "#0c5216",
+                "on-secondary-container": "#307231",
+                "on-tertiary-fixed": "#2a1800",
+                "on-error": "#ffffff",
+                "earth-brown": "#5D4037"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "margin-desktop": "48px",
+                "container-max": "1280px",
+                "unit": "4px",
+                "gutter": "24px",
+                "margin-mobile": "16px"
+        },
+        "fontFamily": {
+                "body-xl": [
+                        "Plus Jakarta Sans"
+                ],
+                "headline-lg": [
+                        "Plus Jakarta Sans"
+                ],
+                "display-lg": [
+                        "Plus Jakarta Sans"
+                ],
+                "headline-md": [
+                        "Plus Jakarta Sans"
+                ],
+                "body-md": [
+                        "Plus Jakarta Sans"
+                ],
+                "label-lg": [
+                        "Plus Jakarta Sans"
+                ],
+                "headline-lg-mobile": [
+                        "Plus Jakarta Sans"
+                ],
+                "label-sm": [
+                        "Plus Jakarta Sans"
+                ],
+                "body-lg": [
+                        "Plus Jakarta Sans"
+                ]
+        },
+        "fontSize": {
+                "body-xl": [
+                        "20px",
+                        {
+                                "lineHeight": "30px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "fontWeight": "700"
+                        }
+                ],
+                "display-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "label-lg": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0.01em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "28px",
+                        {
+                                "lineHeight": "36px",
+                                "fontWeight": "700"
+                        }
+                ],
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.02em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        .loader {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: inline-block;
+            border-top: 3px solid #34a835;
+            border-right: 3px solid transparent;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Subtle pulse effect for the logo */
+        .pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .9;
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface h-screen w-screen overflow-hidden flex flex-col items-center justify-center relative">
+<!-- Main Content Container -->
+<div class="flex flex-col items-center justify-center z-10 pulse-slow">
+<!-- Logo Area -->
+<div class="w-32 h-32 rounded-xl flex items-center justify-center shadow-lg mb-8 overflow-hidden bg-surface-container">
+<img alt="HanapBuhay Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAv-dV19RBCg01MPthkYSOekWCRGZvxuHwVU5Wc5W8V5iPKP65ukwsQOHMeS6UyG5Gg3MTgkPT2Nd3TXX1g0vLhuz5e7MqIbQaaqKhLeZF8ZQN0yx68-e8vyc7WvI2cx2UUEBw5e_T7IxsB3876k8xKLmDOpmFmrZ74zPw163BGd993HiVbg687jk2Uju1mE2He9QZSXr8fgCuUtHcxu5mzR3n_D6l0xk0OroRt0MEAFXR-YDwcaHNYmTO1LlJ-wQljLI0">
+</div>
+<!-- App Name -->
+<h1 class="font-display-lg text-display-lg text-primary tracking-tight text-center">HanapBuhay</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2 text-center max-w-[280px]">Connecting talent with opportunity.</p>
+</div>
+<!-- Loading Indicator -->
+<div class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
+<span class="loader"></span>
+<span class="font-label-sm text-label-sm text-primary mt-4 tracking-widest uppercase">Initializing...</span>
+</div>
+<!-- Optional: Subtle Background Texture/Glow (Performance friendly) -->
+<div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary-container/20 via-surface/0 to-transparent rounded-full opacity-60 blur-3xl"></div>
+</div>
+<script>
+        // Simple JS to simulate loading and redirect (optional, just for demo feel)
+        setTimeout(() => {
+            // console.log("Splash finished. Redirecting to Home/Onboarding...");
+            // window.location.href = '/home'; // In a real app
+        }, 3000);
+    </script>
+</body></html>

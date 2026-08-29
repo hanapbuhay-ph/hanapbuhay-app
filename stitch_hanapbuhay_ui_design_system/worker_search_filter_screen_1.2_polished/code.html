@@ -1,0 +1,304 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>HanapBuhay - Worker Search &amp; Filter</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "surface-dim": "#d9dad9",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "tertiary-fixed": "#ffddb5",
+                        "surface-tint": "#006e11",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeeed",
+                        "on-tertiary-fixed": "#2a1800",
+                        "surface-variant": "#e1e3e2",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "surface": "#f9f9f8",
+                        "tertiary": "#835400",
+                        "outline": "#6e7b69",
+                        "error-container": "#ffdad6",
+                        "charcoal-soft": "#2D312E",
+                        "surface-cream": "#FEFDFB",
+                        "primary-fixed-dim": "#6cdf64",
+                        "secondary": "#2a6b2c",
+                        "primary-fixed": "#88fc7d",
+                        "outline-variant": "#becab6",
+                        "secondary-fixed-dim": "#91d78a",
+                        "surface-container-highest": "#e1e3e2",
+                        "inverse-primary": "#6cdf64",
+                        "inverse-surface": "#2e3131",
+                        "inverse-on-surface": "#f0f1f0",
+                        "on-surface-variant": "#3f4a3b",
+                        "on-surface": "#191c1c",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#acf4a4",
+                        "on-tertiary-container": "#3f2600",
+                        "on-primary-container": "#003404",
+                        "surface-container-low": "#f3f4f3",
+                        "tertiary-container": "#ca8400",
+                        "on-primary-fixed": "#002202",
+                        "leaf-bright": "#4CAF50",
+                        "surface-bright": "#f9f9f8",
+                        "on-secondary-fixed": "#002203",
+                        "background": "#f9f9f8",
+                        "primary": "#006e11",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#191c1c",
+                        "secondary-fixed": "#acf4a4",
+                        "surface-container-high": "#e7e8e7",
+                        "on-secondary-container": "#307231",
+                        "error": "#ba1a1a",
+                        "primary-container": "#34a835",
+                        "on-primary-fixed-variant": "#00530a",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "earth-brown": "#5D4037"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        
+        /* Hide scrollbar for clean mobile look but keep functionality */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .filter-sheet-enter {
+            transform: translateY(100%);
+        }
+        .filter-sheet-enter-active {
+            transform: translateY(0);
+            transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .filter-sheet-exit {
+            transform: translateY(0);
+        }
+        .filter-sheet-exit-active {
+            transform: translateY(100%);
+            transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased pb-[88px] selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+<!-- Sticky Header & Search -->
+<header class="sticky top-0 z-40 bg-surface/90 backdrop-blur-md pb-unit-4 pt-unit-8 px-margin-mobile md:px-margin-desktop md:pt-unit-12 border-b border-surface-container shadow-[0_4px_24px_rgba(52,168,53,0.03)]">
+<div class="max-w-container-max mx-auto flex items-center gap-unit-3"><button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant flex-shrink-0"><span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span></button><div class="flex-1 relative"><div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><span class="material-symbols-outlined text-primary/60" data-icon="search">search</span></div><input class="block w-full pl-11 pr-4 py-3 border-none rounded-xl leading-5 bg-surface-container-high/50 placeholder-outline/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-highest transition-all duration-200 text-body-md" placeholder="Search for workers..." type="text"></div><button aria-label="Filter options" class="w-11 h-11 flex items-center justify-center rounded-xl bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-sm active:scale-95 flex-shrink-0" onclick="toggleFilterSheet()"><span class="material-symbols-outlined" data-icon="tune">tune</span></button></div>
+</header>
+<!-- Main Content Area -->
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-unit-6 pb-unit-8 flex flex-col gap-unit-6">
+<!-- Results Summary -->
+<div class="flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-on-surface">Available Workers</h2>
+<span class="font-label-sm text-label-sm text-outline">Showing 42 results</span>
+</div>
+<!-- Worker Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-unit-6 shadow-[0_8px_30px_rgba(52,168,53,0.06)] hover:shadow-[0_12px_40px_rgba(52,168,53,0.12)] transition-shadow duration-300 relative group cursor-pointer border border-surface-container-low overflow-hidden flex flex-col"><div class="flex gap-unit-4 items-start mb-unit-4"><div class="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border border-surface-container-high"><img alt="Worker profile" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkU7Y-C1oMxe6zr0OvgeZ5S3kO_eCMHarzZBj9g4MnXj5W4JL0gC_TZB2FoAA0_DQM2ZSPj5e9bQUBTeD6SElui-Q9FzT9mFxH1WRKXRdhgeEIokQRp05mLRgjTC2zSfpYnom3llN5lcQd3TtLXfXCc-5MH8U1i3XItr6mv2SETWeiRBy3R_loDclkebGV0LvxZMKMHuuaawidavJK0Bn-Wd2QMuOWiDjqKVNtCM-Nk1zt0Wc1IkLruQ"></div><div class="flex-1 min-w-0"><div class="flex items-center gap-1.5"><h3 class="font-headline-md text-[18px] text-on-surface truncate">Ricardo Dalisay</h3><span class="material-symbols-outlined text-primary text-[18px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span></div><p class="font-body-md text-on-surface-variant truncate">Master Plumber</p><div class="flex items-center gap-1 mt-1"><span class="material-symbols-outlined text-tertiary-fixed-dim text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span><span class="font-label-sm text-label-sm text-on-surface">4.9</span><span class="font-label-sm text-label-sm text-outline mx-1">•</span><span class="font-label-sm text-label-sm text-outline">120 jobs</span></div></div></div><div class="flex flex-wrap gap-2 mb-unit-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-label-sm font-label-sm bg-primary/10 text-primary">Pipe Repair</span><span class="inline-flex items-center px-3 py-1 rounded-full text-label-sm font-label-sm bg-primary/10 text-primary">Installation</span></div><div class="mt-auto pt-unit-4 border-t border-surface-container-low flex justify-between items-center"><div class="flex items-center text-outline gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="location_on">location_on</span><span class="font-label-sm text-label-sm">1.2 km away</span></div><div class="text-right"><span class="font-headline-md text-[18px] text-primary">₱500</span><span class="font-label-sm text-label-sm text-outline">/hr</span></div></div></div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-unit-6 shadow-[0_8px_30px_rgba(52,168,53,0.06)] hover:shadow-[0_12px_40px_rgba(52,168,53,0.12)] transition-shadow duration-300 relative group cursor-pointer border border-surface-container-low overflow-hidden flex flex-col"><div class="flex gap-unit-4 items-start mb-unit-4"><div class="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border border-surface-container-high"><img alt="Worker profile" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDH405GoqOH3YF7vHIzE1GTO7ultUX1RMkAQ3a1jPy2Uk4yTPPesy5KP8n0L-ObT59-5_rJHnTBOCMKifkKXEzosclCpoiW_yKBqk9LHlnP5wIWGGeYEClBKpLqgLX5hJW66J_SMPbccosImNAz3YaX-8XEbt0eOn_2FVwikzE8qds3IuAD0Cn-AUs3IKdC1hTI-t7Uh8hSYgdGsWtoDqZo-pRzFVMLUwWZ32GX5V0asXQ0l-uF1wq4lg"></div><div class="flex-1 min-w-0"><div class="flex items-center gap-1.5"><h3 class="font-headline-md text-[18px] text-on-surface truncate">Maria Santos</h3><span class="material-symbols-outlined text-primary text-[18px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span></div><p class="font-body-md text-on-surface-variant truncate">Licensed Electrician</p><div class="flex items-center gap-1 mt-1"><span class="material-symbols-outlined text-tertiary-fixed-dim text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span><span class="font-label-sm text-label-sm text-on-surface">4.8</span><span class="font-label-sm text-label-sm text-outline mx-1">•</span><span class="font-label-sm text-label-sm text-outline">85 jobs</span></div></div></div><div class="flex flex-wrap gap-2 mb-unit-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-label-sm font-label-sm bg-primary/10 text-primary">Wiring</span><span class="inline-flex items-center px-3 py-1 rounded-full text-label-sm font-label-sm bg-primary/10 text-primary">Troubleshooting</span></div><div class="mt-auto pt-unit-4 border-t border-surface-container-low flex justify-between items-center"><div class="flex items-center text-outline gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="location_on">location_on</span><span class="font-label-sm text-label-sm">2.5 km away</span></div><div class="text-right"><span class="font-headline-md text-[18px] text-primary">₱600</span><span class="font-label-sm text-label-sm text-outline">/hr</span></div></div></div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-unit-6 shadow-[0_8px_30px_rgba(52,168,53,0.06)] hover:shadow-[0_12px_40px_rgba(52,168,53,0.12)] transition-shadow duration-300 relative group cursor-pointer border border-surface-container-low overflow-hidden flex flex-col"><div class="flex gap-unit-4 items-start mb-unit-4"><div class="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border border-surface-container-high"><img alt="Worker profile" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLLGCIEu--Xm4P0-KBOljAcIlxBhIw3H4alcVUAKcUm0f-WRduj1_Y4uTp4_PFAvX2N1JBe95dVby8-ZAEB_n2fA8_G3gK3z3U0eekpE9vZ9AsHZG_-1fRareOQtZjtlJKjZX7U4u0XFAjeY6K3fm96F5x569DOSY2P1YXfSAA_INIK3PhXDGOGRZhwLpVcqhyd7-S7cSiFxIqeJF7NUiAjgqpuZdMfozZ3ExCbQM7D3TFCyt2NqDwkA"></div><div class="flex-1 min-w-0"><h3 class="font-headline-md text-[18px] text-on-surface truncate">Jose Rizal</h3><p class="font-body-md text-on-surface-variant truncate">Math Tutor</p><div class="flex items-center gap-1 mt-1"><span class="material-symbols-outlined text-tertiary-fixed-dim text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span><span class="font-label-sm text-label-sm text-on-surface">5.0</span><span class="font-label-sm text-label-sm text-outline mx-1">•</span><span class="font-label-sm text-label-sm text-outline">42 jobs</span></div></div></div><div class="flex flex-wrap gap-2 mb-unit-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-label-sm font-label-sm bg-primary/10 text-primary">Algebra</span><span class="inline-flex items-center px-3 py-1 rounded-full text-label-sm font-label-sm bg-primary/10 text-primary">Calculus</span></div><div class="mt-auto pt-unit-4 border-t border-surface-container-low flex justify-between items-center"><div class="flex items-center text-outline gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="location_on">location_on</span><span class="font-label-sm text-label-sm">3.0 km away</span></div><div class="text-right"><span class="font-headline-md text-[18px] text-primary">₱400</span><span class="font-label-sm text-label-sm text-outline">/hr</span></div></div></div>
+</div>
+<!-- Empty State (Hidden by default, used when no results) -->
+<!--
+        <div class="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div class="w-48 h-48 mb-6 opacity-80">
+                <img src="placeholder" data-alt="A stylized, friendly vector illustration of an empty magnifying glass resting on a clean white desk next to a small potted green plant. The style is modern, minimalist, and uses the soft greens and warm neutrals of the Tarsi Verdant design system." class="w-full h-full object-contain">
+            </div>
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-2">No workers found</h3>
+            <p class="font-body-md text-on-surface-variant max-w-md mx-auto mb-6">We couldn't find anyone matching your current filters. Try adjusting your search criteria or expanding the distance.</p>
+            <button class="bg-primary text-on-primary font-label-lg px-6 py-3 rounded-full hover:shadow-md transition-shadow active:translate-y-[1px]">Clear Filters</button>
+        </div>
+        -->
+</main>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-surface/90 backdrop-blur-md border-t border-surface-container-low px-margin-mobile pb-unit-6 pt-unit-3 flex justify-around items-center shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+  <a class="flex flex-col items-center gap-1 text-primary" href="#">
+    <div class="bg-primary/10 px-5 py-1 rounded-full">
+      <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">home</span>
+    </div>
+    <span class="font-label-sm text-[11px]">Home</span>
+  </a>
+  <a class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+    <span class="material-symbols-outlined text-[24px]">assignment</span>
+    <span class="font-label-sm text-[11px]">Bookings</span>
+  </a>
+  <a class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+    <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+    <span class="font-label-sm text-[11px]">Messages</span>
+  </a>
+  <a class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+    <span class="material-symbols-outlined text-[24px]">notifications</span>
+    <span class="font-label-sm text-[11px]">Notifications</span>
+  </a>
+  <a class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+    <span class="material-symbols-outlined text-[24px]">person</span>
+    <span class="font-label-sm text-[11px]">Profile</span>
+  </a>
+</nav>
+<!-- Filter Bottom Sheet Backdrop -->
+<div class="fixed inset-0 bg-charcoal-soft/50 backdrop-blur-[2px] z-[60] hidden opacity-0 transition-opacity duration-300" id="filterBackdrop" onclick="toggleFilterSheet()"></div>
+<!-- Filter Bottom Sheet -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest rounded-t-3xl z-[70] transform translate-y-full transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] shadow-[0_-8px_30px_rgba(0,0,0,0.1)] flex flex-col max-h-[795px]" id="filterSheet">
+<!-- Drag Handle -->
+<div class="w-full flex justify-center pt-4 pb-2" onclick="toggleFilterSheet()">
+<div class="w-12 h-1.5 bg-surface-variant rounded-full"></div>
+</div>
+<div class="px-margin-mobile md:px-margin-desktop pb-4 border-b border-surface-container flex justify-between items-center">
+<h2 class="font-headline-md text-[20px] text-on-surface">Filters</h2>
+<button class="text-primary font-label-lg hover:underline">Reset</button>
+</div>
+<!-- Scrollable Content -->
+<div class="px-margin-mobile md:px-margin-desktop py-6 overflow-y-auto flex flex-col gap-8 hide-scrollbar">
+<!-- Category Filter -->
+<section>
+<h3 class="font-label-lg text-label-lg text-on-surface mb-3">Service Category</h3>
+<div class="flex flex-wrap gap-2"><button class="px-5 py-2 rounded-full border-2 border-primary bg-primary text-on-primary font-label-sm transition-all shadow-sm">Plumbing</button><button class="px-5 py-2 rounded-full border border-surface-container-high bg-surface-container-low text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors">Electrical</button><button class="px-5 py-2 rounded-full border border-surface-container-high bg-surface-container-low text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors">Tutoring</button><button class="px-5 py-2 rounded-full border border-surface-container-high bg-surface-container-low text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors">Cleaning</button><button class="px-5 py-2 rounded-full border border-surface-container-high bg-surface-container-low text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors">Carpentry</button></div>
+</section>
+<!-- Distance Filter -->
+<section>
+<div class="flex justify-between items-center mb-3">
+<h3 class="font-label-lg text-label-lg text-on-surface">Distance</h3>
+<span class="font-label-sm text-outline" id="distanceValue">Up to 5 km</span>
+</div>
+<input class="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary" max="20" min="1" oninput="document.getElementById('distanceValue').innerText = `Up to ${this.value} km`" type="range" value="5">
+<div class="flex justify-between mt-2 font-label-sm text-outline text-[11px]">
+<span class="">1 km</span>
+<span class="">20+ km</span>
+</div>
+</section>
+<!-- Minimum Rating -->
+<section>
+<h3 class="font-label-lg text-label-lg text-on-surface mb-3">Minimum Rating</h3>
+<div class="flex gap-2">
+<button class="flex-1 py-2 rounded-lg border border-surface-container-high bg-surface text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors flex items-center justify-center gap-1">
+                        Any
+                    </button>
+<button class="flex-1 py-2 rounded-lg border border-surface-container-high bg-surface text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors flex items-center justify-center gap-1">
+                        3.5+ <span class="material-symbols-outlined text-[14px] text-tertiary-fixed-dim" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="flex-1 py-2 rounded-lg border border-primary bg-primary/10 text-primary font-label-sm transition-colors flex items-center justify-center gap-1">
+                        4.5+ <span class="material-symbols-outlined text-[14px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+</div>
+</section>
+<!-- Verification Status -->
+<section class="flex items-center justify-between py-2">
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface">Verified Workers Only</h3>
+<p class="font-label-sm text-outline mt-1">Show only identity-verified professionals</p>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value="">
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</section>
+</div>
+<!-- Action Button -->
+<div class="p-margin-mobile md:p-margin-desktop border-t border-surface-container bg-surface-container-lowest">
+<button class="w-full bg-primary text-on-primary font-label-lg py-4 rounded-xl shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95 relative overflow-hidden group" onclick="toggleFilterSheet()"><span class="relative z-10 flex items-center justify-center gap-2">Show 42 Results</span><div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div></button>
+</div>
+</div>
+<script>
+        function toggleFilterSheet() {
+            const sheet = document.getElementById('filterSheet');
+            const backdrop = document.getElementById('filterBackdrop');
+            const isHidden = sheet.classList.contains('translate-y-full');
+
+            if (isHidden) {
+                backdrop.classList.remove('hidden');
+                // Trigger reflow
+                void backdrop.offsetWidth;
+                backdrop.classList.remove('opacity-0');
+                backdrop.classList.add('opacity-100');
+                
+                sheet.classList.remove('translate-y-full');
+                sheet.classList.add('translate-y-0');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            } else {
+                backdrop.classList.remove('opacity-100');
+                backdrop.classList.add('opacity-0');
+                
+                sheet.classList.remove('translate-y-0');
+                sheet.classList.add('translate-y-full');
+                
+                setTimeout(() => {
+                    backdrop.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+        }
+    </script>
+
+
+</body></html>

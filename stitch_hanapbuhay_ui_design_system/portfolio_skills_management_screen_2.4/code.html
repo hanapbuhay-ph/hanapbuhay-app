@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Portfolio &amp; Skills - HanapBuhay</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration (Tarsi Verdant) -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#acf4a4",
+                    "surface": "#f9f9f8",
+                    "on-secondary-container": "#307231",
+                    "on-secondary-fixed": "#002203",
+                    "primary-container": "#34a835",
+                    "surface-dim": "#d9dad9",
+                    "on-tertiary-fixed-variant": "#643f00",
+                    "surface-variant": "#e1e3e2",
+                    "on-primary-fixed-variant": "#00530a",
+                    "on-secondary": "#ffffff",
+                    "charcoal-soft": "#2D312E",
+                    "on-tertiary-fixed": "#2a1800",
+                    "on-primary-container": "#003404",
+                    "error": "#ba1a1a",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#3f4a3b",
+                    "tertiary-fixed": "#ffddb5",
+                    "secondary-fixed-dim": "#91d78a",
+                    "tertiary-container": "#ca8400",
+                    "on-background": "#191c1c",
+                    "earth-brown": "#5D4037",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#6cdf64",
+                    "on-secondary-fixed-variant": "#0c5216",
+                    "secondary-fixed": "#acf4a4",
+                    "surface-container": "#edeeed",
+                    "tertiary": "#835400",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#e7e8e7",
+                    "primary": "#006e11",
+                    "secondary": "#2a6b2c",
+                    "surface-cream": "#FEFDFB",
+                    "inverse-on-surface": "#f0f1f0",
+                    "on-tertiary-container": "#3f2600",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#becab6",
+                    "background": "#f9f9f8",
+                    "surface-bright": "#f9f9f8",
+                    "tertiary-fixed-dim": "#ffb957",
+                    "primary-fixed": "#88fc7d",
+                    "on-primary-fixed": "#002202",
+                    "inverse-primary": "#6cdf64",
+                    "surface-tint": "#006e11",
+                    "outline": "#6e7b69",
+                    "leaf-bright": "#4CAF50",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-low": "#f3f4f3",
+                    "inverse-surface": "#2e3131",
+                    "on-surface": "#191c1c",
+                    "surface-container-highest": "#e1e3e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "gutter": "24px",
+                    "margin-desktop": "48px",
+                    "margin-mobile": "16px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "label-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "body-xl": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                    "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                    "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                    "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                    "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                    "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                    "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d9dad9; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #becab6; }
+        
+        /* Tactile press effect for buttons */
+        .btn-tactile {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 6px -1px rgba(0, 110, 17, 0.2);
+            transition: all 0.15s ease-in-out;
+        }
+        .btn-tactile:hover {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 6px 12px -2px rgba(0, 110, 17, 0.25);
+        }
+        .btn-tactile:active {
+            transform: translateY(1px);
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0, 110, 17, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen relative pb-32">
+<!-- TopAppBar Shared Component -->
+<header class="fixed top-0 w-full z-50 backdrop-blur-md shadow-sm flex justify-between items-center px-margin-mobile h-16 bg-surface-cream/90 text-primary">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/20 active:scale-95 transition-transform duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-display-lg text-headline-md text-primary tracking-tight">HanapBuhay</h1>
+<button class="w-10 h-10 rounded-full overflow-hidden border border-surface-dim hover:bg-surface-variant/20 active:scale-95 transition-transform duration-200">
+<img alt="User Profile Photo" class="w-full h-full object-cover" data-alt="A friendly, professional portrait of a skilled tradesperson wearing a clean, deep green uniform shirt. They are smiling warmly in front of a soft, blurred outdoor background featuring natural sunlight and leafy greens. The lighting is bright and inviting, emphasizing a trustworthy and character-driven identity. The image perfectly captures the essence of a reliable, approachable community worker in a bright, modern digital ecosystem." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmWVAJZrMs-frgJSHbxBlPjgPxYgAFE3VyI60PabdDMWj1c-AbtjZAjLMYWcte9X0iXdSeqExLvCLb56F6bRE1ETDL8NI9jRJX12CbNn9VlVdnX2Yuox9V28UEukQ427e9QrreJTrGifYfRIf3NpUGz4tjOR6FF-4s_hGNq3Wzdks5FuxePIUUsyqsFFFH0WxRSGVad4tQuSCyrALmo6eYrswE-XZSTs_1r3kgwXHBo07cyQ1aaA2JZg"/>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto md:max-w-3xl flex flex-col gap-6">
+<!-- Page Title -->
+<div class="flex items-center gap-3">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">Portfolio &amp; Skills</h2>
+</div>
+<!-- Service Categories Card -->
+<section class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_4px_12px_rgba(52,168,53,0.08)] flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-body-xl text-on-surface">Service Categories</h3>
+<button class="text-primary hover:bg-primary/5 rounded-full p-2 transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-2">
+<!-- Selected Chips (10% Primary Green) -->
+<div class="bg-primary/10 text-on-primary-container px-4 py-2 rounded-full font-label-sm text-label-sm flex items-center gap-1 cursor-pointer border border-transparent">
+                    Plumbing
+                    <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+</div>
+<div class="bg-primary/10 text-on-primary-container px-4 py-2 rounded-full font-label-sm text-label-sm flex items-center gap-1 cursor-pointer border border-transparent">
+                    General Repairs
+                    <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+</div>
+<!-- Unselected Chips -->
+<div class="border border-outline-variant text-on-surface-variant px-4 py-2 rounded-full font-label-sm text-label-sm cursor-pointer hover:bg-surface-container-low transition-colors">
+                    Electrical
+                </div>
+<div class="border border-outline-variant text-on-surface-variant px-4 py-2 rounded-full font-label-sm text-label-sm cursor-pointer hover:bg-surface-container-low transition-colors">
+                    Tutoring
+                </div>
+<div class="border border-outline-variant text-on-surface-variant px-4 py-2 rounded-full font-label-sm text-label-sm cursor-pointer hover:bg-surface-container-low transition-colors">
+                    Cleaning
+                </div>
+</div>
+</section>
+<!-- Portfolio Photos Card -->
+<section class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_4px_12px_rgba(52,168,53,0.08)] flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-body-xl text-on-surface">Past Work</h3>
+<span class="text-on-surface-variant font-label-sm text-label-sm bg-surface-container px-2 py-1 rounded-md">2 / 6 Max</span>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<!-- Add Photo Tile -->
+<button class="aspect-square bg-surface-container-low hover:bg-surface-container flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-outline-variant text-primary transition-colors active:scale-95 group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform duration-200">add_circle</span>
+<span class="font-label-sm text-label-sm mt-1">Add</span>
+</button>
+<!-- Existing Photo 1 -->
+<div class="aspect-square relative rounded-lg overflow-hidden group border border-surface-dim">
+<img alt="Plumbing Work" class="w-full h-full object-cover" data-alt="A high-quality, brightly lit close-up photograph of a modern, newly installed bathroom sink plumbing system. The gleaming chrome pipes contrast beautifully against a pristine white subway tile background. The lighting is soft and ambient, casting a subtle green-tinted shadow that perfectly embodies the clean, reliable, and optimistic light-mode aesthetic of the Digital Naturalist design system. The craftsmanship is flawless, conveying professional expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiC9O4Rbu4EbhriWzxhNnQUuwB-fITKnOGMD16dr_WA4wF_xP5IwZL7COp7pmybZvlasjxNmYkh613MZArsCMnrLk5H7Ml5u2NoDhvUhTDqmNZoTe94MSKBOfaaG6Q5qRBKcLugmRDyeNSF8t5nl-CXzJ2b1qOzEDW5qEsLkBECBeRAz1l4-wqoVGF-hws9q5TLdX7BnHc7swZ32SLyqq9FpJk2yrVjZdGmk90J58-oS1OrqSTjZraww"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<button class="absolute top-1 right-1 bg-surface-cream/90 backdrop-blur-sm text-error rounded-full p-1 hover:bg-error-container hover:text-on-error-container transition-colors shadow-sm z-10 active:scale-90">
+<span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+</button>
+</div>
+<!-- Existing Photo 2 -->
+<div class="aspect-square relative rounded-lg overflow-hidden group border border-surface-dim">
+<img alt="Electrical Work" class="w-full h-full object-cover" data-alt="A beautifully composed, high-resolution image showcasing a neatly organized electrical breaker panel in a residential home. The crisp white surface of the panel is illuminated by warm, welcoming ambient light, highlighting the precise, professional wiring work. The overall mood is safe, structured, and expertly executed, aligning seamlessly with a modern, community-focused visual language that prioritizes clarity and tactile reliability in a bright setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBogvimJOtrXBhubeCyISmclI6t0l1k96cSnhHmtcTSFVjdiyUy07Kw8WKNtbTVQOlt5uipqv4SHYfHsPpSkeZa680oBcVEymW2k5SLwLWnUAXgOgkD6xNmFeYAD6MpN11j3ciDdfFbAWgwLH1iiqmO_64TjgIE63aOYrB8PLkrdsPUrn9wZ-OSbi8aUQXq1tcAsQtenjtJYQ6XZw5jPxgmhatANCVh0Og1ACsDiUti_NGwIGlkOOkkhA"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<button class="absolute top-1 right-1 bg-surface-cream/90 backdrop-blur-sm text-error rounded-full p-1 hover:bg-error-container hover:text-on-error-container transition-colors shadow-sm z-10 active:scale-90">
+<span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Bio Section Card -->
+<section class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_4px_12px_rgba(52,168,53,0.08)] flex flex-col gap-4 mb-8">
+<h3 class="font-headline-md text-body-xl text-on-surface">Professional Bio</h3>
+<div class="relative">
+<textarea class="w-full min-h-[140px] border border-outline-variant rounded-lg p-4 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none bg-surface-bright text-on-surface font-body-md text-body-md resize-y placeholder:text-outline shadow-inner" id="bio-input" maxlength="500" onkeyup="document.getElementById('char-count').innerText = this.value.length + '/500'" placeholder="Tell clients about your experience, specialties, and work ethic...">Experienced plumber with over 10 years of experience serving the Makati area. Specialized in leak detection, pipe replacements, and full bathroom renovations. I pride myself on clean workspaces and punctual service.</textarea>
+<div class="absolute bottom-3 right-4 flex items-center justify-end w-full pointer-events-none">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-bright/80 backdrop-blur-sm px-2 rounded" id="char-count">214/500</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Sticky Save Button Area -->
+<div class="fixed bottom-[88px] left-0 w-full px-margin-mobile flex justify-center z-40 pointer-events-none">
+<button class="pointer-events-auto w-full md:max-w-md bg-primary text-on-primary font-label-lg text-label-lg rounded-full py-4 text-center btn-tactile flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 20px;">save</span>
+            Save Changes
+        </button>
+</div>
+<!-- BottomNavBar Shared Component -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe-area z-50 rounded-t-xl bg-surface-cream/95 shadow-[0_-4px_12px_rgba(52,168,53,0.08)] backdrop-blur-md md:hidden">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 p-2" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-[10px] mt-1">Home</span>
+</a>
+<!-- Bookings -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 p-2" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-sm text-[10px] mt-1">Bookings</span>
+</a>
+<!-- Messages -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 p-2 relative" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-sm text-[10px] mt-1">Messages</span>
+</a>
+<!-- Notifications -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 p-2" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-[10px] mt-1">Notifications</span>
+</a>
+<!-- Profile (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1.5 hover:opacity-80 transition-opacity active:translate-y-0.5 duration-150 shadow-sm border border-secondary-container" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-[10px] mt-1 font-bold">Profile</span>
+</a>
+</nav>
+<!-- Desktop Nav Fallback (hidden on mobile, visible on md+) -->
+<nav class="hidden md:flex fixed top-0 right-0 h-16 items-center gap-6 px-margin-desktop z-50 text-on-surface-variant font-label-lg text-label-lg">
+<a class="hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="hover:text-primary transition-colors" href="#">My Jobs</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">Profile</a>
+</nav>
+</body></html>

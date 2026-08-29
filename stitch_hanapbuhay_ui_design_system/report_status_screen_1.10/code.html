@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Report Status - HanapBuhay</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#835400",
+                    "charcoal-soft": "#2D312E",
+                    "secondary-fixed": "#acf4a4",
+                    "on-tertiary-fixed-variant": "#643f00",
+                    "on-tertiary-container": "#3f2600",
+                    "on-secondary-fixed-variant": "#0c5216",
+                    "outline-variant": "#becab6",
+                    "on-secondary-container": "#307231",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#006e11",
+                    "secondary": "#2a6b2c",
+                    "surface-variant": "#e1e3e2",
+                    "on-primary-fixed": "#002202",
+                    "tertiary-container": "#ca8400",
+                    "secondary-fixed-dim": "#91d78a",
+                    "on-secondary": "#ffffff",
+                    "background": "#f9f9f8",
+                    "surface-container-highest": "#e1e3e2",
+                    "on-error": "#ffffff",
+                    "on-surface": "#191c1c",
+                    "surface-container-high": "#e7e8e7",
+                    "inverse-surface": "#2e3131",
+                    "tertiary-fixed-dim": "#ffb957",
+                    "inverse-primary": "#6cdf64",
+                    "outline": "#6e7b69",
+                    "on-tertiary-fixed": "#2a1800",
+                    "on-surface-variant": "#3f4a3b",
+                    "surface-dim": "#d9dad9",
+                    "on-background": "#191c1c",
+                    "primary": "#006e11",
+                    "surface-bright": "#f9f9f8",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#f0f1f0",
+                    "primary-container": "#34a835",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#88fc7d",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#00530a",
+                    "on-secondary-fixed": "#002203",
+                    "tertiary-fixed": "#ffddb5",
+                    "surface-container-low": "#f3f4f3",
+                    "primary-fixed-dim": "#6cdf64",
+                    "on-primary-container": "#003404",
+                    "surface-container": "#edeeed",
+                    "secondary-container": "#acf4a4",
+                    "leaf-bright": "#4CAF50",
+                    "surface-cream": "#FEFDFB",
+                    "earth-brown": "#5D4037",
+                    "error-container": "#ffdad6",
+                    "surface": "#f9f9f8"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1280px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "margin-desktop": "48px"
+            },
+            "fontFamily": {
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-xl": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-xl": [
+                            "20px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-lg": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #d9dad9;
+            border-radius: 10px;
+        }
+        
+        /* Smooth transitions for interactive elements */
+        .card-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .expandable-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-out;
+        }
+        
+        .expandable-content.expanded {
+            grid-template-rows: 1fr;
+        }
+        
+        .expandable-inner {
+            overflow: hidden;
+        }
+        
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .expanded .chevron-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen font-body-md font-sans antialiased selection:bg-primary/20 selection:text-primary">
+<!-- TopAppBar (Transactional Context - No navigation tabs) -->
+<header class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md shadow-sm transition-colors duration-300">
+<div class="flex items-center justify-between px-margin-mobile md:px-gutter h-16 w-full max-w-container-max mx-auto">
+<!-- Leading Action -->
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<!-- Title -->
+<h1 class="font-headline-md font-bold text-headline-md-mobile md:text-headline-md text-on-surface tracking-tight truncate flex-1 text-center">
+                Report Status
+            </h1>
+<!-- Trailing Action Placeholder (Empty for balance) -->
+<div class="w-10 h-10"></div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-container-max mx-auto px-margin-mobile md:px-gutter pt-8 pb-32">
+<div class="max-w-2xl mx-auto flex flex-col gap-6">
+<!-- Header Section -->
+<div class="mb-2">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">My Reports</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Track the status of your recent issue reports and dispute resolutions.</p>
+</div>
+<!-- Report Cards List -->
+<!-- Card 1: Expanded State (Under Review) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(52,168,53,0.06)] border border-outline-variant/30 overflow-hidden card-transition group cursor-pointer hover:shadow-[0_8px_32px_rgba(52,168,53,0.1)]">
+<!-- Card Header/Main Trigger -->
+<div class="p-6 pb-4" onclick="document.getElementById('content-1').classList.toggle('expanded')">
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Filed: Oct 24, 2023</span>
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight">Unsatisfactory work - Leaking pipe</h3>
+</div>
+<div class="flex-shrink-0 ml-4">
+<!-- Amber/Yellow Badge for Under Review -->
+<span class="inline-flex items-center px-3 py-1 rounded-full font-label-sm text-label-sm font-semibold bg-tertiary-container/15 text-tertiary-container border border-tertiary-container/30">
+<span class="material-symbols-outlined text-[16px] mr-1" style="font-variation-settings: 'FILL' 1;">pending</span>
+                                Under Review
+                            </span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-outline-variant/20">
+<span class="font-label-sm text-label-sm font-semibold text-primary uppercase tracking-wider">Tap to view details</span>
+<span class="material-symbols-outlined text-on-surface-variant chevron-icon transition-transform duration-300 transform rotate-180">expand_more</span>
+</div>
+</div>
+<!-- Expandable Content (Default Expanded for demo) -->
+<div class="expandable-content expanded bg-surface-container-low/50" id="content-1">
+<div class="expandable-inner">
+<div class="p-6 pt-2 border-t border-outline-variant/20">
+<div class="flex flex-col gap-6">
+<!-- Report Details -->
+<div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface mb-2">Original Report</h4>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                        The plumber arrived late and did not fully fix the leaking pipe under the sink. It started dripping again after a few hours. I would like the worker to return or request a partial refund.
+                                    </p>
+</div>
+<!-- Admin Remarks Section -->
+<div class="bg-primary/5 rounded-lg p-4 border-l-4 border-primary">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+<h4 class="font-label-lg text-label-lg font-semibold text-primary">Admin Remarks</h4>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                        Our team has reviewed your report and contacted the worker for clarification. We are currently verifying the service log and will update you shortly with a proposed resolution.
+                                    </p>
+<span class="block mt-3 font-label-sm text-label-sm text-on-surface-variant/70 text-right">Updated: Oct 25, 2023 - 09:15 AM</span>
+</div>
+<!-- Actions -->
+<div class="flex justify-end gap-3 pt-2">
+<button class="px-5 py-2 rounded-lg font-label-lg text-label-lg font-semibold text-primary border-2 border-primary hover:bg-primary/5 transition-colors active:scale-95">Add Note</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Collapsed State (Resolved) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(52,168,53,0.06)] border border-outline-variant/30 overflow-hidden card-transition group cursor-pointer hover:shadow-[0_8px_32px_rgba(52,168,53,0.1)]">
+<div class="p-6 pb-4" onclick="document.getElementById('content-2').classList.toggle('expanded'); this.querySelector('.chevron-icon').parentElement.parentElement.classList.toggle('expanded')">
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Filed: Oct 12, 2023</span>
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight">Worker no-show for appointment</h3>
+</div>
+<div class="flex-shrink-0 ml-4">
+<!-- Green Badge for Resolved -->
+<span class="inline-flex items-center px-3 py-1 rounded-full font-label-sm text-label-sm font-semibold bg-primary/10 text-primary border border-primary/20">
+<span class="material-symbols-outlined text-[16px] mr-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                Resolved
+                            </span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-outline-variant/20">
+<span class="font-label-sm text-label-sm font-semibold text-primary uppercase tracking-wider">Tap to view details</span>
+<span class="material-symbols-outlined text-on-surface-variant chevron-icon transition-transform duration-300">expand_more</span>
+</div>
+</div>
+<!-- Expandable Content -->
+<div class="expandable-content bg-surface-container-low/50" id="content-2">
+<div class="expandable-inner">
+<div class="p-6 pt-2 border-t border-outline-variant/20">
+<div class="flex flex-col gap-6">
+<div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface mb-2">Original Report</h4>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                        The cleaner was scheduled to arrive at 10:00 AM but never showed up and is not answering calls.
+                                    </p>
+</div>
+<div class="bg-surface-variant/30 rounded-lg p-4 border-l-4 border-outline-variant">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface-variant">Resolution Summary</h4>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                        We apologize for the inconvenience. The worker experienced a medical emergency. A full refund has been processed to your original payment method and a 15% discount voucher has been credited to your account for your next booking.
+                                    </p>
+<span class="block mt-3 font-label-sm text-label-sm text-on-surface-variant/70 text-right">Resolved: Oct 14, 2023 - 02:30 PM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Illustration Placeholder (if needed, commented out for this view) -->
+<!--
+            <div class="flex flex-col items-center justify-center p-12 text-center">
+                <div class="w-32 h-32 mb-6 opacity-60">
+                    <animated-svg src="{{DATA:ANIMATION:ANIMATION_1}}" class="w-full h-full"></animated-svg>
+                </div>
+                <h3 class="font-headline-md text-headline-md font-bold text-on-surface mb-2">No Reports Filed</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant max-w-sm">You haven't submitted any issue reports yet. If you encounter any problems with a service, you can report it from the Bookings page.</p>
+            </div>
+            -->
+</div>
+</main>
+<!-- BottomNavBar (Hidden on desktop, shown on mobile) -->
+<!-- Note: Following instructions, since this is a transactional sub-page ("Report Status" implying a back action), 
+         we MUST suppress the navigation shell to prioritize the canvas. 
+         The top app bar already has a back button indicating this is a sub-page, not a top-level destination. -->
+<script>
+        // Simple script to handle toggling chevron classes outside the grid container
+        document.querySelectorAll('.expandable-content').forEach(content => {
+            content.addEventListener('transitionend', function() {
+               // Optional cleanup after transition
+            });
+        });
+    </script>
+</body></html>

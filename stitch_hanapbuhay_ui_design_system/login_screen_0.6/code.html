@@ -1,0 +1,252 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>HanapBuhay - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f9f9f8",
+                    "on-tertiary-container": "#3f2600",
+                    "inverse-primary": "#6cdf64",
+                    "on-surface": "#191c1c",
+                    "leaf-bright": "#4CAF50",
+                    "primary-fixed-dim": "#6cdf64",
+                    "outline-variant": "#becab6",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffddb5",
+                    "surface-bright": "#f9f9f8",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#acf4a4",
+                    "primary": "#006e11",
+                    "on-tertiary-fixed-variant": "#643f00",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed-variant": "#0c5216",
+                    "surface-tint": "#006e11",
+                    "on-tertiary-fixed": "#2a1800",
+                    "surface-container-low": "#f3f4f3",
+                    "on-background": "#191c1c",
+                    "surface-cream": "#FEFDFB",
+                    "earth-brown": "#5D4037",
+                    "surface-variant": "#e1e3e2",
+                    "on-primary-container": "#003404",
+                    "inverse-surface": "#2e3131",
+                    "on-secondary-fixed": "#002203",
+                    "surface-container-highest": "#e1e3e2",
+                    "on-surface-variant": "#3f4a3b",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#34a835",
+                    "surface-container-high": "#e7e8e7",
+                    "tertiary-container": "#ca8400",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed": "#88fc7d",
+                    "inverse-on-surface": "#f0f1f0",
+                    "background": "#f9f9f8",
+                    "on-secondary-container": "#307231",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#002202",
+                    "secondary": "#2a6b2c",
+                    "charcoal-soft": "#2D312E",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#edeeed",
+                    "tertiary": "#835400",
+                    "secondary-container": "#acf4a4",
+                    "outline": "#6e7b69",
+                    "on-primary-fixed-variant": "#00530a",
+                    "tertiary-fixed-dim": "#ffb957",
+                    "secondary-fixed-dim": "#91d78a",
+                    "surface-dim": "#d9dad9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "48px",
+                    "unit": "4px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-xl": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-xl": [
+                            "20px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-lg": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.surface-cream');
+            color: theme('colors.on-surface');
+        }
+        .btn-primary {
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-margin-mobile md:p-margin-desktop">
+<div class="w-full max-w-md bg-white rounded-xl shadow-[0_4px_30px_rgba(52,168,53,0.08)] p-8">
+<!-- Top: Logo & Welcome -->
+<div class="flex flex-col items-center mb-8">
+<img alt="HanapBuhay Logo" class="w-24 h-24 mb-4 object-contain rounded-full shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7w933jsHcNTnwzg0kZMxgWWX0Cp0M8sC2qaEjyQYatAjLOUO0EUjHjPlUEpqRCBjwN4egW-D0S3aKg_9OzIH64-O7mIgmBi5ZAjwL9EbEEtwb2wsH8J9hBpsbX5T9e-_P46HE4oxvQrMetyzGD4VRZ6KZM6i-aX1BNpsBPS9SRzJJCH6aX0Rh3E3AqO2FRUs2aeZKGAkRwekKgPf0GBvT59Wg3Q4okkUH1kSw3UdhBTrl7U7zABUGUQMgQTbn34kueCk">
+<h1 class="font-headline-md text-headline-md text-on-surface mb-2">Welcome Back</h1>
+<p class="font-body-md text-body-md text-on-surface-variant text-center">Log in to continue finding opportunities.</p>
+</div>
+<!-- Middle: Form Area -->
+<div class="space-y-6">
+<!-- Google Login -->
+<button class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors duration-200">
+<svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+<span class="font-label-lg text-label-lg text-on-surface">Continue with Google</span>
+</button>
+<!-- Divider -->
+<div class="relative flex items-center">
+<div class="flex-grow border-t border-outline-variant"></div>
+<span class="flex-shrink-0 mx-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">or</span>
+<div class="flex-grow border-t border-outline-variant"></div>
+</div>
+<!-- Form Fields -->
+<form action="#" class="space-y-4" method="POST">
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-1" for="identifier">Email or Mobile Number</label>
+<input class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors font-body-md text-body-md text-on-surface" id="identifier" name="identifier" placeholder="Enter your email or mobile" type="text">
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-1" for="password">Password</label>
+<div class="relative">
+<input class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors font-body-md text-body-md text-on-surface pr-12" id="password" name="password" placeholder="Enter your password" type="password">
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex justify-end">
+<a class="font-label-sm text-label-sm text-primary hover:text-primary-container transition-colors" href="#">Forgot Password?</a>
+</div>
+<button class="w-full py-3 px-4 bg-primary-container text-on-primary-container rounded-lg font-label-lg text-label-lg btn-primary hover:bg-leaf-bright transition-all duration-200 shadow-md" type="submit">
+                    Log In
+                </button>
+</form>
+</div>
+<!-- Bottom: Sign Up Link -->
+<div class="mt-8 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Don't have an account? 
+                <a class="font-label-lg text-label-lg text-primary hover:text-primary-container transition-colors ml-1" href="#">Sign Up</a>
+</p>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>HanapBuhay - Role Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#f9f9f8",
+                    "on-primary-fixed": "#002202",
+                    "on-tertiary-fixed-variant": "#643f00",
+                    "charcoal-soft": "#2D312E",
+                    "primary-fixed-dim": "#6cdf64",
+                    "secondary-fixed-dim": "#91d78a",
+                    "surface-cream": "#FEFDFB",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#acf4a4",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#6cdf64",
+                    "error": "#ba1a1a",
+                    "surface": "#f9f9f8",
+                    "tertiary-container": "#ca8400",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#191c1c",
+                    "tertiary-fixed-dim": "#ffb957",
+                    "surface-bright": "#f9f9f8",
+                    "on-secondary-fixed-variant": "#0c5216",
+                    "inverse-surface": "#2e3131",
+                    "surface-container": "#edeeed",
+                    "on-surface-variant": "#3f4a3b",
+                    "primary-container": "#34a835",
+                    "on-secondary-fixed": "#002203",
+                    "on-primary-fixed-variant": "#00530a",
+                    "tertiary": "#835400",
+                    "surface-tint": "#006e11",
+                    "error-container": "#ffdad6",
+                    "earth-brown": "#5D4037",
+                    "surface-container-low": "#f3f4f3",
+                    "on-background": "#191c1c",
+                    "on-tertiary-fixed": "#2a1800",
+                    "leaf-bright": "#4CAF50",
+                    "surface-variant": "#e1e3e2",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#d9dad9",
+                    "tertiary-fixed": "#ffddb5",
+                    "primary-fixed": "#88fc7d",
+                    "primary": "#006e11",
+                    "on-secondary-container": "#307231",
+                    "inverse-on-surface": "#f0f1f0",
+                    "outline-variant": "#becab6",
+                    "on-tertiary-container": "#3f2600",
+                    "surface-container-highest": "#e1e3e2",
+                    "surface-container-high": "#e7e8e7",
+                    "secondary-container": "#acf4a4",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "outline": "#6e7b69",
+                    "secondary": "#2a6b2c",
+                    "on-primary-container": "#003404"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "unit": "4px",
+                    "container-max": "1280px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "48px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-xl": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-xl": [
+                            "20px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-lg": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        /* Custom overrides or specific additions if needed beyond Tailwind config */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .role-card {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .role-card.active {
+            border-color: #34a835; /* Primary Green */
+            background-color: rgba(52, 168, 53, 0.05);
+            box-shadow: 0 4px 12px rgba(52, 168, 53, 0.1);
+        }
+        
+        .role-card.active .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .check-icon {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop font-body-lg text-on-surface">
+<main class="w-full max-w-md mx-auto flex flex-col bg-surface-cream rounded-xl shadow-[0_8px_30px_rgba(52,168,53,0.08)] overflow-hidden relative">
+<!-- Top App Bar equivalent for onboarding flow -->
+<header class="w-full flex justify-center py-6 border-b border-surface-container-low relative">
+<button aria-label="Go back" class="absolute left-6 top-1/2 transform -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">HanapBuhay</h1>
+</header>
+<div class="flex-1 flex flex-col p-6 space-y-8">
+<div class="text-center space-y-2">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">
+                    How will you use HanapBuhay?
+                </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Select your primary role to customize your experience.
+                </p>
+</div>
+<!-- Selection Area -->
+<div class="flex flex-col gap-4">
+<!-- Client Role Card -->
+<button class="role-card relative w-full flex items-center p-6 bg-surface border-2 border-outline-variant rounded-lg text-left group hover:border-primary-container/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="card-client" onclick="selectRole('client')" type="button">
+<div class="w-12 h-12 flex-shrink-0 bg-secondary-container rounded-full flex items-center justify-center mr-4 text-on-secondary-container">
+<span class="material-symbols-outlined text-[28px]">search</span>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">I want to hire</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Find skilled workers for your tasks and projects.</p>
+</div>
+<div class="check-icon absolute top-4 right-4 w-6 h-6 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</button>
+<!-- Worker Role Card -->
+<button class="role-card relative w-full flex items-center p-6 bg-surface border-2 border-outline-variant rounded-lg text-left group hover:border-primary-container/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="card-worker" onclick="selectRole('worker')" type="button">
+<div class="w-12 h-12 flex-shrink-0 bg-tertiary-container rounded-full flex items-center justify-center mr-4 text-on-primary">
+<span class="material-symbols-outlined text-[28px]">build</span>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">I want to work</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Offer your skills and find job opportunities.</p>
+</div>
+<div class="check-icon absolute top-4 right-4 w-6 h-6 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Footer -->
+<div class="p-6 pt-0 mt-auto">
+<button class="w-full py-4 px-6 bg-surface-variant text-on-surface-variant font-label-lg text-label-lg rounded-lg transition-all duration-200 cursor-not-allowed flex items-center justify-center gap-2" disabled="" id="continue-btn">
+                Continue
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</main>
+<script>
+        let selectedRole = null;
+
+        function selectRole(role) {
+            selectedRole = role;
+            
+            // Reset all cards
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Activate selected card
+            document.getElementById(`card-${role}`).classList.add('active');
+            
+            // Enable button
+            const btn = document.getElementById('continue-btn');
+            btn.disabled = false;
+            btn.classList.remove('bg-surface-variant', 'text-on-surface-variant', 'cursor-not-allowed');
+            btn.classList.add('bg-primary-container', 'text-on-primary-container', 'hover:shadow-[0_4px_12px_rgba(52,168,53,0.2)]', 'hover:-translate-y-[1px]', 'active:translate-y-0', 'cursor-pointer');
+        }
+    </script>
+</body></html>

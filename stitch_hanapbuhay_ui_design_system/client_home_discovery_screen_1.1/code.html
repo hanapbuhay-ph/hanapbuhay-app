@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HanapBuhay - Client Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f4f3",
+                    "surface-container": "#edeeed",
+                    "on-secondary-fixed-variant": "#0c5216",
+                    "earth-brown": "#5D4037",
+                    "on-tertiary-fixed": "#2a1800",
+                    "inverse-on-surface": "#f0f1f0",
+                    "on-background": "#191c1c",
+                    "surface-bright": "#f9f9f8",
+                    "secondary": "#2a6b2c",
+                    "inverse-surface": "#2e3131",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e1e3e2",
+                    "primary": "#006e11",
+                    "tertiary-fixed-dim": "#ffb957",
+                    "surface-dim": "#d9dad9",
+                    "background": "#f9f9f8",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-high": "#e7e8e7",
+                    "on-secondary-container": "#307231",
+                    "surface-tint": "#006e11",
+                    "on-primary-fixed-variant": "#00530a",
+                    "charcoal-soft": "#2D312E",
+                    "on-primary": "#ffffff",
+                    "surface-cream": "#FEFDFB",
+                    "on-tertiary-fixed-variant": "#643f00",
+                    "surface": "#f9f9f8",
+                    "on-primary-container": "#003404",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed-dim": "#91d78a",
+                    "outline": "#6e7b69",
+                    "secondary-fixed": "#acf4a4",
+                    "surface-container-highest": "#e1e3e2",
+                    "secondary-container": "#acf4a4",
+                    "on-primary-fixed": "#002202",
+                    "primary-fixed-dim": "#6cdf64",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#3f4a3b",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#3f2600",
+                    "on-secondary-fixed": "#002203",
+                    "tertiary-fixed": "#ffddb5",
+                    "tertiary-container": "#ca8400",
+                    "on-surface": "#191c1c",
+                    "tertiary": "#835400",
+                    "inverse-primary": "#6cdf64",
+                    "leaf-bright": "#4CAF50",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#88fc7d",
+                    "outline-variant": "#becab6",
+                    "primary-container": "#34a835"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "48px",
+                    "container-max": "1280px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-xl": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-xl": [
+                            "20px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-lg": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-cream text-on-surface font-body-md min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full bg-surface/90 backdrop-blur-md shadow-sm z-50 px-margin-mobile h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover shadow-sm" data-alt="A close up, well-lit portrait of a friendly smiling woman with dark hair tied back. She is wearing a soft green casual top. The background is a slightly blurred, bright, modern home interior reflecting the warm, approachable digital naturalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4BwpVFeeJQhGcGUv5pbpsr7CT4owGF37tr0FDoGJYElF827-cpuy7iFWtbJ7K4lWCz9kNGqOcKpaXJZY5IJKn0wyuQPJEdZ3MNFWNK14GXr_YeT28OK3bvwJSc4AwzJqKw_9MkE5rbc3U6vYym7naSebqJ-TSrmybCzu0_ykH7Q1oy7s-Rwh7VcJvsf6rkwfJMZKApNCf0g-2SFQ_GLFxR9U8mAVOv-Op7FHezf_TVpd18CtD6k2Agw"/>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Good morning,</p>
+<h1 class="font-headline-md text-headline-md-mobile text-primary font-bold tracking-tight">Maria</h1>
+</div>
+</div>
+<button class="relative p-2 rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+<span class="absolute top-2 right-2 w-2.5 h-2.5 bg-error rounded-full border-2 border-surface"></span>
+</button>
+</header>
+<main class="px-margin-mobile pt-6 pb-8 space-y-8">
+<!-- Search Section -->
+<section>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant z-10 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-low border border-surface-variant rounded-xl py-4 pl-12 pr-4 font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-[0_2px_8px_rgba(52,168,53,0.04)]" placeholder="Search for services (e.g. plumbing)" type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary text-on-primary rounded-lg shadow-sm hover:shadow-md transition-all active:translate-y-px">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">tune</span>
+</button>
+</div>
+</section>
+<!-- Categories Section -->
+<section>
+<h2 class="font-headline-md text-headline-md-mobile mb-4">Categories</h2>
+<div class="flex overflow-x-auto gap-3 hide-scrollbar pb-2 -mx-margin-mobile px-margin-mobile">
+<!-- Chip 1 -->
+<button class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary-container rounded-full font-label-lg text-label-lg whitespace-nowrap active:scale-95 transition-transform border border-primary/20">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">electrical_services</span>
+                    Electrical
+                </button>
+<!-- Chip 2 -->
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface-variant rounded-full font-label-lg text-label-lg whitespace-nowrap active:scale-95 transition-transform hover:bg-surface-variant">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">plumbing</span>
+                    Plumbing
+                </button>
+<!-- Chip 3 -->
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface-variant rounded-full font-label-lg text-label-lg whitespace-nowrap active:scale-95 transition-transform hover:bg-surface-variant">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">school</span>
+                    Tutoring
+                </button>
+<!-- Chip 4 -->
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface-variant rounded-full font-label-lg text-label-lg whitespace-nowrap active:scale-95 transition-transform hover:bg-surface-variant">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">cleaning_services</span>
+                    Cleaning
+                </button>
+<!-- Chip 5 -->
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface-variant rounded-full font-label-lg text-label-lg whitespace-nowrap active:scale-95 transition-transform hover:bg-surface-variant">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">local_laundry_service</span>
+                    Laundry
+                </button>
+<!-- Chip 6 -->
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface-variant rounded-full font-label-lg text-label-lg whitespace-nowrap active:scale-95 transition-transform hover:bg-surface-variant">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">yard</span>
+                    Gardening
+                </button>
+</div>
+</section>
+<!-- Top Rated Section -->
+<section>
+<div class="flex justify-between items-end mb-4">
+<h2 class="font-headline-md text-headline-md-mobile">Top Rated Near You</h2>
+<a class="font-label-lg text-label-lg text-primary hover:underline" href="#">See all</a>
+</div>
+<div class="flex overflow-x-auto gap-4 hide-scrollbar pb-4 -mx-margin-mobile px-margin-mobile">
+<!-- Worker Card 1 -->
+<div class="min-w-[240px] bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_12px_rgba(52,168,53,0.06)] border border-surface-variant/30 flex flex-col gap-3 relative">
+<div class="absolute top-3 right-3 bg-surface-cream/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm font-bold">4.9</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="w-14 h-14 rounded-full object-cover" data-alt="A professional headshot of a Filipino tradesman, smiling warmly, wearing a clean navy blue uniform shirt. The background is softly out of focus, highlighting the modern, bright aesthetic of the digital naturalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrEde9acyquM_Bt8hCJnEcFIpvbH7gfPCaL0wj5kX5VlSBoQMzv5wKHsGeS1zNVdl-NyIW3OyK5Dg88IYFfwQeM3Ce5fTxjKf6ZtW9tl0bQPwFvEme-ECow3Rp_oC5NggnioPJPbtzkwiMrgn7hEBDqxEtfCc_rCTGJh7Lp1RcMS5X6oR-w0Yv-3Q7AnLD_1evzW-2P2r1ulDqprrV26ZwWu2oLlo7nlrTVOibz2Rld-ZtCbOV0U4yBQ"/>
+<span class="absolute bottom-0 right-0 bg-primary text-on-primary rounded-full p-0.5 border-2 border-surface-container-lowest flex items-center justify-center" title="Verified">
+<span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold">Juan Dela Cruz</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Master Plumber</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2 pt-3 border-t border-surface-variant/50">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-label-sm text-label-sm">1.2 km away</span>
+</div>
+<span class="font-label-lg text-label-lg text-primary font-bold">₱500/hr</span>
+</div>
+</div>
+<!-- Worker Card 2 -->
+<div class="min-w-[240px] bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_12px_rgba(52,168,53,0.06)] border border-surface-variant/30 flex flex-col gap-3 relative">
+<div class="absolute top-3 right-3 bg-surface-cream/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm font-bold">4.8</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="w-14 h-14 rounded-full object-cover" data-alt="A portrait of a friendly Filipina woman in a neat grey polo shirt, looking confident and approachable. The lighting is bright and even, matching the clean, modern ui design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGmHqJ0xaMYXIp-3eJ4r2BK1EeNODHWOguTDR95nvU7zy95dBl_v6y5NLCnChTg38qnYmaF4ihEgBOgZ_wzVt-7ncSUEJ5aa_Yu0LkTTE5cYh5Z29d9VY64JK3CyWsrmwWVPBJvd8OkFy9ZMsj0Tv0id_xYv0oTKsxYp6NVw0UMVrlqEj52mKuKuFyK7ZhnZ8w1z-rQgt3Zbc0dOKMZP_lRRWoq_qM0rbgFEYSkCEbJW9U0cQyyye-yw"/>
+<span class="absolute bottom-0 right-0 bg-primary text-on-primary rounded-full p-0.5 border-2 border-surface-container-lowest flex items-center justify-center" title="Verified">
+<span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold">Ana Santos</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Electrician</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2 pt-3 border-t border-surface-variant/50">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-label-sm text-label-sm">2.5 km away</span>
+</div>
+<span class="font-label-lg text-label-lg text-primary font-bold">₱600/hr</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Recently Viewed -->
+<section>
+<h2 class="font-headline-md text-headline-md-mobile mb-4">Recently Viewed</h2>
+<div class="grid grid-cols-1 gap-4">
+<!-- List Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-surface-variant/40 flex items-center gap-4 hover:shadow-md transition-shadow active:scale-[0.98]">
+<img class="w-16 h-16 rounded-lg object-cover" data-alt="A smiling young male tutor wearing glasses and a casual green sweater, holding a textbook. The setting is a bright, sunlit study area, consistent with a warm, community-focused visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuUPQlr8Uvz0JFJ9UAuS7vJWYkNcB6FoeVjB57uSXqNyt9xKia7q7IqKhxSKo5KoYkU-N9rho-ZXv0igR-avMHHjVw-tsCquBI1_GVCSBcIbJPydLtwL97ovPhk_mW0CZUTAEJ3ROEU4NQcsqmdVUMqJx2uvHEfom0a44G7StS7TgslQAM-xAYi9Q2s_LvOAqzCMHCkkB4sg3xOyzZU0-L5jmYMjn2KsWP8B_TmzuWDFF2Sltl3H_elA"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-label-lg text-label-lg font-bold">Mark Reyes</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm font-bold">5.0</span>
+</div>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">Math &amp; Science Tutor</p>
+<div class="flex gap-2">
+<span class="px-2 py-0.5 bg-surface-container rounded text-[10px] font-semibold text-on-surface-variant">Online</span>
+<span class="px-2 py-0.5 bg-surface-container rounded text-[10px] font-semibold text-on-surface-variant">In-person</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface/90 backdrop-blur-md shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl md:hidden border-t border-surface-variant/20">
+<!-- Explore (Active) -->
+<button class="flex flex-col items-center justify-center text-primary bg-secondary-container/30 rounded-full px-4 py-1 active:scale-90 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-sm text-label-sm mt-1">Explore</span>
+</button>
+<!-- Bookings -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">event_note</span>
+<span class="font-label-sm text-label-sm mt-1">Bookings</span>
+</button>
+<!-- Inbox -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200 relative">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chat_bubble</span>
+<span class="absolute top-1 right-3 w-2 h-2 bg-error rounded-full"></span>
+<span class="font-label-sm text-label-sm mt-1">Inbox</span>
+</button>
+<!-- Profile -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary-container transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</button>
+</nav>
+</body></html>

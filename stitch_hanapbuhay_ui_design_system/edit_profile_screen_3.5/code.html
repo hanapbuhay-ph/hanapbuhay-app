@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Profile - HanapBuhay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#edeeed",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#002203",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "on-error-container": "#93000a",
+                        "surface-cream": "#FEFDFB",
+                        "on-tertiary-fixed": "#2a1800",
+                        "earth-brown": "#5D4037",
+                        "on-primary-fixed-variant": "#00530a",
+                        "on-tertiary-container": "#3f2600",
+                        "secondary-container": "#acf4a4",
+                        "background": "#f9f9f8",
+                        "on-background": "#191c1c",
+                        "secondary-fixed": "#acf4a4",
+                        "on-primary-fixed": "#002202",
+                        "surface-container-highest": "#e1e3e2",
+                        "secondary-fixed-dim": "#91d78a",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#becab6",
+                        "inverse-on-surface": "#f0f1f0",
+                        "surface-container-high": "#e7e8e7",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "surface": "#f9f9f8",
+                        "primary-fixed": "#88fc7d",
+                        "surface-container-low": "#f3f4f3",
+                        "surface-bright": "#f9f9f8",
+                        "primary-container": "#34a835",
+                        "surface-variant": "#e1e3e2",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2e3131",
+                        "leaf-bright": "#4CAF50",
+                        "surface-dim": "#d9dad9",
+                        "primary": "#006e11",
+                        "on-primary-container": "#003404",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#ca8400",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#307231",
+                        "charcoal-soft": "#2D312E",
+                        "secondary": "#2a6b2c",
+                        "surface-tint": "#006e11",
+                        "outline": "#6e7b69",
+                        "on-surface": "#191c1c",
+                        "tertiary-fixed": "#ffddb5",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#6cdf64",
+                        "primary-fixed-dim": "#6cdf64",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "on-surface-variant": "#3f4a3b",
+                        "tertiary": "#835400",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "16px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pressed {
+            transform: translateY(1px);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar (Task-Focused: No global nav) -->
+<header class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md shadow-sm flex items-center justify-between px-margin-mobile h-16">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 text-on-surface-variant">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-on-surface font-bold tracking-tight text-center absolute left-1/2 -translate-x-1/2">Edit Profile</h1>
+<div class="w-10 h-10"></div> <!-- Spacer for center alignment -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto px-margin-mobile py-8 max-w-container-max mx-auto w-full md:px-margin-desktop md:py-12">
+<div class="max-w-xl mx-auto flex flex-col gap-8">
+<!-- Profile Photo Section -->
+<section class="flex flex-col items-center gap-4 relative">
+<div class="relative group">
+<img alt="User profile photo" class="w-32 h-32 rounded-full object-cover shadow-sm border-4 border-surface-container-lowest" data-alt="A close-up portrait of a friendly, approachable professional in their 30s. The lighting is soft and natural, suggesting an outdoor or well-lit indoor environment. The subject is slightly smiling, conveying trust and reliability. The image style is bright, clean, and aligns with a vibrant, modern light-mode aesthetic, utilizing warm natural tones that complement a deep green interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuz05w9cR_oRfmVsupPrZ06Y9I4lksP27yZmzOW2yXOPIbjC9Mk7RltiJ_eUdbQZakdG3kQm1uxPbepfqI96WXeAOC1V_l_gScm7-e-T7U6xagC4ZFMFa5e2i_kNYPpuvo11a-PZcrtp_zDkskb1Epf6OwQT7VT5apYgDJNlk1BCmaTSlAQTScbeCP1ssmlUXYn8ArR3ypW8qxR4X12TqS0RjHSc_NmpsGSnpHGeXCb472ciWAu_-miw"/>
+<button aria-label="Edit profile photo" class="absolute bottom-0 right-0 w-10 h-10 bg-primary-container text-on-primary rounded-full flex items-center justify-center shadow-md hover:bg-primary transition-colors active:scale-95 duration-100 border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+</button>
+</div>
+</section>
+<!-- Edit Form -->
+<form class="flex flex-col gap-6" onsubmit="event.preventDefault();">
+<div class="flex flex-col gap-2">
+<label class="font-label-lg text-label-lg text-on-surface-variant" for="fullName">Full Name</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">person</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all font-body-md" id="fullName" name="fullName" required="" type="text" value="Juan Dela Cruz"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-lg text-label-lg text-on-surface-variant" for="contactNumber">Contact Number</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">phone_iphone</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all font-body-md" id="contactNumber" name="contactNumber" required="" type="tel" value="+63 917 123 4567"/>
+</div>
+</div>
+<div class="flex flex-col gap-2 opacity-70">
+<label class="font-label-lg text-label-lg text-on-surface-variant" for="emailAddress">Email Address <span class="font-normal text-xs">(Non-editable)</span></label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
+<input class="w-full bg-surface-container border border-outline-variant text-on-surface-variant rounded-lg pl-10 pr-4 py-3 focus:outline-none cursor-not-allowed font-body-md" id="emailAddress" name="emailAddress" readonly="" type="email" value="juan.delacruz@example.com"/>
+</div>
+</div>
+<!-- Spacer to push button down on taller screens if needed, though form is compact -->
+<div class="h-4"></div>
+<button class="w-full bg-primary-container text-on-primary font-label-lg text-label-lg py-4 rounded-full shadow-[0_4px_14px_rgba(52,168,53,0.2)] hover:shadow-[0_6px_20px_rgba(52,168,53,0.3)] transition-all active:scale-[0.98] active:shadow-inner flex items-center justify-center gap-2" onmousedown="this.classList.add('pressed')" onmouseleave="this.classList.remove('pressed')" onmouseup="this.classList.remove('pressed')" type="submit">
+<span class="material-symbols-outlined">save</span>
+                    Save Changes
+                </button>
+</form>
+</div>
+</main>
+</body></html>

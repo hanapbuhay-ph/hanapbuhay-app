@@ -1,0 +1,349 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Registration - Account Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#6e7b69",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#006e11",
+                      "secondary-fixed": "#acf4a4",
+                      "tertiary-fixed-dim": "#ffb957",
+                      "charcoal-soft": "#2D312E",
+                      "inverse-surface": "#2e3131",
+                      "earth-brown": "#5D4037",
+                      "outline-variant": "#becab6",
+                      "surface-container": "#edeeed",
+                      "on-tertiary-fixed-variant": "#643f00",
+                      "on-primary-fixed-variant": "#00530a",
+                      "primary-fixed": "#88fc7d",
+                      "error": "#ba1a1a",
+                      "leaf-bright": "#4CAF50",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#f9f9f8",
+                      "surface-variant": "#e1e3e2",
+                      "surface-container-low": "#f3f4f3",
+                      "tertiary": "#835400",
+                      "surface": "#f9f9f8",
+                      "on-secondary-fixed-variant": "#0c5216",
+                      "surface-dim": "#d9dad9",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#e1e3e2",
+                      "inverse-primary": "#6cdf64",
+                      "on-surface-variant": "#3f4a3b",
+                      "on-error-container": "#93000a",
+                      "primary-fixed-dim": "#6cdf64",
+                      "secondary-fixed-dim": "#91d78a",
+                      "primary-container": "#34a835",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed": "#ffddb5",
+                      "on-error": "#ffffff",
+                      "secondary-container": "#acf4a4",
+                      "background": "#f9f9f8",
+                      "on-secondary-container": "#307231",
+                      "on-tertiary-fixed": "#2a1800",
+                      "on-primary-container": "#003404",
+                      "on-tertiary-container": "#3f2600",
+                      "on-background": "#191c1c",
+                      "secondary": "#2a6b2c",
+                      "tertiary-container": "#ca8400",
+                      "surface-tint": "#006e11",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#f0f1f0",
+                      "on-primary-fixed": "#002202",
+                      "on-secondary-fixed": "#002203",
+                      "surface-container-high": "#e7e8e7",
+                      "on-surface": "#191c1c",
+                      "surface-cream": "#FEFDFB"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "48px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-xl": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-lg": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-xl": [
+                              "20px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.surface-cream');
+            color: theme('colors.on-surface');
+        }
+        
+        /* Custom scrollbar for webkit to keep it clean */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.surface-variant');
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline-variant');
+        }
+
+        .input-floating-label:focus-within label,
+        .input-floating-label input:not(:placeholder-shown) + label {
+            transform: translateY(-50%) scale(0.85);
+            top: 0;
+            background-color: theme('colors.surface-container-lowest');
+            padding: 0 4px;
+            color: theme('colors.primary');
+        }
+      </style>
+</head>
+<body class="min-h-screen font-body-md text-body-md flex flex-col md:flex-row antialiased">
+<!-- Left/Top Section: Visual Anchor (40% desktop, minimal mobile) -->
+<div class="hidden md:flex md:w-[40%] bg-surface-container-low flex-col justify-between p-margin-desktop border-r border-surface-variant relative overflow-hidden">
+<!-- Abstract shape/pattern background -->
+<div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 20% 30%, theme('colors.primary-container') 0%, transparent 40%), radial-gradient(circle at 80% 80%, theme('colors.secondary-container') 0%, transparent 40%);"></div>
+<div class="z-10">
+<h1 class="font-headline-4xl text-headline-4xl text-primary font-bold tracking-tight mb-8">HanapBuhay</h1>
+<p class="font-headline-md text-headline-md text-on-surface-variant max-w-md">Join our vibrant community of knowledge seekers and doers.</p>
+</div>
+<div class="z-10 space-y-6">
+<div class="bg-surface-container-lowest/80 backdrop-blur-sm p-6 rounded-xl border border-surface-variant/50 shadow-sm">
+<div class="flex items-center gap-4 mb-2">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined" data-weight="fill">verified</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface">Trusted Platform</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Connect with verified professionals.</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest/80 backdrop-blur-sm p-6 rounded-xl border border-surface-variant/50 shadow-sm">
+<div class="flex items-center gap-4 mb-2">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined" data-weight="fill">shield</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface">Secure &amp; Private</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Your data is safe with us.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right/Bottom Section: Form Area (60% desktop, full mobile) -->
+<div class="flex-1 flex flex-col relative h-[100dvh] overflow-hidden bg-surface-cream">
+<!-- Mobile App Bar / Top Navigation -->
+<header class="flex items-center px-margin-mobile md:px-gutter shrink-0 z-20 bg-surface-cream/90 backdrop-blur-md h-20">
+<button aria-label="Go back" class="p-2 -ml-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[28px] font-light">arrow_back_ios_new</span>
+</button>
+<div class="flex-1 text-center md:hidden">
+<h1 class="font-display-lg text-[28px] text-primary font-bold tracking-tight">HanapBuhay</h1>
+</div>
+<div class="w-10 md:hidden"></div> <!-- Spacer for centering -->
+</header>
+<!-- Scrollable Form Container -->
+<main class="flex-1 overflow-y-auto px-margin-mobile md:px-gutter pb-32 pt-4 flex justify-center"><div class="w-full max-w-md flex flex-col pt-6">
+<!-- Step Indicator & Header -->
+<div class="mb-10">
+<div class="flex flex-col items-center gap-3 mb-6">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Step 2 of 2</p>
+<!-- Role Badge -->
+<div class="inline-flex items-center bg-primary/10 rounded-full px-4 py-1.5 border border-primary/20">
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">work</span>
+                                Signing up as: Worker
+                            </span>
+<a class="ml-3 font-label-sm text-label-sm text-primary underline hover:text-primary-fixed-variant transition-colors" href="#">Change</a>
+</div>
+</div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-3 text-center">Account Details</h2>
+<p class="font-body-md text-body-md text-on-surface-variant text-center">Please provide your details to complete registration.</p>
+</div>
+<!-- Form -->
+<form action="#" class="space-y-5 flex-1" method="POST">
+<!-- Full Name -->
+<div class="relative input-floating-label">
+<input class="block w-full rounded-lg border-outline-variant bg-surface-container-lowest px-4 pb-2.5 pt-5 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow peer" id="fullName" name="fullName" placeholder=" " required="" type="text">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md text-body-md transition-all pointer-events-none peer-focus:text-primary" for="fullName">
+                            Full Name
+                        </label>
+</div>
+<!-- Mobile Number -->
+<div class="relative input-floating-label">
+<input class="block w-full rounded-lg border-outline-variant bg-surface-container-lowest px-4 pb-2.5 pt-5 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow peer" id="mobileNumber" name="mobileNumber" placeholder=" " required="" type="tel">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md text-body-md transition-all pointer-events-none peer-focus:text-primary" for="mobileNumber">
+                            Mobile Number
+                        </label>
+</div>
+<!-- Email Address -->
+<div class="relative input-floating-label">
+<input class="block w-full rounded-lg border-outline-variant bg-surface-container-lowest px-4 pb-2.5 pt-5 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow peer" id="email" name="email" placeholder=" " required="" type="email">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md text-body-md transition-all pointer-events-none peer-focus:text-primary" for="email">
+                            Email Address
+                        </label>
+</div>
+<!-- Password -->
+<div class="relative input-floating-label group">
+<input class="block w-full rounded-lg border-outline-variant bg-surface-container-lowest px-4 pr-12 pb-2.5 pt-5 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow peer" id="password" name="password" placeholder=" " required="" type="password">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md text-body-md transition-all pointer-events-none peer-focus:text-primary" for="password">
+                            Password
+                        </label>
+<button aria-label="Toggle password visibility" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+<!-- Confirm Password -->
+<div class="relative input-floating-label group">
+<input class="block w-full rounded-lg border-outline-variant bg-surface-container-lowest px-4 pr-12 pb-2.5 pt-5 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow peer" id="confirmPassword" name="confirmPassword" placeholder=" " required="" type="password">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md text-body-md transition-all pointer-events-none peer-focus:text-primary" for="confirmPassword">
+                            Confirm Password
+                        </label>
+<button aria-label="Toggle password visibility" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+<!-- Terms Checkbox -->
+<div class="flex items-start gap-3 mt-6">
+<div class="flex items-center h-6">
+<input class="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-surface-cream transition-colors cursor-pointer bg-surface-container-lowest" id="terms" name="terms" required="" type="checkbox">
+</div>
+<div class="text-sm">
+<label class="font-body-md text-body-md text-on-surface-variant cursor-pointer" for="terms">
+                                I agree to the <a class="text-primary font-label-lg hover:underline" href="#">Terms of Service</a> and <a class="text-primary font-label-lg hover:underline" href="#">Privacy Policy</a>.
+                            </label>
+</div>
+</div>
+<!-- Spacing buffer for sticky footer on small screens -->
+<div class="h-8"></div>
+</form>
+</div></main>
+<!-- Sticky Footer Area (Action Buttons) -->
+<div class="absolute bottom-0 left-0 w-full bg-surface-cream/95 backdrop-blur-md border-t border-surface-variant/50 p-margin-mobile md:px-gutter md:py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-20 flex justify-center">
+<div class="w-full max-w-md flex flex-col gap-4">
+<button class="w-full bg-primary hover:bg-primary/90 text-on-primary font-label-lg text-label-lg py-4 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_10px_rgba(0,110,17,0.15)] active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2" type="submit">
+                    Create Account
+                    <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<p class="text-center font-body-md text-body-md text-on-surface-variant mt-2">
+                    Already have an account? <a class="text-primary font-label-lg hover:underline" href="#">Log In</a>
+</p>
+</div>
+</div>
+</div>
+
+
+</body></html>

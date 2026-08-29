@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>File a Report - HanapBuhay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#191c1c",
+                      "charcoal-soft": "#2D312E",
+                      "on-primary-fixed": "#002202",
+                      "error": "#ba1a1a",
+                      "earth-brown": "#5D4037",
+                      "background": "#f9f9f8",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed": "#2a1800",
+                      "inverse-primary": "#6cdf64",
+                      "primary-fixed-dim": "#6cdf64",
+                      "primary": "#006e11",
+                      "inverse-on-surface": "#f0f1f0",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#ffb957",
+                      "surface-tint": "#006e11",
+                      "primary-fixed": "#88fc7d",
+                      "surface-variant": "#e1e3e2",
+                      "primary-container": "#34a835",
+                      "surface-container-highest": "#e1e3e2",
+                      "on-primary-fixed-variant": "#00530a",
+                      "outline-variant": "#becab6",
+                      "on-secondary-fixed-variant": "#0c5216",
+                      "surface-container": "#edeeed",
+                      "on-surface-variant": "#3f4a3b",
+                      "on-secondary-fixed": "#002203",
+                      "outline": "#6e7b69",
+                      "surface-bright": "#f9f9f8",
+                      "on-secondary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed-variant": "#643f00",
+                      "surface": "#f9f9f8",
+                      "leaf-bright": "#4CAF50",
+                      "inverse-surface": "#2e3131",
+                      "tertiary": "#835400",
+                      "surface-dim": "#d9dad9",
+                      "on-primary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "surface-cream": "#FEFDFB",
+                      "secondary-container": "#acf4a4",
+                      "secondary-fixed-dim": "#91d78a",
+                      "secondary-fixed": "#acf4a4",
+                      "secondary": "#2a6b2c",
+                      "on-secondary-container": "#307231",
+                      "on-background": "#191c1c",
+                      "tertiary-container": "#ca8400",
+                      "surface-container-low": "#f3f4f3",
+                      "tertiary-fixed": "#ffddb5",
+                      "on-tertiary-container": "#3f2600",
+                      "surface-container-high": "#e7e8e7",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-container": "#003404"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "margin-desktop": "48px",
+                      "margin-mobile": "16px",
+                      "unit": "4px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-xl": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-lg": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-xl": [
+                              "20px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-surface');
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Focus state for inputs */
+        .form-input:focus {
+            border-color: theme('colors.primary');
+            box-shadow: 0 0 0 1px theme('colors.primary');
+        }
+        
+        /* Custom file upload button styling */
+        input[type="file"]::file-selector-button {
+            margin-right: 12px;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            border: 1px solid theme('colors.outline');
+            background-color: transparent;
+            color: theme('colors.on-surface-variant');
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        input[type="file"]::file-selector-button:hover {
+            background-color: theme('colors.surface-variant');
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full bg-surface/90 backdrop-blur-md shadow-sm z-50 transition-all duration-300">
+<div class="flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full max-w-container-max mx-auto">
+<div class="flex items-center">
+<button aria-label="Go back" class="p-2 -ml-2 rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 text-on-surface-variant mr-2 md:hidden">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary tracking-tight">File a Report</h1>
+</div>
+<div class="hidden md:flex items-center space-x-8">
+<!-- Desktop Nav omitted as this is a transactional page -->
+</div>
+<button aria-label="More options" class="p-2 -mr-2 rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-6 md:py-12">
+<div class="max-w-2xl mx-auto">
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                Your report is confidential and will be reviewed by our Trust &amp; Safety team.
+            </p>
+<!-- Report Target Details Card -->
+<section class="bg-surface-container-lowest rounded-lg shadow-[0_2px_12px_rgba(52,168,53,0.05)] border border-surface-variant p-6 mb-8">
+<h2 class="font-label-lg text-label-lg text-on-surface-variant mb-4 uppercase tracking-wide">Reporting Regarding</h2>
+<div class="flex items-start space-x-4">
+<img alt="Client Profile Photo" class="w-16 h-16 rounded-full object-cover border-2 border-surface-variant" data-alt="A professional headshot of a female client, modern casual attire, bright natural lighting, friendly yet professional demeanor, high-quality digital photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCDpxdyXqBdGAkH66T3lnMaTAAIhV_YCX1em6ahE3YrI5Qg_U1f-f8_jJIEJNAqTX0UqWDM7ufhLo5BzOJK9-PE5RepH8lktssZqakwXN9Fh67EyBCVdm96RrF-36L0pcEZrDiP62SX__URcvvj-u85xR45SyZGo7rJO0uxVs0un_tDZKA3kixMyYAWj2FyQXr5T7gC3ii4g2gAU3tfICD9GCy-AsGnYWOTPYgYoc3Dq_hrv3qBoFZFw"/>
+<div>
+<h3 class="font-headline-md text-headline-md-mobile md:text-headline-md text-on-surface">Maria Santos</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Client</p>
+<div class="mt-3 bg-surface-container-low p-3 rounded-lg border border-surface-variant inline-flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">Related Job</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="electrical_services">bolt</span>
+                                Electrical Fix - Oct 28, 2023
+                            </span>
+</div>
+</div>
+</div>
+</section>
+<!-- Report Form -->
+<form action="#" class="space-y-6" method="POST">
+<!-- Reason Dropdown -->
+<div class="space-y-2">
+<label class="block font-label-lg text-label-lg text-on-surface" for="report_reason">Reason for Report</label>
+<div class="relative">
+<select class="form-input w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-body-md text-body-md text-on-surface appearance-none focus:outline-none transition-colors" id="report_reason" name="report_reason" required="">
+<option disabled="" selected="" value="">Select a reason...</option>
+<option value="non_payment">Non-payment</option>
+<option value="unsafe_environment">Unsafe Environment</option>
+<option value="abusive_behavior">Abusive Behavior</option>
+<option value="misconduct">Misconduct</option>
+<option value="other">Other</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Description Field -->
+<div class="space-y-2">
+<label class="block font-label-lg text-label-lg text-on-surface" for="report_description">Description <span class="text-error">*</span></label>
+<textarea class="form-input w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none transition-colors resize-y" id="report_description" name="report_description" placeholder="Please describe the issue in detail..." required="" rows="5"></textarea>
+<p class="font-label-sm text-label-sm text-on-surface-variant text-right">0/500 characters</p>
+</div>
+<!-- Attach Evidence -->
+<div class="space-y-2">
+<label class="block font-label-lg text-label-lg text-on-surface">Attach Evidence (Optional)</label>
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-6 bg-surface-container-lowest text-center hover:border-primary transition-colors duration-200 group cursor-pointer">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors mb-2" data-icon="add_photo_alternate">add_photo_alternate</span>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Drag and drop photos here, or click to browse</p>
+<input accept="image/*" class="w-full text-center" id="evidence_upload" multiple="" name="evidence_upload" type="file"/>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Max file size: 5MB. Formats: JPG, PNG.</p>
+</div>
+<!-- Submit Button -->
+<div class="pt-6 border-t border-surface-variant">
+<button class="w-full md:w-auto bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg py-3 px-6 rounded-full shadow-[0_4px_10px_rgba(0,110,17,0.15)] active:scale-[0.98] active:translate-y-[1px] transition-all duration-200 flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+                        Submit Report
+                    </button>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-4 text-center md:text-left">
+                        By submitting this report, you confirm that the information provided is accurate to the best of your knowledge.
+                    </p>
+</div>
+</form>
+</div>
+</main>
+<!-- Navigation shell omitted as per rules for transactional/task-focused pages -->
+</body></html>

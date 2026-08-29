@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Rate Client - HanapBuhay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#88fc7d",
+                        "secondary-fixed": "#acf4a4",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#3f2600",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#d9dad9",
+                        "secondary-container": "#acf4a4",
+                        "tertiary-container": "#ca8400",
+                        "outline-variant": "#becab6",
+                        "charcoal-soft": "#2D312E",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#91d78a",
+                        "on-background": "#191c1c",
+                        "surface-container-low": "#f3f4f3",
+                        "inverse-primary": "#6cdf64",
+                        "primary": "#006e11",
+                        "primary-fixed-dim": "#6cdf64",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#191c1c",
+                        "surface-container": "#edeeed",
+                        "primary-container": "#34a835",
+                        "on-surface-variant": "#3f4a3b",
+                        "on-secondary-fixed-variant": "#0c5216",
+                        "surface-variant": "#e1e3e2",
+                        "earth-brown": "#5D4037",
+                        "inverse-on-surface": "#f0f1f0",
+                        "on-primary-fixed-variant": "#00530a",
+                        "tertiary": "#835400",
+                        "on-tertiary-fixed-variant": "#643f00",
+                        "surface-cream": "#FEFDFB",
+                        "on-tertiary-fixed": "#2a1800",
+                        "on-primary-fixed": "#002202",
+                        "on-secondary-container": "#307231",
+                        "on-secondary-fixed": "#002203",
+                        "background": "#f9f9f8",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb957",
+                        "secondary": "#2a6b2c",
+                        "surface-container-highest": "#e1e3e2",
+                        "tertiary-fixed": "#ffddb5",
+                        "outline": "#6e7b69",
+                        "leaf-bright": "#4CAF50",
+                        "surface-bright": "#f9f9f8",
+                        "surface-tint": "#006e11",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2e3131",
+                        "surface-container-high": "#e7e8e7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#003404",
+                        "surface": "#f9f9f8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-xl": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-xl": ["20px", { "lineHeight": "30px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .star-rating .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+            color: #ffb957; /* tertiary-fixed-dim for stars */
+        }
+    </style>
+</head>
+<body class="bg-surface-cream text-on-surface font-body-md min-h-screen flex flex-col">
+<!-- Top Navigation (Transactional, no global nav shell) -->
+<header class="fixed top-0 w-full z-50 bg-surface-cream/90 backdrop-blur-md border-b border-surface-variant flex justify-between items-center px-margin-mobile h-16 shadow-sm">
+<button class="text-on-surface-variant hover:bg-surface-variant/20 p-2 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary font-bold">Rate Client</h1>
+<div class="w-10"></div> <!-- Spacer for center alignment -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full flex flex-col items-center">
+<!-- Client Profile Summary -->
+<div class="flex flex-col items-center mb-8">
+<div class="w-24 h-24 rounded-full overflow-hidden mb-4 shadow-[0_4px_12px_rgba(52,168,53,0.08)] ring-2 ring-primary-container/20">
+<img alt="Maria Santos Profile Photo" class="w-full h-full object-cover" data-alt="A bright, cheerful portrait photo of a Filipino woman, Maria Santos, smiling warmly. She is in her late 30s with dark hair, lit by soft natural sunlight. The background is a slightly blurred, clean modern home interior. Warm, welcoming, modern-tactile aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL8gp5DTjG9mPrA8PGwe0owkHAZxvI4lH_kFXzwyltRJqrehKP3hTO8wXnwW8sWjoKFVd-4AIv2Cx9IYAjY740GZlEo0rAjtlqso7ElQj2f3kZucQozDtKRy-dNJjZ4iOEvtSPIxZ8jemjuQy8pQ3sclcXmMDlIN-ltJC18TpDOO3Fg7K7rgynRoia5UMq6MO7h5x0P8YJFuCOR2d81z21xIjVoy2cvkjfr-MFPFGA4VmWNSZ40OQtDg"/>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface text-center mb-1">Maria Santos</h2>
+<p class="font-body-md text-body-md text-on-surface-variant text-center">Home Cleaning Service</p>
+</div>
+<!-- Rating Card -->
+<div class="bg-surface-container-lowest rounded-xl p-gutter w-full max-w-md shadow-[0_4px_12px_rgba(52,168,53,0.08)] mb-6 flex flex-col items-center">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6">How was your experience?</h3>
+<!-- Interactive Stars -->
+<div class="flex space-x-2 mb-8 star-rating" id="rating-container">
+<button aria-label="Rate 1 star" class="p-1 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none">
+<span class="material-symbols-outlined text-[48px] text-surface-variant" data-icon="star">star</span>
+</button>
+<button aria-label="Rate 2 stars" class="p-1 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none">
+<span class="material-symbols-outlined text-[48px] text-surface-variant" data-icon="star">star</span>
+</button>
+<button aria-label="Rate 3 stars" class="p-1 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none">
+<span class="material-symbols-outlined text-[48px] text-surface-variant" data-icon="star">star</span>
+</button>
+<button aria-label="Rate 4 stars" class="p-1 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none">
+<span class="material-symbols-outlined text-[48px] text-surface-variant" data-icon="star">star</span>
+</button>
+<button aria-label="Rate 5 stars" class="p-1 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none">
+<span class="material-symbols-outlined text-[48px] text-surface-variant" data-icon="star">star</span>
+</button>
+</div>
+<p class="font-label-lg text-label-lg text-primary h-6 mb-2" id="rating-text"></p>
+</div>
+<!-- Feedback Input -->
+<div class="w-full max-w-md mb-8">
+<label class="block font-label-lg text-label-lg text-on-surface mb-2" for="feedback">Write a Review (Optional)</label>
+<textarea class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest p-4 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors shadow-sm resize-none" id="feedback" placeholder="Share your experience working with Maria..." rows="4"></textarea>
+</div>
+</main>
+<!-- Bottom Action Button Fixed -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-cream/95 backdrop-blur-md p-4 pb-safe-area border-t border-surface-variant shadow-[0_-4px_12px_rgba(52,168,53,0.08)] z-40">
+<div class="max-w-md mx-auto">
+<button class="w-full bg-primary text-on-primary font-label-lg text-label-lg py-4 rounded-xl shadow-sm hover:shadow-md hover:bg-primary/90 active:translate-y-px active:shadow-inner transition-all duration-200 flex justify-center items-center">
+                Submit Rating
+            </button>
+</div>
+</div>
+<script>
+        // Simple Star Rating Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const stars = document.querySelectorAll('#rating-container button span');
+            const ratingText = document.getElementById('rating-text');
+            const feedbackTexts = ["Very Poor", "Poor", "Okay", "Good", "Excellent!"];
+            let currentRating = 0;
+
+            stars.forEach((starSpan, index) => {
+                const button = starSpan.parentElement;
+                
+                button.addEventListener('click', () => {
+                    currentRating = index + 1;
+                    updateStars(currentRating);
+                });
+
+                button.addEventListener('mouseenter', () => {
+                    updateStars(index + 1, true);
+                });
+            });
+
+            document.getElementById('rating-container').addEventListener('mouseleave', () => {
+                updateStars(currentRating);
+            });
+
+            function updateStars(rating, isHover = false) {
+                stars.forEach((star, idx) => {
+                    if (idx < rating) {
+                        star.classList.add('filled');
+                        star.classList.remove('text-surface-variant');
+                        if (isHover && currentRating === 0) {
+                             star.style.opacity = '0.7';
+                        } else {
+                             star.style.opacity = '1';
+                        }
+                    } else {
+                        star.classList.remove('filled');
+                        star.classList.add('text-surface-variant');
+                        star.style.opacity = '1';
+                    }
+                });
+
+                if (rating > 0) {
+                    ratingText.textContent = feedbackTexts[rating - 1];
+                } else {
+                    ratingText.textContent = '';
+                }
+            }
+        });
+    </script>
+</body></html>
