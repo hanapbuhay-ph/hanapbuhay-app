@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/routing/app_router.dart';
@@ -62,8 +61,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Stack(
         children: [
           // Radial Glow Effect
@@ -74,8 +76,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   center: Alignment.center,
                   radius: 1.2,
                   colors: [
-                    AppColors.primaryContainer.withOpacity(0.2),
-                    AppColors.background.withOpacity(0.0),
+                    colorScheme.primaryContainer.withValues(alpha: 0.2),
+                    colorScheme.background.withValues(alpha: 0.0),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.7, 1.0],
@@ -96,11 +98,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     width: 128,
                     height: 128,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceContainer,
-                      borderRadius: BorderRadius.circular(24), // rounded-xl equivalent
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(24), 
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -108,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Image.asset(
-                      'assets/images/screen.png',
+                      'assets/icon/app_icon.png',
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -117,7 +119,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   // App Name
                   Text(
                     'HanapBuhay',
-                    style: AppTypography.displayLarge,
+                    style: AppTypography.displayLarge.copyWith(color: colorScheme.onSurface),
                   ),
                   
                   // Tagline
@@ -128,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       'Connecting talent with opportunity.',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyLarge.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -149,11 +151,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   child: Container(
                     width: 48,
                     height: 48,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border(
                         top: BorderSide(
-                          color: AppColors.primaryContainer,
+                          color: colorScheme.primaryContainer,
                           width: 3,
                         ),
                       ),
@@ -165,6 +167,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   'INITIALIZING...',
                   style: AppTypography.labelSmall.copyWith(
                     letterSpacing: 2.0,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -106,9 +105,11 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
     final authProvider = context.watch<AuthProvider>();
     final isWorker = authProvider.userRole == 'worker';
     final filtered = _filteredCategories;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Help Center'),
@@ -140,24 +141,29 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
   }
 
   Widget _buildSearchBar() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: TextField(
         controller: _searchController,
         onChanged: (val) => setState(() => _searchQuery = val),
+        style: TextStyle(color: colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: 'Search for help...',
-          prefixIcon: const Icon(Icons.search, color: AppColors.outline),
+          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+          prefixIcon: Icon(Icons.search, color: colorScheme.outline),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         ),
@@ -166,6 +172,8 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
   }
 
   Widget _buildCategorySection(FaqCategory category) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -173,23 +181,23 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
           padding: const EdgeInsets.only(left: 8, bottom: 12),
           child: Row(
             children: [
-              Icon(category.icon, size: 20, color: AppColors.secondary),
+              Icon(category.icon, size: 20, color: colorScheme.secondary),
               const SizedBox(width: 8),
               Text(
                 category.title,
-                style: AppTypography.labelLarge.copyWith(color: AppColors.secondary, fontWeight: FontWeight.w700),
+                style: AppTypography.labelLarge.copyWith(color: colorScheme.secondary, fontWeight: FontWeight.w700),
               ),
             ],
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.surfaceContainerHigh),
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -203,7 +211,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
               return Column(
                 children: [
                   _buildAccordionItem(category, item),
-                  if (!isLast) const Divider(height: 1, indent: 20, endIndent: 20),
+                  if (!isLast) Divider(height: 1, indent: 20, endIndent: 20, color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
                 ],
               );
             }),
@@ -215,6 +223,8 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
   }
 
   Widget _buildAccordionItem(FaqCategory category, FaqItem item) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Column(
       children: [
         ListTile(
@@ -222,18 +232,17 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
             item.question,
             style: AppTypography.bodyMedium.copyWith(
               fontWeight: item.isExpanded ? FontWeight.w700 : FontWeight.w500,
-              color: item.isExpanded ? AppColors.primary : AppColors.onSurface,
+              color: item.isExpanded ? colorScheme.primary : colorScheme.onSurface,
             ),
           ),
           trailing: AnimatedRotation(
             duration: const Duration(milliseconds: 300),
             turns: item.isExpanded ? 0.5 : 0,
-            child: const Icon(Icons.expand_more, size: 20),
+            child: Icon(Icons.expand_more, size: 20, color: colorScheme.onSurfaceVariant),
           ),
           onTap: () {
             setState(() {
               final wasExpanded = item.isExpanded;
-              // Close others in the same category
               for (var i in category.items) {
                 i.isExpanded = false;
               }
@@ -247,7 +256,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Text(
               item.answer,
-              style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant, height: 1.5),
+              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.5),
             ),
           ),
           crossFadeState: item.isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
@@ -258,28 +267,30 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
   }
 
   Widget _buildContactSupport() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Column(
       children: [
         Text(
           "Can't find what you're looking for?",
-          style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 16),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 280),
           child: ElevatedButton.icon(
             onPressed: () {
-              Navigator.pushNamed(context, '${AppRouter.chatThread}/c2'); // Mock support ID
+              Navigator.pushNamed(context, '${AppRouter.chatThread}/c2'); 
             },
             icon: const Icon(Icons.headset_mic_outlined),
             label: const Text('Contact Support'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               elevation: 4,
-              shadowColor: AppColors.primary.withOpacity(0.3),
+              shadowColor: colorScheme.primary.withValues(alpha: 0.3),
             ),
           ),
         ),
@@ -288,21 +299,22 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Column(
       children: [
         const SizedBox(height: 40),
-        const Icon(Icons.search_off_outlined, size: 64, color: AppColors.outlineVariant),
+        Icon(Icons.search_off_outlined, size: 64, color: theme.colorScheme.outlineVariant),
         const SizedBox(height: 16),
         Text(
           'No results found for "$_searchQuery"',
           textAlign: TextAlign.center,
-          style: AppTypography.headlineMedium.copyWith(fontSize: 18),
+          style: AppTypography.headlineMedium.copyWith(fontSize: 18, color: theme.colorScheme.onSurface),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Try using different keywords or check out the categories below.',
           textAlign: TextAlign.center,
-          style: AppTypography.bodySmall,
+          style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
       ],
     );

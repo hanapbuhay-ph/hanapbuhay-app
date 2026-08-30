@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 
 /// Security Settings Screen (0.8)
-/// 
-/// Allows users to manage their account security, including changing password,
-/// viewing linked accounts, and signing out.
 class SecuritySettingsScreen extends StatefulWidget {
   const SecuritySettingsScreen({super.key});
 
@@ -18,14 +14,15 @@ class SecuritySettingsScreen extends StatefulWidget {
 }
 
 class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
-  bool _twoFactorEnabled = false;
+  final bool _twoFactorEnabled = true; // Email OTP is mandatory in this app
 
   Future<void> _handleSignOut() async {
+    final theme = Theme.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out of all devices?'),
+        title: const Text('Sign Out of All Devices'),
+        content: const Text('This will sign you out of all devices where you are currently logged in. Do you want to continue?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -33,7 +30,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sign Out', style: TextStyle(color: AppColors.error)),
+            child: Text('Sign Out', style: TextStyle(color: theme.colorScheme.error, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -42,18 +39,41 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     if (confirmed == true && mounted) {
       await context.read<AuthProvider>().logout();
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRouter.login);
+        Navigator.pushNamedAndRemoveUntil(context, AppRouter.login, (route) => false);
       }
     }
+  }
+
+  void _showLinkedAccountsInfo() {
+    final authProvider = context.read<AuthProvider>();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Linked Accounts'),
+        content: Text(
+          authProvider.isGoogleLinked 
+            ? 'Your account is currently linked with your Google account (${authProvider.userEmail}). This allows you to log in quickly using Google Sign-In.'
+            : 'You are currently using email and password to log in. You can link a Google account during the registration process.'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final linkedEmail = authProvider.userEmail ?? 'Not linked';
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final linkedEmail = authProvider.userEmail ?? '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB), // Surface Cream
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           AppHeader(
@@ -76,15 +96,16 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                   // Settings Card
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.08),
+                          color: colorScheme.primary.withValues(alpha: 0.08),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
+                      border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
@@ -93,6 +114,50 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                         _buildSettingsRow(
                           title: 'Change Password',
                           onTap: () => Navigator.pushNamed(context, AppRouter.changePassword),
+                        ),
+                        Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+                        
+                        // Row 2: Linked Accounts
+                        _buildSettingsRow(
+                          title: 'Linked Accounts',
+                          subtitle: authProvider.isGoogleLinked ? 'Google account linked: $linkedEmail' : 'Manage your connected social accounts',
+                          onTap: _showLinkedAccountsInfo,
+                        ),
+                        Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+                        
+                        // Row 3: Two-Factor Authentication
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Two-Factor Authentication', style: AppTypography.bodyLarge.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Email verification is required for all accounts and cannot be disabled.',
+                                      style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch(
+                                value: _twoFactorEnabled,
+                                activeTrackColor: colorScheme.primary.withValues(alpha: 0.5),
+                                activeColor: colorScheme.primary,
+                                onChanged: null, // Disabled as mandatory
+                              ),
+                            ],
+                          ),
+                        ),
+                        Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+                        
+                        // Row 4: Login Activity
+                        _buildSettingsRow(
+                          title: 'Login Activity',
+                          onTap: () => Navigator.pushNamed(context, AppRouter.loginActivity),
                         ),
                       ],
                     ),
@@ -106,14 +171,15 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                     child: TextButton(
                       onPressed: _handleSignOut,
                       style: TextButton.styleFrom(
-                        backgroundColor: AppColors.errorContainer.withOpacity(0.3),
+                        backgroundColor: colorScheme.errorContainer.withValues(alpha: 0.2),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        side: BorderSide(color: colorScheme.error.withValues(alpha: 0.3)),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Sign Out of All Devices',
                         style: TextStyle(
-                          color: AppColors.error,
+                          color: colorScheme.error,
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                         ),
@@ -134,6 +200,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     String? subtitle,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -144,18 +212,18 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppTypography.bodyLarge),
+                  Text(title, style: AppTypography.bodyLarge.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w600)),
                   if (subtitle != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
+            Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
           ],
         ),
       ),

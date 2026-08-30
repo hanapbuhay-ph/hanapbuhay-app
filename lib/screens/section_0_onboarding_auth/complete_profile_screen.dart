@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
 /// Complete Profile Screen (0.5b)
-/// 
-/// For users who authenticated via Google. This screen collects the 
-/// remaining required details (Mobile, Barangay) to complete the profile.
 class CompleteProfileScreen extends StatefulWidget {
   final String role;
 
@@ -24,7 +20,7 @@ class CompleteProfileScreen extends StatefulWidget {
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'John Doe'); // Pre-filled from Google
+  final _nameController = TextEditingController();
   final _mobileController = TextEditingController();
   
   String? _selectedBarangay;
@@ -39,6 +35,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final authProvider = context.read<AuthProvider>();
+    _nameController.text = authProvider.userName ?? '';
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _mobileController.dispose();
@@ -51,7 +54,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await context.read<AuthProvider>().updateProfile(
+      final authProvider = context.read<AuthProvider>();
+      final result = await authProvider.updateProfile(
         name: _nameController.text.trim(),
         mobileNumber: _mobileController.text.trim(),
       );
@@ -59,18 +63,17 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       if (!mounted) return;
 
       if (result.success) {
-        if (mounted) {
-          final authProvider = context.read<AuthProvider>();
-          Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
-        }
+        Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
       } else {
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
         );
       }
     } catch (e) {
+      final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+        SnackBar(content: Text('Error: $e'), backgroundColor: colorScheme.error),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -79,14 +82,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final authProvider = context.watch<AuthProvider>();
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB), // Surface Cream
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
-          // 1. Standardized Header
           const AppHeader(),
 
-          // 2. Scrollable Content
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -96,22 +101,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
-                    Text('Complete Profile', style: AppTypography.headlineLarge.copyWith(fontSize: 28)),
+                    Text('Complete Profile', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
                     const SizedBox(height: 8),
                     Text(
                       'Just a few more details needed to finish.',
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                     
                     const SizedBox(height: 32),
                     
-                    // Profile Photo Placeholder
                     _buildProfilePhoto(),
                     
                     const SizedBox(height: 40),
 
-                    // Full Name (Editable)
                     _buildTextField(
                       controller: _nameController,
                       label: 'Full Name',
@@ -120,15 +123,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Email (Google Provided - Disabled)
-                    _buildDisabledEmailField('john.doe@gmail.com'),
+                    _buildDisabledEmailField(authProvider.userEmail ?? 'user@gmail.com'),
                     const SizedBox(height: 20),
 
-                    // Mobile Number
                     _buildMobileField(),
                     const SizedBox(height: 20),
 
-                    // Barangay Dropdown (Custom Addition)
                     _buildBarangayDropdown(),
                     
                     const SizedBox(height: 40),
@@ -138,12 +138,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ),
           ),
 
-          // 3. Fixed Footer
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
             child: PrimaryButton(
               label: 'Finish Setup',
@@ -158,6 +157,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 
   Widget _buildProfilePhoto() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Stack(
         children: [
@@ -165,18 +165,18 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLow,
+              color: colorScheme.surfaceVariant.withValues(alpha: 0.2),
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primary.withOpacity(0.1), width: 4),
+              border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1), width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: const Icon(Icons.person, size: 50, color: AppColors.outline),
+            child: Icon(Icons.person, size: 50, color: colorScheme.outline),
           ),
           Positioned(
             bottom: 0,
@@ -184,11 +184,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
+                color: colorScheme.primary,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(color: colorScheme.surface, width: 2),
               ),
-              child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+              child: Icon(Icons.camera_alt, size: 16, color: colorScheme.onPrimary),
             ),
           ),
         ],
@@ -202,27 +202,29 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     String? hint,
     String? Function(String?)? validator,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextFormField(
       controller: controller,
-      style: AppTypography.bodyMedium,
+      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
       decoration: _getInputDecoration(label).copyWith(hintText: hint),
       validator: validator,
     );
   }
 
   Widget _buildDisabledEmailField(String email) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Email Address', style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant)),
+            Text('Email Address', style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant)),
             Row(
               children: [
-                const Icon(Icons.verified, size: 14, color: AppColors.secondary),
+                Icon(Icons.verified, size: 14, color: colorScheme.secondary),
                 const SizedBox(width: 4),
-                Text('Provided by Google', style: AppTypography.labelSmall.copyWith(color: AppColors.secondary, fontSize: 10)),
+                Text('Provided by Google', style: AppTypography.labelSmall.copyWith(color: colorScheme.secondary, fontSize: 10)),
               ],
             ),
           ],
@@ -232,15 +234,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLow.withOpacity(0.5),
+            color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
-              Text(email, style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant)),
+              Text(email, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
               const Spacer(),
-              const Icon(Icons.lock_outline, size: 18, color: AppColors.outlineVariant),
+              Icon(Icons.lock_outline, size: 18, color: colorScheme.outlineVariant),
             ],
           ),
         ),
@@ -249,14 +251,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 
   Widget _buildMobileField() {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextFormField(
       controller: _mobileController,
       keyboardType: TextInputType.phone,
-      style: AppTypography.bodyMedium,
+      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
       decoration: _getInputDecoration('Mobile Number').copyWith(
         prefixIcon: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-          child: Text('+63 ', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+          child: Text('+63 ', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
         ),
         hintText: '9xx xxx xxxx',
       ),
@@ -265,31 +268,33 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 
   Widget _buildBarangayDropdown() {
+    final colorScheme = Theme.of(context).colorScheme;
     return DropdownButtonFormField<String>(
       value: _selectedBarangay,
       decoration: _getInputDecoration('Barangay'),
       items: _barangays.map((b) => DropdownMenuItem(
         value: b,
-        child: Text(b, style: AppTypography.bodyMedium),
+        child: Text(b, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
       )).toList(),
       onChanged: (val) => setState(() => _selectedBarangay = val),
       validator: (value) => value == null ? 'Please select your barangay' : null,
-      dropdownColor: Colors.white,
+      dropdownColor: colorScheme.surface,
       borderRadius: BorderRadius.circular(12),
     );
   }
 
   InputDecoration _getInputDecoration(String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
-      labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
-      floatingLabelStyle: AppTypography.labelSmall.copyWith(color: AppColors.primary),
+      labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+      floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
       filled: true,
-      fillColor: AppColors.surfaceContainerLowest,
+      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
     );
   }
 }

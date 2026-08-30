@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
@@ -53,8 +52,6 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
 
   Future<void> _fetchWorkers() async {
     setState(() => _isLoading = true);
-    // In a real app, we would pass filters to the repository
-    // For mock, we fetch all and filter client-side
     _allWorkers = await context.read<WorkerProvider>().getTopRatedWorkers();
     _applyFilters();
     setState(() => _isLoading = false);
@@ -70,7 +67,6 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
         final matchesCategory = _selectedCategory == null || 
             worker.specialty.toLowerCase().contains(_selectedCategory!.toLowerCase());
         
-        // Mock distance parsing (e.g., "1.2 km" -> 1.2)
         final distance = double.tryParse(worker.distance.split(' ')[0]) ?? 0.0;
         final matchesDistance = distance <= _maxDistance;
         
@@ -107,17 +103,15 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.background,
       body: Column(
         children: [
-          // Sticky Header
           _buildHeader(),
-
-          // Content
           Expanded(
             child: _isLoading 
-              ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+              ? Center(child: CircularProgressIndicator(color: theme.colorScheme.primary))
               : _filteredWorkers.isEmpty 
                   ? _buildEmptyState()
                   : _buildResultsList(),
@@ -129,13 +123,15 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return SafeArea(
       bottom: false,
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          border: const Border(bottom: BorderSide(color: AppColors.surfaceContainerHigh)),
+          color: colorScheme.surface.withValues(alpha: 0.9),
+          border: Border(bottom: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
         ),
         child: Row(
           children: [
@@ -145,17 +141,19 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
+                  color: colorScheme.surfaceVariant.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: (_) => _applyFilters(),
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: colorScheme.onSurface),
+                  decoration: InputDecoration(
                     hintText: 'Search for workers...',
-                    prefixIcon: Icon(Icons.search, color: AppColors.primary, size: 20),
+                    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                    prefixIcon: Icon(Icons.search, color: colorScheme.primary, size: 20),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -167,10 +165,10 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.tune, color: Colors.white),
+                child: Icon(Icons.tune, color: colorScheme.onPrimary),
               ),
             ),
           ],
@@ -180,6 +178,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
   }
 
   Widget _buildResultsList() {
+    final theme = Theme.of(context);
     return ListView.builder(
       padding: const EdgeInsets.all(24),
       physics: const BouncingScrollPhysics(),
@@ -191,10 +190,10 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Available Workers', style: AppTypography.headlineMedium),
+                Text('Available Workers', style: AppTypography.headlineMedium.copyWith(color: theme.colorScheme.onSurface)),
                 Text(
                   'Showing ${_filteredWorkers.length} results',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+                  style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
               ],
             ),
@@ -206,6 +205,8 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
   }
 
   Widget _buildWorkerCard(Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}');
@@ -214,12 +215,12 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
+          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -238,21 +239,21 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(worker.name, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 18)),
+                          Text(worker.name, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 18, color: colorScheme.onSurface)),
                           if (worker.isVerified) ...[
                             const SizedBox(width: 4),
-                            const Icon(Icons.verified, color: AppColors.primary, size: 18),
+                            Icon(Icons.verified, color: colorScheme.primary, size: 18),
                           ],
                         ],
                       ),
-                      Text(worker.specialty, style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant)),
+                      Text(worker.specialty, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           const Icon(Icons.star, color: Colors.amber, size: 14),
                           const SizedBox(width: 4),
-                          Text(worker.rating.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          Text(' • ${worker.reviewCount} jobs', style: AppTypography.bodySmall),
+                          Text(worker.rating.toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: colorScheme.onSurface)),
+                          Text(' • ${worker.reviewCount} jobs', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                         ],
                       ),
                     ],
@@ -266,34 +267,34 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
               children: worker.tags.map((tag) => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   tag, 
-                  style: AppTypography.labelSmall.copyWith(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w700)
+                  style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w700)
                 ),
               )).toList(),
             ),
             const SizedBox(height: 16),
-            const Divider(height: 1, color: AppColors.surfaceContainerHigh),
+            Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.location_on, size: 14, color: AppColors.onSurfaceVariant),
+                    Icon(Icons.location_on, size: 14, color: colorScheme.onSurfaceVariant),
                     const SizedBox(width: 4),
-                    Text(worker.distance, style: AppTypography.bodySmall),
+                    Text(worker.distance, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                   ],
                 ),
                 RichText(
                   text: TextSpan(
-                    style: AppTypography.headlineMedium.copyWith(color: AppColors.primary, fontSize: 18, fontWeight: FontWeight.w800),
+                    style: AppTypography.headlineMedium.copyWith(color: colorScheme.primary, fontSize: 18, fontWeight: FontWeight.w800),
                     children: [
                       TextSpan(text: '₱${worker.hourlyRate.toInt()}'),
-                      TextSpan(text: '/hr', style: AppTypography.bodySmall.copyWith(fontSize: 12)),
+                      TextSpan(text: '/hr', style: AppTypography.bodySmall.copyWith(fontSize: 12, color: colorScheme.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -306,6 +307,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -316,18 +318,18 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLow,
+                color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.search_off, size: 60, color: AppColors.outlineVariant),
+              child: Icon(Icons.search_off, size: 60, color: theme.colorScheme.outlineVariant),
             ),
             const SizedBox(height: 24),
-            const Text('No workers found', style: AppTypography.headlineMedium),
+            Text('No workers found', style: AppTypography.headlineMedium.copyWith(color: theme.colorScheme.onSurface)),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'We couldn\'t find anyone matching your current filters. Try adjusting your search criteria.',
               textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium,
+              style: AppTypography.bodyMedium.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 32),
             TextButton(
@@ -341,7 +343,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                 });
                 _applyFilters();
               },
-              child: const Text('Clear Filters', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+              child: Text('Clear Filters', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -388,22 +390,26 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
-          Container(width: 48, height: 4, decoration: BoxDecoration(color: AppColors.outlineVariant, borderRadius: BorderRadius.circular(2))),
+          Container(width: 48, height: 4, decoration: BoxDecoration(color: colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2))),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Filters', style: AppTypography.headlineMedium),
+              Text('Filters', style: AppTypography.headlineMedium.copyWith(color: colorScheme.onSurface)),
               TextButton(
                 onPressed: () {
                   setState(() {
@@ -413,15 +419,14 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                     _verified = true;
                   });
                 },
-                child: const Text('Reset', style: TextStyle(color: AppColors.primary)),
+                child: Text('Reset', style: TextStyle(color: colorScheme.primary)),
               ),
             ],
           ),
-          const Divider(),
+          Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
           const SizedBox(height: 24),
           
-          // Category
-          Align(alignment: Alignment.centerLeft, child: Text('Service Category', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700))),
+          Align(alignment: Alignment.centerLeft, child: Text('Service Category', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface))),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -430,22 +435,21 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               label: Text(cat),
               selected: _category == cat,
               onSelected: (selected) => setState(() => _category = selected ? cat : null),
-              selectedColor: AppColors.primary,
-              labelStyle: TextStyle(color: _category == cat ? Colors.white : AppColors.onSurfaceVariant),
+              selectedColor: colorScheme.primary,
+              labelStyle: TextStyle(color: _category == cat ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
               showCheckmark: false,
-              backgroundColor: AppColors.surfaceContainerLow,
+              backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
             )).toList(),
           ),
           
           const SizedBox(height: 32),
 
-          // Distance
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Distance', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
-              Text('Up to ${_distance.toInt()} km', style: AppTypography.bodySmall),
+              Text('Distance', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface)),
+              Text('Up to ${_distance.toInt()} km', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
             ],
           ),
           Slider(
@@ -453,14 +457,14 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
             min: 1,
             max: 20,
             divisions: 19,
-            activeColor: AppColors.primary,
+            activeColor: colorScheme.primary,
+            inactiveColor: colorScheme.outlineVariant.withValues(alpha: 0.3),
             onChanged: (val) => setState(() => _distance = val),
           ),
 
           const SizedBox(height: 32),
 
-          // Rating
-          Align(alignment: Alignment.centerLeft, child: Text('Minimum Rating', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700))),
+          Align(alignment: Alignment.centerLeft, child: Text('Minimum Rating', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface))),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -474,20 +478,20 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
           const SizedBox(height: 32),
 
-          // Verified
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Verified Workers Only', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
-                  Text('Show only identity-verified professionals', style: AppTypography.bodySmall),
+                  Text('Verified Workers Only', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface)),
+                  Text('Show only identity-verified professionals', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                 ],
               ),
               Switch(
                 value: _verified,
-                activeThumbColor: AppColors.primary,
+                activeTrackColor: colorScheme.primary.withValues(alpha: 0.5),
+                activeColor: colorScheme.primary,
                 onChanged: (val) => setState(() => _verified = val),
               ),
             ],
@@ -510,23 +514,24 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
   Widget _buildRatingOption(String label, double value) {
     final isSelected = _rating == value;
+    final colorScheme = Theme.of(context).colorScheme;
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _rating = value),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.white,
-            border: Border.all(color: isSelected ? AppColors.primary : AppColors.outlineVariant),
+            color: isSelected ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surface,
+            border: Border.all(color: isSelected ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5)),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(label, style: TextStyle(color: isSelected ? AppColors.primary : AppColors.onSurfaceVariant, fontWeight: FontWeight.bold)),
+              Text(label, style: TextStyle(color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold)),
               if (value > 0) ...[
                 const SizedBox(width: 4),
-                Icon(Icons.star, color: isSelected ? AppColors.primary : Colors.amber, size: 14),
+                Icon(Icons.star, color: isSelected ? colorScheme.primary : Colors.amber, size: 14),
               ],
             ],
           ),

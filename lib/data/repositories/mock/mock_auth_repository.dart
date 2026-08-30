@@ -10,6 +10,7 @@ class MockAuthRepository implements AuthRepository {
       'name': 'Ricardo Dalisay',
       'mobile': '09171234567',
       'avatar': 'https://i.pravatar.cc/150?u=w1',
+      'signInMethod': 'email',
     },
     'client@test.com': {
       'id': 'c1',
@@ -17,6 +18,7 @@ class MockAuthRepository implements AuthRepository {
       'name': 'Maria Santos',
       'mobile': '09171112222',
       'avatar': 'https://i.pravatar.cc/150?u=client',
+      'signInMethod': 'email',
     },
   };
 
@@ -38,6 +40,7 @@ class MockAuthRepository implements AuthRepository {
       'name': name,
       'mobile': mobileNumber,
       'avatar': role == 'worker' ? 'https://i.pravatar.cc/150?u=w1' : 'https://i.pravatar.cc/150?u=client',
+      'signInMethod': 'email',
     };
     
     return AuthResult.success(
@@ -56,6 +59,7 @@ class MockAuthRepository implements AuthRepository {
         'name': 'Mock User',
         'mobile': '09123456789',
         'avatar': 'https://i.pravatar.cc/150?u=mock',
+        'signInMethod': 'email',
       };
       
       return AuthResult.success(
@@ -68,6 +72,7 @@ class MockAuthRepository implements AuthRepository {
             'role': userData['role'],
             'mobile_number': userData['mobile'],
             'avatar_url': userData['avatar'],
+            'sign_in_method': userData['signInMethod'],
           },
           'token': 'mock_token_123',
         },
@@ -87,6 +92,7 @@ class MockAuthRepository implements AuthRepository {
       'name': 'Maria Santos',
       'mobile': '09171234567',
       'avatar': 'https://i.pravatar.cc/150?u=client',
+      'signInMethod': 'email',
     };
 
     return AuthResult.success(
@@ -99,6 +105,7 @@ class MockAuthRepository implements AuthRepository {
           'role': userData['role'],
           'mobile_number': userData['mobile'],
           'avatar_url': userData['avatar'],
+          'sign_in_method': userData['signInMethod'],
         },
         'token': 'mock_token_123',
       },

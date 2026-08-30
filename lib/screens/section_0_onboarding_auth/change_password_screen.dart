@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
 /// Change Password Screen
-/// 
-/// Allows authenticated users to change their password.
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
 
@@ -48,6 +45,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
       if (!mounted) return;
 
+      final colorScheme = Theme.of(context).colorScheme;
       if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Password updated successfully')),
@@ -55,12 +53,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
         );
       }
     } catch (e) {
+      final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+        SnackBar(content: Text('Error: $e'), backgroundColor: colorScheme.error),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -69,8 +68,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB),
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Change Password'),
@@ -85,7 +87,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     Text(
                       'Your new password must be different from previous used passwords.',
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                     const SizedBox(height: 32),
                     
@@ -129,9 +131,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
             child: PrimaryButton(
               label: 'Update Password',
@@ -152,23 +154,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     required VoidCallback toggleObscure,
     String? Function(String?)? validator,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextFormField(
       controller: controller,
       obscureText: obscure,
-      style: AppTypography.bodyMedium,
+      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
-        floatingLabelStyle: AppTypography.labelSmall.copyWith(color: AppColors.primary),
+        labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+        floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
         filled: true,
-        fillColor: AppColors.surfaceContainerLowest,
+        fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
         suffixIcon: IconButton(
-          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, size: 20),
+          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, size: 20, color: colorScheme.onSurfaceVariant),
           onPressed: toggleObscure,
         ),
       ),

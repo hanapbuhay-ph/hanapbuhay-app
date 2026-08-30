@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/worker_provider.dart';
@@ -90,16 +89,18 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
           Navigator.pop(context, true); // Return success to history screen
         }
       } else if (mounted) {
+        final colorScheme = Theme.of(context).colorScheme;
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
         );
       }
     } catch (e) {
       if (mounted) {
+        final colorScheme = Theme.of(context).colorScheme;
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('Error: $e'), backgroundColor: colorScheme.error),
         );
       }
     }
@@ -107,8 +108,11 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary)));
+      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
     if (_booking == null || _worker == null) {
@@ -116,7 +120,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'HanapBuhay'),
@@ -127,66 +131,62 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
               physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  // Title
                   Text(
                     'Rate Your Experience',
-                    style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800),
+                    style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'How was the service provided by ${_worker!.name.split(' ').first}?',
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                    style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
 
-                  // Worker Summary Card
                   _buildWorkerCard(_worker!),
                   const SizedBox(height: 40),
 
-                  // Star Selector
                   Text(
                     'Select Rating',
-                    style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
+                    style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
                   ),
                   const SizedBox(height: 16),
                   _buildStarRating(),
                   const SizedBox(height: 40),
 
-                  // Written Review
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Write a Review',
-                      style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
+                      style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _commentController,
                     maxLines: 5,
-                    style: AppTypography.bodyMedium,
+                    style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
                     decoration: InputDecoration(
                       hintText: 'Tell us about your experience...',
+                      hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: AppColors.outlineVariant),
+                        borderSide: BorderSide(color: colorScheme.outlineVariant),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: AppColors.outlineVariant),
+                        borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
                       ),
                     ),
                   ),
                   const SizedBox(height: 48),
 
-                  // Submit Button
                   _buildSubmitButton(),
                 ],
               ),
@@ -198,15 +198,18 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
   }
 
   Widget _buildWorkerCard(Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -216,25 +219,25 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
         children: [
           CircleAvatar(
             radius: 48,
-            backgroundColor: AppColors.surfaceContainerLow,
+            backgroundColor: colorScheme.surfaceVariant,
             backgroundImage: NetworkImage(worker.avatarUrl),
           ),
           const SizedBox(height: 16),
           Text(
             worker.name,
-            style: AppTypography.headlineMedium.copyWith(fontSize: 22, fontWeight: FontWeight.w800),
+            style: AppTypography.headlineMedium.copyWith(fontSize: 22, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
           ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primaryContainer.withOpacity(0.1),
+              color: colorScheme.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(30),
             ),
             child: Text(
               worker.specialty.toUpperCase(),
               style: AppTypography.labelSmall.copyWith(
-                color: AppColors.onSecondaryContainer,
+                color: colorScheme.primary,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.2,
               ),
@@ -246,6 +249,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
   }
 
   Widget _buildStarRating() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(5, (index) {
@@ -258,7 +262,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
             child: Icon(
               isSelected ? Icons.star : Icons.star_border,
               size: 48,
-              color: isSelected ? Colors.amber : AppColors.outlineVariant,
+              color: isSelected ? Colors.amber : colorScheme.outlineVariant,
             ),
           ),
         );
@@ -267,22 +271,24 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
   }
 
   Widget _buildSubmitButton() {
-    Color bgColor = AppColors.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    Color bgColor = colorScheme.primary;
     String label = 'Submit Review';
     Widget icon = const SizedBox.shrink();
 
     if (_isSubmitting) {
       label = 'Submitting...';
-      icon = const Padding(
-        padding: EdgeInsets.only(right: 12),
+      icon = Padding(
+        padding: const EdgeInsets.only(right: 12),
         child: SizedBox(
           width: 20,
           height: 20,
-          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+          child: CircularProgressIndicator(color: colorScheme.onPrimary, strokeWidth: 2),
         ),
       );
     } else if (_isSuccess) {
-      bgColor = AppColors.leafBright;
+      bgColor = const Color(0xFF4CAF50);
       label = 'Review Submitted';
       icon = const Padding(
         padding: EdgeInsets.only(right: 8),
@@ -301,7 +307,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
           borderRadius: BorderRadius.circular(40),
           boxShadow: [
             BoxShadow(
-              color: bgColor.withOpacity(0.3),
+              color: bgColor.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -314,7 +320,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
             Text(
               label,
               style: AppTypography.labelLarge.copyWith(
-                color: Colors.white,
+                color: _isSuccess ? Colors.white : colorScheme.onPrimary,
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
               ),

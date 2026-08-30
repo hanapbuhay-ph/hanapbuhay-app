@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -40,8 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // NOTE: login() is currently Unimplemented in ApiAuthRepository
-      // For now, this will throw an error which we catch below.
       final authProvider = context.read<AuthProvider>();
       final result = await authProvider.login(
         _identifierController.text.trim(),
@@ -55,15 +52,17 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
         }
       } else {
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
         );
       }
     } catch (e) {
+      final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e is UnimplementedError ? 'Login is currently pending backend.' : 'Login failed: $e'),
-          backgroundColor: AppColors.error,
+          backgroundColor: colorScheme.error,
         ),
       );
     } finally {
@@ -73,13 +72,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleGoogleLogin() async {
     await GoogleAuthService().signIn();
-    // Logic for Google path would go here
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB), // Surface Cream
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           // 1. Standardized Header
@@ -89,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
               if (Navigator.canPop(context)) {
                 Navigator.pop(context);
               } else {
-                // If Login is the root (from Splash), back takes you to Onboarding
                 Navigator.pushReplacementNamed(context, AppRouter.onboarding);
               }
             },
@@ -111,27 +111,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: Image.asset('assets/images/screen.png', fit: BoxFit.cover),
+                      child: Image.asset('assets/icon/app_icon.png', fit: BoxFit.cover),
                     ),
                     
                     const SizedBox(height: 24),
-                    Text('Welcome Back', style: AppTypography.headlineLarge.copyWith(fontSize: 28)),
+                    Text('Welcome Back', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
                     const SizedBox(height: 8),
                     Text(
                       'Log in to continue finding opportunities.',
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                     
                     const SizedBox(height: 40),
@@ -144,18 +144,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Divider
                     Row(
                       children: [
-                        Expanded(child: Divider(color: AppColors.outlineVariant)),
+                        Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
                             'OR', 
                             style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                               letterSpacing: 1.2,
                             )
                           ),
                         ),
-                        Expanded(child: Divider(color: AppColors.outlineVariant)),
+                        Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
                       ],
                     ),
                     
@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       hint: 'Enter your password',
                       obscureText: _obscurePassword,
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off, size: 20),
+                        icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off, size: 20, color: colorScheme.onSurfaceVariant),
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                       validator: (val) => val == null || val.isEmpty ? 'Required' : null,
@@ -191,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'Forgot Password?',
                           style: AppTypography.labelSmall.copyWith(
-                            color: AppColors.primary,
+                            color: colorScheme.primary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -208,9 +208,9 @@ class _LoginScreenState extends State<LoginScreen> {
           // 3. Fixed Footer
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -224,13 +224,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don't have an account? ", style: AppTypography.bodySmall),
+                    Text("Don't have an account? ", style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(context, AppRouter.registerRole),
                       child: Text(
                         'Sign Up',
                         style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.primary,
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -253,25 +253,27 @@ class _LoginScreenState extends State<LoginScreen> {
     Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      style: AppTypography.bodyMedium,
+      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
-        floatingLabelStyle: AppTypography.labelSmall.copyWith(color: AppColors.primary),
+        labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+        floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
         filled: true,
-        fillColor: AppColors.surfaceContainerLowest,
+        fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
         suffixIcon: suffixIcon,
       ),
       validator: validator,
     );
   }
 }
-

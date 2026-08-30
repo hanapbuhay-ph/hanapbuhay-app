@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
@@ -25,12 +24,10 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
 
-  // Local Edit State
   List<String> _selectedCategories = [];
-  List<String> _portfolioPaths = []; // Can be URLs or local paths
+  List<String> _portfolioPaths = []; 
   String _currentBio = '';
 
-  // Baseline for dirty check
   List<String> _initialCategories = [];
   List<String> _initialPortfolioPaths = [];
   String _initialBio = '';
@@ -47,7 +44,6 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Future<void> _loadWorkerData() async {
-    // Assuming worker 'w1' for demo
     final worker = await context.read<WorkerProvider>().getWorkerById('w1');
     if (mounted && worker != null) {
       setState(() {
@@ -57,7 +53,6 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
         _currentBio = worker.bio;
         _bioController.text = worker.bio;
 
-        // Set baseline
         _initialCategories = List.from(_selectedCategories);
         _initialPortfolioPaths = List.from(_portfolioPaths);
         _initialBio = _currentBio;
@@ -118,6 +113,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
     setState(() => _isSaving = true);
 
     try {
+      final theme = Theme.of(context);
       final result = await context.read<WorkerProvider>().updateWorkerProfile(
         workerId: _worker!.id,
         categories: _selectedCategories,
@@ -127,9 +123,8 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.primary),
+          SnackBar(content: Text(result.message), backgroundColor: theme.colorScheme.primary),
         );
-        // Reset baseline
         setState(() {
           _initialCategories = List.from(_selectedCategories);
           _initialPortfolioPaths = List.from(_portfolioPaths);
@@ -139,9 +134,10 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final theme = Theme.of(context);
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('Error: $e'), backgroundColor: theme.colorScheme.error),
         );
       }
     }
@@ -149,12 +145,15 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary)));
+      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           _buildHeader(),
@@ -167,7 +166,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Portfolio & Skills', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
+                      Text('Portfolio & Skills', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                       const SizedBox(height: 32),
                       
                       _buildCategoriesCard(),
@@ -177,7 +176,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
                       const SizedBox(height: 24),
                       
                       _buildBioCard(),
-                      const SizedBox(height: 120), // Space for sticky button
+                      const SizedBox(height: 120), 
                     ],
                   ),
                 ),
@@ -187,30 +186,32 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const WorkerBottomNav(currentIndex: 4), // Profile tab
+      bottomNavigationBar: const WorkerBottomNav(currentIndex: 4), 
     );
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return SafeArea(
       bottom: false,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+          color: colorScheme.surface.withValues(alpha: 0.9),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
-            const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+            Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
             const SizedBox(width: 16),
-            const Text(
+            Text(
               'HanapBuhay',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: AppColors.primary,
+                color: colorScheme.primary,
                 letterSpacing: -1,
               ),
             ),
@@ -223,12 +224,15 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Widget _buildCategoriesCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,8 +240,8 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Service Categories', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16)),
-              const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+              Text('Service Categories', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16, color: colorScheme.onSurface)),
+              Icon(Icons.edit_outlined, size: 18, color: colorScheme.primary),
             ],
           ),
           const SizedBox(height: 20),
@@ -251,9 +255,9 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.white,
+                    color: isSelected ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surface,
                     borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: isSelected ? AppColors.primary : AppColors.outlineVariant),
+                    border: Border.all(color: isSelected ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -261,13 +265,13 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
                       Text(
                         cat,
                         style: AppTypography.labelSmall.copyWith(
-                          color: isSelected ? AppColors.primary : AppColors.onSurfaceVariant,
+                          color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                         ),
                       ),
                       if (isSelected) ...[
                         const SizedBox(width: 6),
-                        const Icon(Icons.check, size: 14, color: AppColors.primary),
+                        Icon(Icons.check, size: 14, color: colorScheme.primary),
                       ],
                     ],
                   ),
@@ -281,12 +285,15 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Widget _buildPortfolioCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,10 +301,10 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Past Work', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16)),
+              Text('Past Work', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16, color: colorScheme.onSurface)),
               Text(
                 '${_portfolioPaths.length} / 6 Max',
-                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w700),
+                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -324,20 +331,21 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Widget _buildAddPhotoTile() {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: _addPhoto,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow,
+          color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.outlineVariant, style: BorderStyle.solid),
+          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3), style: BorderStyle.solid),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_circle_outline, color: AppColors.primary),
-            SizedBox(height: 4),
-            Text('Add', style: TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold)),
+            Icon(Icons.add_circle_outline, color: colorScheme.primary),
+            const SizedBox(height: 4),
+            Text('Add', style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -375,17 +383,20 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Widget _buildBioCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Professional Bio', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text('Professional Bio', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16, color: colorScheme.onSurface)),
           const SizedBox(height: 16),
           Stack(
             children: [
@@ -393,14 +404,15 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
                 controller: _bioController,
                 maxLines: 5,
                 maxLength: 500,
-                style: AppTypography.bodyMedium,
+                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
                 onChanged: (val) => setState(() => _currentBio = val),
                 decoration: InputDecoration(
                   hintText: 'Tell clients about your experience, specialties, and work ethic...',
+                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
                   filled: true,
-                  fillColor: AppColors.surfaceContainerLow.withOpacity(0.3),
+                  fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  counterText: '', // Using custom counter
+                  counterText: '', 
                 ),
               ),
               Positioned(
@@ -408,10 +420,10 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
                 right: 8,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(4)),
+                  decoration: BoxDecoration(color: colorScheme.surface.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(4)),
                   child: Text(
                     '${_currentBio.length}/500',
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant),
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
                   ),
                 ),
               ),

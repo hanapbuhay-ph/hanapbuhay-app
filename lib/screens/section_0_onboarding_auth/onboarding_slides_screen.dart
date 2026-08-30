@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/routing/app_router.dart';
@@ -16,28 +15,30 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingSlideData> _slides = [
-    OnboardingSlideData(
-      title: "What is HanapBuhay?",
-      description: "Find skilled workers in your community — verified and trusted through your local barangay.",
-      color: const Color(0xFFE8F5E9),
-    ),
-    OnboardingSlideData(
-      title: "For Clients",
-      description: "Book electricians, plumbers, tutors, cleaners, and more — right in your neighborhood.",
-      color: const Color(0xFFF1F8E9),
-    ),
-    OnboardingSlideData(
-      title: "For Workers",
-      description: "Offer your skills, grow your reputation, and earn from what you do best.",
-      color: const Color(0xFFF9FBE7),
-    ),
-    OnboardingSlideData(
-      title: "Safe & Verified",
-      description: "Every worker is barangay-document verified — so you always know who you're hiring.",
-      color: const Color(0xFFFFFDE7),
-    ),
-  ];
+  List<OnboardingSlideData> _getSlides(ColorScheme colorScheme) {
+    return [
+      OnboardingSlideData(
+        title: "What is HanapBuhay?",
+        description: "Find skilled workers in your community — verified and trusted through your local barangay.",
+        color: colorScheme.primary.withValues(alpha: 0.1),
+      ),
+      OnboardingSlideData(
+        title: "For Clients",
+        description: "Book electricians, plumbers, tutors, cleaners, and more — right in your neighborhood.",
+        color: colorScheme.secondary.withValues(alpha: 0.1),
+      ),
+      OnboardingSlideData(
+        title: "For Workers",
+        description: "Offer your skills, grow your reputation, and earn from what you do best.",
+        color: colorScheme.tertiary.withValues(alpha: 0.1),
+      ),
+      OnboardingSlideData(
+        title: "Safe & Verified",
+        description: "Every worker is barangay-document verified — so you always know who you're hiring.",
+        color: colorScheme.error.withValues(alpha: 0.1),
+      ),
+    ];
+  }
 
   void _onFinish() {
     context.read<AuthProvider>().completeOnboarding();
@@ -64,8 +65,12 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final slides = _getSlides(colorScheme);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Stack(
         children: [
           Column(
@@ -80,9 +85,9 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
                       _currentPage = page;
                     });
                   },
-                  itemCount: _slides.length,
+                  itemCount: slides.length,
                   itemBuilder: (context, index) {
-                    return _IllustrationPart(data: _slides[index]);
+                    return _IllustrationPart(data: slides[index]);
                   },
                 ),
               ),
@@ -91,12 +96,12 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
               Expanded(
                 flex: 4,
                 child: _OnboardingCard(
-                  data: _slides[_currentPage],
-                  isLast: _currentPage == _slides.length - 1,
+                  data: slides[_currentPage],
+                  isLast: _currentPage == slides.length - 1,
                   currentPage: _currentPage,
-                  numPages: _slides.length,
+                  numPages: slides.length,
                   onNext: () {
-                    if (_currentPage < _slides.length - 1) {
+                    if (_currentPage < slides.length - 1) {
                       _pageController.nextPage(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
@@ -112,7 +117,7 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
           ),
           
           // Skip Button - overlaid on top
-          if (_currentPage < _slides.length - 1)
+          if (_currentPage < slides.length - 1)
             Positioned(
               top: MediaQuery.of(context).padding.top + 16,
               right: 16,
@@ -121,11 +126,11 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.surface.withOpacity(0.8),
+                    color: colorScheme.surface.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -134,7 +139,7 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
                   child: Text(
                     'Skip',
                     style: AppTypography.labelLarge.copyWith(
-                      color: AppColors.primary,
+                      color: colorScheme.primary,
                       fontSize: 14,
                     ),
                   ),
@@ -166,9 +171,11 @@ class _IllustrationPart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
-      color: AppColors.surfaceContainerLowest,
+      color: colorScheme.surface,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -183,14 +190,14 @@ class _IllustrationPart extends StatelessWidget {
               child: Icon(
                 Icons.image_outlined,
                 size: 100,
-                color: AppColors.primary.withOpacity(0.2),
+                color: colorScheme.primary.withValues(alpha: 0.2),
               ),
             ),
             const SizedBox(height: 24),
             Text(
               '[ILLUSTRATION PLACEHOLDER]',
               style: AppTypography.labelSmall.copyWith(
-                color: AppColors.outline,
+                color: colorScheme.outline,
                 letterSpacing: 1.2,
               ),
             ),
@@ -220,25 +227,28 @@ class _OnboardingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFFFEFDFB),
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(32),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.08),
+            color: colorScheme.primary.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, -8),
           ),
         ],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.1)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
       child: Column(
         children: [
-          // Option 2: Rising Info (Vertical Slide-Up)
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 400),
@@ -247,7 +257,7 @@ class _OnboardingCard extends StatelessWidget {
                   opacity: animation,
                   child: SlideTransition(
                     position: Tween<Offset>(
-                      begin: const Offset(0, 0.1), // Rises slightly from the bottom
+                      begin: const Offset(0, 0.1),
                       end: Offset.zero,
                     ).animate(CurvedAnimation(
                       parent: animation,
@@ -267,6 +277,7 @@ class _OnboardingCard extends StatelessWidget {
                       fontSize: data.title.contains('HanapBuhay') ? 36 : 32,
                       height: 1.1,
                       fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -276,7 +287,7 @@ class _OnboardingCard extends StatelessWidget {
                       data.description,
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                         height: 1.6,
                         fontSize: 16,
                       ),
@@ -287,7 +298,6 @@ class _OnboardingCard extends StatelessWidget {
             ),
           ),
           
-          // Navigation Section
           const SizedBox(height: 20),
           if (!isLast)
             Row(
@@ -306,8 +316,8 @@ class _OnboardingCard extends StatelessWidget {
                         width: isActive ? 24 : 8,
                         decoration: BoxDecoration(
                           color: isActive 
-                            ? AppColors.primaryContainer 
-                            : AppColors.outlineVariant,
+                            ? colorScheme.primary 
+                            : colorScheme.outlineVariant.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -319,11 +329,11 @@ class _OnboardingCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryContainer,
+                      color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryContainer.withOpacity(0.3),
+                          color: colorScheme.primary.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -335,14 +345,14 @@ class _OnboardingCard extends StatelessWidget {
                         Text(
                           'Next',
                           style: AppTypography.labelLarge.copyWith(
-                            color: Colors.white,
+                            color: colorScheme.onPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(
+                        Icon(
                           Icons.arrow_forward,
-                          color: Colors.white,
+                          color: colorScheme.onPrimary,
                           size: 20,
                         ),
                       ],
@@ -368,8 +378,8 @@ class _OnboardingCard extends StatelessWidget {
                         width: isActive ? 24 : 8,
                         decoration: BoxDecoration(
                           color: isActive 
-                            ? AppColors.primaryContainer 
-                            : AppColors.outlineVariant,
+                            ? colorScheme.primary 
+                            : colorScheme.outlineVariant.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -383,11 +393,11 @@ class _OnboardingCard extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryContainer,
+                      color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryContainer.withOpacity(0.4),
+                          color: colorScheme.primary.withValues(alpha: 0.4),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),
@@ -397,7 +407,7 @@ class _OnboardingCard extends StatelessWidget {
                       'Get Started',
                       textAlign: TextAlign.center,
                       style: AppTypography.labelLarge.copyWith(
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
                       ),

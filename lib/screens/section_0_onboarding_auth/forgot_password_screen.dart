@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -37,8 +36,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   int _secondsRemaining = 59;
   bool _canResend = false;
 
-  late AnimationController _shakeController;
-  late Animation<double> _shakeAnimation;
+  AnimationController? _shakeController;
+  Animation<double>? _shakeAnimation;
 
   @override
   void initState() {
@@ -52,7 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
       TweenSequenceItem(tween: Tween<double>(begin: 10, end: -10), weight: 1),
       TweenSequenceItem(tween: Tween<double>(begin: -10, end: 10), weight: 1),
       TweenSequenceItem(tween: Tween<double>(begin: 10, end: 0), weight: 1),
-    ]).animate(_shakeAnimation);
+    ]).animate(_shakeController!);
   }
 
   @override
@@ -67,7 +66,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     _timer?.cancel();
-    _shakeController.dispose();
+    _shakeController?.dispose();
     super.dispose();
   }
 
@@ -139,7 +138,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
 
   void _handleOtpError(String message) {
     setState(() => _errorMessage = message);
-    _shakeController.forward(from: 0);
+    _shakeController?.forward(from: 0);
     HapticFeedback.vibrate();
     for (var c in _otpControllers) {
       c.clear();
@@ -182,8 +181,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB),
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(),
@@ -214,23 +216,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   }
 
   Widget _buildRequestCodeView() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(height: 32),
         Container(
           width: 80, height: 80,
-          decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+          decoration: BoxDecoration(
+            color: colorScheme.surface, 
+            shape: BoxShape.circle, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05), 
+                blurRadius: 10, 
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           clipBehavior: Clip.antiAlias,
-          child: Image.asset('assets/images/screen.png', fit: BoxFit.cover),
+          child: Image.asset('assets/icon/app_icon.png', fit: BoxFit.cover),
         ),
         const SizedBox(height: 24),
-        Text('Forgot Password?', style: AppTypography.headlineLarge.copyWith(fontSize: 28)),
+        Text('Forgot Password?', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
         const SizedBox(height: 8),
         Text(
           'Enter your email address or mobile number and we\'ll send you a code to reset your password.',
           textAlign: TextAlign.center,
-          style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 40),
         _buildTextField(
@@ -245,51 +258,55 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   }
 
   Widget _buildVerifyCodeView() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         const SizedBox(height: 32),
         Container(
           width: 96, height: 96,
-          decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), shape: BoxShape.circle),
-          child: const Icon(Icons.mark_email_unread_outlined, size: 48, color: AppColors.primary),
+          decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+          child: Icon(Icons.mark_email_unread_outlined, size: 48, color: colorScheme.primary),
         ),
         const SizedBox(height: 32),
-        Text('Verify your email', style: AppTypography.headlineLarge.copyWith(fontSize: 28)),
+        Text('Verify your email', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
         const SizedBox(height: 12),
         RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
             children: [
               const TextSpan(text: 'We sent a verification code to your email address\n'),
               TextSpan(
                 text: _identifierController.text,
-                style: AppTypography.labelLarge.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800),
+                style: AppTypography.labelLarge.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800),
               ),
             ],
           ),
         ),
         const SizedBox(height: 40),
-        AnimatedBuilder(
-          animation: _shakeAnimation,
-          builder: (context, child) => Transform.translate(offset: Offset(_shakeAnimation.value, 0), child: child),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(6, (index) => _buildOtpBox(index))),
-        ),
+        if (_shakeAnimation != null)
+          AnimatedBuilder(
+            animation: _shakeAnimation!,
+            builder: (context, child) => Transform.translate(offset: Offset(_shakeAnimation!.value, 0), child: child),
+            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(6, (index) => _buildOtpBox(index))),
+          )
+        else
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(6, (index) => _buildOtpBox(index))),
         if (_errorMessage != null) ...[
           const SizedBox(height: 16),
-          Text(_errorMessage!, textAlign: TextAlign.center, style: AppTypography.bodySmall.copyWith(color: AppColors.error)),
+          Text(_errorMessage!, textAlign: TextAlign.center, style: AppTypography.bodySmall.copyWith(color: colorScheme.error)),
         ],
         const SizedBox(height: 40),
         Text(
           _canResend ? "Didn't receive the code?" : "Resend code in 00:${_secondsRemaining.toString().padLeft(2, '0')}",
-          style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
         GestureDetector(
           onTap: _canResend ? _handleRequestCode : null,
           child: Text(
             'Resend Code',
-            style: AppTypography.labelLarge.copyWith(color: _canResend ? AppColors.primary : AppColors.outlineVariant, fontWeight: FontWeight.w800),
+            style: AppTypography.labelLarge.copyWith(color: _canResend ? colorScheme.primary : colorScheme.outlineVariant, fontWeight: FontWeight.w800),
           ),
         ),
       ],
@@ -297,17 +314,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   }
 
   Widget _buildResetPasswordView() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         const SizedBox(height: 32),
-        Text('HanapBuhay', style: AppTypography.headlineMedium.copyWith(color: AppColors.primary, fontSize: 32, fontWeight: FontWeight.w800)),
+        Text('HanapBuhay', style: AppTypography.headlineMedium.copyWith(color: colorScheme.primary, fontSize: 32, fontWeight: FontWeight.w800)),
         const SizedBox(height: 16),
-        Text('Create New Password', style: AppTypography.headlineLarge.copyWith(fontSize: 28)),
+        Text('Create New Password', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
         const SizedBox(height: 8),
         Text(
           'Your new password must be different from previous used passwords.',
           textAlign: TextAlign.center,
-          style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 40),
         _buildTextField(
@@ -316,7 +334,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           hint: 'Must be at least 8 characters',
           obscureText: _obscureNewPassword,
           suffixIcon: IconButton(
-            icon: Icon(_obscureNewPassword ? Icons.visibility : Icons.visibility_off, size: 20),
+            icon: Icon(_obscureNewPassword ? Icons.visibility : Icons.visibility_off, size: 20, color: colorScheme.onSurfaceVariant),
             onPressed: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
           ),
           errorText: _errorMessage,
@@ -328,7 +346,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           hint: 'Must match new password',
           obscureText: _obscureConfirmPassword,
           suffixIcon: IconButton(
-            icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off, size: 20),
+            icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off, size: 20, color: colorScheme.onSurfaceVariant),
             onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
           ),
         ),
@@ -338,6 +356,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   }
 
   Widget _buildSuccessView() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 60),
       child: Column(
@@ -345,16 +364,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
         children: [
           Container(
             width: 96, height: 96,
-            decoration: const BoxDecoration(color: AppColors.primaryContainer, shape: BoxShape.circle),
-            child: const Icon(Icons.check_circle, size: 48, color: Colors.white),
+            decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child: Icon(Icons.check_circle, size: 48, color: colorScheme.primary),
           ),
           const SizedBox(height: 32),
-          Text('Password Reset Successful', textAlign: TextAlign.center, style: AppTypography.headlineLarge.copyWith(fontSize: 28)),
+          Text('Password Reset Successful', textAlign: TextAlign.center, style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
           const SizedBox(height: 12),
           Text(
             'You can now log in with your new password. Keep it safe!',
             textAlign: TextAlign.center,
-            style: AppTypography.bodyLarge.copyWith(color: AppColors.onSurfaceVariant),
+            style: AppTypography.bodyLarge.copyWith(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 48),
           PrimaryButton(
@@ -367,6 +386,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   }
 
   Widget _buildFooter() {
+    final colorScheme = Theme.of(context).colorScheme;
     String label = 'Send Reset Code';
     VoidCallback? onPressed = _handleRequestCode;
 
@@ -380,7 +400,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
 
     return Container(
       padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
-      decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.surfaceContainerHigh))),
+      decoration: BoxDecoration(
+        color: colorScheme.surface, 
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
+      ),
       child: PrimaryButton(
         label: label,
         isLoading: _isLoading,
@@ -390,34 +413,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   }
 
   Widget _buildTextField({required TextEditingController controller, required String label, String? hint, bool obscureText = false, Widget? suffixIcon, String? errorText}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      style: AppTypography.bodyMedium,
+      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         errorText: errorText,
-        labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
-        floatingLabelStyle: AppTypography.labelSmall.copyWith(color: AppColors.primary),
+        labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+        floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
         filled: true,
-        fillColor: AppColors.surfaceContainerLowest,
+        fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
         suffixIcon: suffixIcon,
       ),
     );
   }
 
   Widget _buildOtpBox(int index) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 44, height: 56,
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _otpFocusNodes[index].hasFocus ? AppColors.primary : AppColors.outlineVariant, width: _otpFocusNodes[index].hasFocus ? 2 : 1),
+        border: Border.all(color: _otpFocusNodes[index].hasFocus ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5), width: _otpFocusNodes[index].hasFocus ? 2 : 1),
       ),
       child: KeyboardListener(
         focusNode: FocusNode(),
@@ -432,7 +457,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           textAlign: TextAlign.center,
           keyboardType: TextInputType.number,
           inputFormatters: [LengthLimitingTextInputFormatter(1), FilteringTextInputFormatter.digitsOnly],
-          style: AppTypography.headlineMedium.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800),
+          style: AppTypography.headlineMedium.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800),
           decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.zero),
           onChanged: (value) {
             if (value.isNotEmpty) {

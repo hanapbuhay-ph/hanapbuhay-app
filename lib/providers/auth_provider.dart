@@ -31,6 +31,9 @@ class AuthProvider extends ChangeNotifier {
   String? _userAvatar;
   String? get userAvatar => _userAvatar;
 
+  String? _signInMethod;
+  String? get signInMethod => _signInMethod;
+
   bool _hasSeenOnboarding = false;
   bool get hasSeenOnboarding => _hasSeenOnboarding;
 
@@ -50,9 +53,12 @@ class AuthProvider extends ChangeNotifier {
     _userName = prefs.getString('user_name');
     _userMobile = prefs.getString('user_mobile');
     _userAvatar = prefs.getString('user_avatar');
+    _signInMethod = prefs.getString('sign_in_method');
 
     notifyListeners();
   }
+
+  bool get isGoogleLinked => _signInMethod == 'google';
 
   Future<void> completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
@@ -73,6 +79,7 @@ class AuthProvider extends ChangeNotifier {
         name: userData?['name'],
         mobile: userData?['mobile_number'],
         avatar: userData?['avatar_url'],
+        method: userData?['sign_in_method'] ?? 'email',
       );
     }
     return result;
@@ -108,17 +115,28 @@ class AuthProvider extends ChangeNotifier {
         name: userData?['name'],
         mobile: userData?['mobile_number'],
         avatar: userData?['avatar_url'],
+        method: userData?['sign_in_method'] ?? 'email',
       );
     }
     return result;
   }
 
-  Future<void> setAuthenticated(String token, String role, {String? id, String? email, String? name, String? mobile, String? avatar}) async {
+  Future<void> setAuthenticated(String token, String role, {
+    String? id, 
+    String? email, 
+    String? name, 
+    String? mobile, 
+    String? avatar,
+    String method = 'email',
+  }) async {
     await _storage.saveToken(token);
     final prefs = await SharedPreferences.getInstance();
     
     await prefs.setString('user_role', role);
     _userRole = role;
+
+    await prefs.setString('sign_in_method', method);
+    _signInMethod = method;
 
     if (id != null) {
       await prefs.setString('user_id', id);
@@ -191,6 +209,7 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove('user_name');
     await prefs.remove('user_mobile');
     await prefs.remove('user_avatar');
+    await prefs.remove('sign_in_method');
     
     _isAuthenticated = false;
     _userId = null;
@@ -199,6 +218,7 @@ class AuthProvider extends ChangeNotifier {
     _userName = null;
     _userMobile = null;
     _userAvatar = null;
+    _signInMethod = null;
     
     notifyListeners();
   }

@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/buttons/google_signin_button.dart';
 
 /// Registration — Role Selection Screen
-/// 
-/// Refactored to avoid "stacked" overlays. The footer is now part of the 
-/// main layout Column, and the content area is scrollable in between.
 class RegistrationRoleScreen extends StatefulWidget {
   const RegistrationRoleScreen({super.key});
 
@@ -23,7 +21,6 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
 
   void _onContinueManual() {
     if (_selectedRole == null) return;
-    // We use push to keep the back stack for this registration wizard
     Navigator.pushNamed(context, '${AppRouter.registerAccount}?role=$_selectedRole');
   }
 
@@ -31,20 +28,31 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
     if (_selectedRole == null) return;
     await GoogleAuthService().signIn();
     if (mounted) {
-      Navigator.pushNamed(context, '${AppRouter.completeProfile}?role=$_selectedRole');
+      // Simulate Google Login success and mark as 'google' method
+      await context.read<AuthProvider>().setAuthenticated(
+        'mock_google_token',
+        _selectedRole!,
+        email: 'john.doe@gmail.com',
+        name: 'John Doe',
+        method: 'google',
+      );
+      if (mounted) {
+        Navigator.pushNamed(context, '${AppRouter.completeProfile}?role=$_selectedRole');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB), // Surface Cream
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
-          // 1. Standardized Header
           const AppHeader(),
 
-          // 2. Scrollable Selection Area
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -54,27 +62,27 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Step 1 of 2',
-                    style: AppTypography.labelLarge.copyWith(color: AppColors.primary),
+                    style: AppTypography.labelLarge.copyWith(color: colorScheme.primary),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'How will you use HanapBuhay?',
                     textAlign: TextAlign.center,
-                    style: AppTypography.headlineLarge.copyWith(fontSize: 28),
+                    style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Select your primary role to customize your experience.',
                     textAlign: TextAlign.center,
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                    style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
                   const SizedBox(height: 32),
                   _RoleCard(
                     title: 'I want to hire',
                     description: 'Find skilled workers for your tasks and projects.',
                     icon: Icons.search,
-                    iconBgColor: AppColors.secondaryContainer,
-                    iconColor: AppColors.onSecondaryContainer,
+                    iconBgColor: colorScheme.secondaryContainer,
+                    iconColor: colorScheme.onSecondaryContainer,
                     isSelected: _selectedRole == 'client',
                     onTap: () => setState(() => _selectedRole = 'client'),
                   ),
@@ -83,8 +91,8 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
                     title: 'I want to work',
                     description: 'Offer your skills and find job opportunities.',
                     icon: Icons.build,
-                    iconBgColor: const Color(0xFFFFDDB5),
-                    iconColor: const Color(0xFF835400),
+                    iconBgColor: colorScheme.tertiaryContainer,
+                    iconColor: colorScheme.onTertiaryContainer,
                     isSelected: _selectedRole == 'worker',
                     onTap: () => setState(() => _selectedRole = 'worker'),
                   ),
@@ -94,19 +102,18 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
             ),
           ),
 
-          // 3. Fixed Bottom Navigation (Not an overlay anymore)
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
               ],
-              border: const Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -119,15 +126,15 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    Expanded(child: Divider(color: AppColors.outlineVariant)),
+                    Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'or', 
-                        style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant)
+                        style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant)
                       ),
                     ),
-                    Expanded(child: Divider(color: AppColors.outlineVariant)),
+                    Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -164,34 +171,36 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           border: Border.all(
-            color: isSelected ? AppColors.primaryContainer : AppColors.outlineVariant,
+            color: isSelected ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5),
             width: 2,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: AppColors.primaryContainer.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               )
             else
-              const BoxShadow(
-                color: Color(0x0A000000),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 4,
-                offset: Offset(0, 2),
+                offset: const Offset(0, 2),
               ),
           ],
         ),
-        clipBehavior: Clip.antiAlias, // Ensure internal content respects corners
+        clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
             Row(
@@ -212,12 +221,12 @@ class _RoleCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: AppTypography.headlineMedium.copyWith(fontSize: 20),
+                        style: AppTypography.headlineMedium.copyWith(fontSize: 20, color: colorScheme.onSurface),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         description,
-                        style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                        style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -230,11 +239,11 @@ class _RoleCard extends StatelessWidget {
                 right: 0,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryContainer,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 16),
+                  child: Icon(Icons.check, color: colorScheme.onPrimary, size: 16),
                 ),
               ),
           ],
@@ -243,4 +252,3 @@ class _RoleCard extends StatelessWidget {
     );
   }
 }
-

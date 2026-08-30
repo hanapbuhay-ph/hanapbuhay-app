@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
@@ -47,25 +46,29 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
 
     try {
       final result = await context.read<WorkerProvider>().submitVerificationDocuments(
-        workerId: 'w1', // Mock current worker
+        workerId: 'w1', 
         govIdPath: _govId!.path,
         brgyCertPath: _brgyCert!.path,
         selfiePath: _selfie!.path,
       );
 
-      if (mounted && result.success) {
+      if (!mounted) return;
+      final theme = Theme.of(context);
+
+      if (result.success) {
         Navigator.pushReplacementNamed(context, AppRouter.verificationUnderReview);
-      } else if (mounted) {
+      } else {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(content: Text(result.message), backgroundColor: theme.colorScheme.error),
         );
       }
     } catch (e) {
       if (mounted) {
+        final theme = Theme.of(context);
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('Error: $e'), backgroundColor: theme.colorScheme.error),
         );
       }
     }
@@ -73,8 +76,11 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Verification'),
@@ -129,12 +135,11 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
             ),
           ),
 
-          // Fixed Bottom Button
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
             child: PrimaryButton(
               label: 'Submit for Review',
@@ -149,18 +154,19 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
   }
 
   Widget _buildProgressIndicator() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Text(
           'Step 1 of 3',
-          style: AppTypography.labelLarge.copyWith(color: AppColors.primaryContainer, fontWeight: FontWeight.w700),
+          style: AppTypography.labelLarge.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
         Container(
           height: 8,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerHigh,
+            color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
           child: FractionallySizedBox(
@@ -168,7 +174,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
             widthFactor: 0.33,
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
+                color: colorScheme.primary,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -179,19 +185,20 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
   }
 
   Widget _buildInstructionalCard() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Text(
         'To verify your account, please upload clear photos of the following documents. This helps us maintain a safe community.',
-        style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant, height: 1.6),
+        style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.6),
       ),
     );
   }
@@ -206,14 +213,17 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
     required VoidCallback onRemove,
     String actionLabel = 'Choose File',
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: AppTypography.bodyLarge.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
-            Icon(icon, color: AppColors.outline, size: 20),
+            Text(title, style: AppTypography.bodyLarge.copyWith(fontSize: 18, fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+            Icon(icon, color: colorScheme.onSurfaceVariant, size: 20),
           ],
         ),
         const SizedBox(height: 12),
@@ -223,35 +233,34 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
             width: double.infinity,
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: file == null ? AppColors.surfaceContainerLowest : Colors.white,
+              color: file == null ? colorScheme.surfaceVariant.withValues(alpha: 0.1) : colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: file == null ? AppColors.outlineVariant : AppColors.primaryContainer,
-                style: file == null ? BorderStyle.solid : BorderStyle.solid,
+                color: file == null ? colorScheme.outlineVariant.withValues(alpha: 0.5) : colorScheme.primary,
+                style: BorderStyle.solid,
                 width: file == null ? 2 : 1,
               ),
-              // Simulating dashed border for empty state is hard in Flutter, using solid.
             ),
             child: file == null 
               ? Column(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(color: AppColors.surfaceContainerHigh, shape: BoxShape.circle),
-                      child: const Icon(Icons.photo_camera, color: AppColors.onSurfaceVariant, size: 32),
+                      decoration: BoxDecoration(color: colorScheme.surfaceVariant.withValues(alpha: 0.3), shape: BoxShape.circle),
+                      child: Icon(Icons.photo_camera, color: colorScheme.onSurfaceVariant, size: 32),
                     ),
                     const SizedBox(height: 16),
-                    Text(hint, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
+                    Text(hint, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface)),
                     const SizedBox(height: 4),
-                    Text(subHint, style: AppTypography.bodySmall.copyWith(color: AppColors.outline)),
+                    Text(subHint, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                     const SizedBox(height: 20),
                     OutlinedButton(
                       onPressed: onTap,
                       style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                        side: const BorderSide(color: AppColors.outline),
+                        side: BorderSide(color: colorScheme.outline),
                       ),
-                      child: Text(actionLabel, style: const TextStyle(color: AppColors.onSurface)),
+                      child: Text(actionLabel, style: TextStyle(color: colorScheme.onSurface)),
                     ),
                   ],
                 )

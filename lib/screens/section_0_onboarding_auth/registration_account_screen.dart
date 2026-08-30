@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -9,9 +8,6 @@ import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
 /// Registration — Account Details Screen
-/// 
-/// Refactored to avoid "stacked" overlays. The footer is now part of the 
-/// main layout Column, and the form area is scrollable in between.
 class RegistrationAccountScreen extends StatefulWidget {
   final String role;
 
@@ -90,13 +86,15 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
           });
         }
         
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
         );
       }
     } catch (e) {
+      final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: $e'), backgroundColor: AppColors.error),
+        SnackBar(content: Text('Registration failed: $e'), backgroundColor: colorScheme.error),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -106,16 +104,16 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isFormValid = _agreeToTerms;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB), // Surface Cream
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
-          // 1. Standardized Header
           const AppHeader(),
 
-          // 2. Scrollable Form Area
-          Expanded(
+           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               physics: const BouncingScrollPhysics(),
@@ -127,7 +125,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                     Text(
                       'Step 2 of 2',
                       style: AppTypography.labelLarge.copyWith(
-                        color: AppColors.primary,
+                        color: colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -136,19 +134,19 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.08),
+                        color: colorScheme.primary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.work_outline, size: 16, color: AppColors.primary),
+                          Icon(Icons.work_outline, size: 16, color: colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
                             'Signing up as: ${widget.role[0].toUpperCase()}${widget.role.substring(1)}',
                             style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.primary,
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -158,7 +156,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                             child: Text(
                               'Change',
                               style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.primary,
+                                color: colorScheme.primary,
                                 decoration: TextDecoration.underline,
                               ),
                             ),
@@ -168,12 +166,12 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                     ),
 
                     const SizedBox(height: 32),
-                    Text('Account Details', style: AppTypography.headlineLarge.copyWith(fontSize: 28)),
+                    Text('Account Details', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
                     const SizedBox(height: 8),
                     Text(
                       'Please provide your details to complete registration.',
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                     
                     const SizedBox(height: 40),
@@ -204,11 +202,11 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                       decoration: _getInputDecoration('Barangay').copyWith(errorText: _fieldErrors['barangay']),
                       items: _barangays.map((b) => DropdownMenuItem(
                         value: b,
-                        child: Text(b, style: AppTypography.bodyMedium),
+                        child: Text(b, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
                       )).toList(),
                       onChanged: (val) => setState(() => _selectedBarangay = val),
                       validator: (value) => value == null ? 'Please select your barangay' : null,
-                      dropdownColor: Colors.white,
+                      dropdownColor: colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     const SizedBox(height: 20),
@@ -270,7 +268,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                           height: 24, width: 24,
                           child: Checkbox(
                             value: _agreeToTerms,
-                            activeColor: AppColors.primary,
+                            activeColor: colorScheme.primary,
                             onChanged: (val) => setState(() => _agreeToTerms = val ?? false),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                           ),
@@ -279,18 +277,18 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                         Expanded(
                           child: RichText(
                             text: TextSpan(
-                              style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+                              style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                               children: [
                                 const TextSpan(text: 'I agree to the '),
                                 TextSpan(
                                   text: 'Terms of Service',
-                                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                                  style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
                                   recognizer: TapGestureRecognizer()..onTap = () => debugPrint('ToS'),
                                 ),
                                 const TextSpan(text: ' and '),
                                 TextSpan(
                                   text: 'Privacy Policy',
-                                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                                  style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
                                   recognizer: TapGestureRecognizer()..onTap = () => debugPrint('Privacy'),
                                 ),
                                 const TextSpan(text: '.'),
@@ -307,19 +305,19 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
             ),
           ),
 
-          // 3. Fixed Bottom Navigation (Not an overlay anymore)
+          // 3. Fixed Bottom Navigation
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
               ],
-              border: const Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -334,13 +332,13 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Already have an account? ', style: AppTypography.bodySmall),
+                    Text('Already have an account? ', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(context, AppRouter.login),
                       child: Text(
                         'Log In',
                         style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.primary,
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -369,7 +367,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: AppTypography.bodyMedium,
+      style: AppTypography.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurface),
       decoration: _getInputDecoration(label).copyWith(
         hintText: hint,
         suffixIcon: suffixIcon,
@@ -380,17 +378,18 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
   }
 
   InputDecoration _getInputDecoration(String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
-      labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
-      floatingLabelStyle: AppTypography.labelSmall.copyWith(color: AppColors.primary),
+      labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+      floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
       filled: true,
-      fillColor: AppColors.surfaceContainerLowest,
+      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
-      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.error)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.error)),
     );
   }
 }
