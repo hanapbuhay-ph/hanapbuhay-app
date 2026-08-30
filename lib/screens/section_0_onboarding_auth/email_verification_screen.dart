@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../services/service_locator.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -95,31 +94,15 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
     });
 
     try {
-      final result = await authRepository.verifyOtp(widget.email, _otp);
+      final authProvider = context.read<AuthProvider>();
+      final result = await authProvider.verifyOtp(widget.email, _otp);
 
       if (!mounted) return;
 
       if (result.success) {
-        final userData = result.data?['user'] as Map<String, dynamic>?;
-        final token = result.data?['token'] ?? '';
-        final role = userData?['role'] ?? 'client';
-        final name = userData?['name'];
-        final mobile = userData?['mobile_number'];
-        final avatar = userData?['avatar_url'];
-        
-        final authProvider = context.read<AuthProvider>();
-        await authProvider.setAuthenticated(
-          token, 
-          role, 
-          email: widget.email,
-          name: name,
-          mobile: mobile,
-          avatar: avatar,
-        );
-
         if (!mounted) return;
         
-        context.go(authProvider.getHomeRoute());
+        Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
       } else {
         _handleError(result.message);
       }

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -52,7 +52,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
       TweenSequenceItem(tween: Tween<double>(begin: 10, end: -10), weight: 1),
       TweenSequenceItem(tween: Tween<double>(begin: -10, end: 10), weight: 1),
       TweenSequenceItem(tween: Tween<double>(begin: 10, end: 0), weight: 1),
-    ]).animate(_shakeController);
+    ]).animate(_shakeAnimation);
   }
 
   @override
@@ -99,7 +99,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     });
 
     try {
-      final result = await authRepository.forgotPassword(identifier);
+      final authProvider = context.read<AuthProvider>();
+      final result = await authProvider.forgotPassword(identifier);
       if (result.success) {
         setState(() => _currentStep = ForgotPasswordStep.verifyCode);
         _startTimer();
@@ -122,7 +123,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     });
 
     try {
-      final result = await authRepository.verifyForgotPasswordOtp(_identifierController.text.trim(), _otp);
+      final authProvider = context.read<AuthProvider>();
+      final result = await authProvider.verifyForgotPasswordOtp(_identifierController.text.trim(), _otp);
       if (result.success) {
         setState(() => _currentStep = ForgotPasswordStep.resetPassword);
       } else {
@@ -164,7 +166,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     });
 
     try {
-      final result = await authRepository.resetPassword(_identifierController.text.trim(), pass);
+      final authProvider = context.read<AuthProvider>();
+      final result = await authProvider.resetPassword(_identifierController.text.trim(), pass);
       if (result.success) {
         setState(() => _currentStep = ForgotPasswordStep.success);
       } else {
@@ -356,7 +359,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           const SizedBox(height: 48),
           PrimaryButton(
             label: 'Back to Login',
-            onPressed: () => context.go(AppRouter.login),
+            onPressed: () => Navigator.pushReplacementNamed(context, AppRouter.login),
           ),
         ],
       ),

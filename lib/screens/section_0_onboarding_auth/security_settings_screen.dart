@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -43,7 +42,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     if (confirmed == true && mounted) {
       await context.read<AuthProvider>().logout();
       if (mounted) {
-        context.go(AppRouter.login);
+        Navigator.pushReplacementNamed(context, AppRouter.login);
       }
     }
   }
@@ -60,10 +59,10 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
           AppHeader(
             title: 'Security Settings',
             onBackPressed: () {
-              if (context.canPop()) {
-                context.pop();
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
               } else {
-                context.go(authProvider.getHomeRoute());
+                Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
               }
             },
           ),
@@ -93,62 +92,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                         // Row 1: Change Password
                         _buildSettingsRow(
                           title: 'Change Password',
-                          onTap: () => context.push(AppRouter.changePassword),
-                        ),
-                        const Divider(height: 1, color: AppColors.surfaceContainerHigh),
-                        
-                        // Row 2: Linked Accounts
-                        _buildSettingsRow(
-                          title: 'Linked Accounts',
-                          subtitle: 'Google account linked: $linkedEmail',
-                          onTap: () {
-                            // TODO: Linked Accounts screen not in current scope
-                            debugPrint('Navigate to Linked Accounts');
-                          },
-                        ),
-                        const Divider(height: 1, color: AppColors.surfaceContainerHigh),
-                        
-                        // Row 3: Two-Factor Authentication
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Two-Factor Authentication', style: AppTypography.bodyLarge),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Add an extra layer of security to your account.',
-                                      style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Switch(
-                                value: _twoFactorEnabled,
-                                activeThumbColor: AppColors.primary,
-                                onChanged: (val) {
-                                  // TODO: 2FA is non-functional until backend support
-                                  setState(() => _twoFactorEnabled = val);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('2FA is coming soon!')),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Divider(height: 1, color: AppColors.surfaceContainerHigh),
-                        
-                        // Row 4: Login Activity
-                        _buildSettingsRow(
-                          title: 'Login Activity',
-                          onTap: () {
-                            // TODO: Login Activity screen not in current scope
-                            debugPrint('Navigate to Login Activity');
-                          },
+                          onTap: () => Navigator.pushNamed(context, AppRouter.changePassword),
                         ),
                       ],
                     ),

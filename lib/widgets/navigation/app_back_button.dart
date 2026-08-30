@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 
 /// A reusable glass-themed back button in a circle container.
@@ -37,8 +36,8 @@ class AppBackButton extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: onPressed ?? () {
-                if (context.canPop()) {
-                  context.pop();
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
                 }
               },
               child: Icon(

@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../providers/chat_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../services/service_locator.dart';
+import '../../core/routing/app_router.dart';
 import '../../data/models/chat_model.dart';
 
 class ChatThreadScreen extends StatefulWidget {
@@ -36,9 +38,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   Future<void> _loadData() async {
-    final conversations = await chatRepository.getConversations();
+    final chatProvider = context.read<ChatProvider>();
+    final conversations = await chatProvider.getConversations();
     final conversation = conversations.firstWhere((c) => c.id == widget.conversationId);
-    final messages = await chatRepository.getMessages(widget.conversationId);
+    final messages = await chatProvider.getMessages(widget.conversationId);
     
     if (mounted) {
       setState(() {
@@ -46,7 +49,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         _messages = messages;
         _isLoading = false;
       });
-      chatRepository.markAsRead(widget.conversationId);
+      chatProvider.markAsRead(widget.conversationId);
       _scrollToBottom();
     }
   }
@@ -70,10 +73,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     _messageController.clear();
 
     // Mock send
-    await chatRepository.sendMessage(widget.conversationId, 'current_user', text: msgText, imageUrl: imageUrl);
+    final chatProvider = context.read<ChatProvider>();
+    await chatProvider.sendMessage(widget.conversationId, 'current_user', text: msgText, imageUrl: imageUrl);
     
     // Refresh local list
-    final updated = await chatRepository.getMessages(widget.conversationId);
+    final updated = await chatProvider.getMessages(widget.conversationId);
     if (mounted) {
       setState(() => _messages = updated);
       _scrollToBottom();
@@ -146,12 +150,24 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       titleSpacing: 0,
       title: Row(
         children: [
-          CircleAvatar(
-            radius: 18, 
-            backgroundImage: _conversation!.isSupport 
-              ? null 
-              : NetworkImage(_conversation!.otherUserAvatar),
-            child: _conversation!.isSupport ? const Icon(Icons.support_agent, size: 20) : null,
+          GestureDetector(
+            onTap: () {
+              if (_conversation!.isSupport) return;
+              if (_conversation!.otherUserRole == 'Client') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Client profiles coming soon!')),
+                );
+              } else {
+                Navigator.pushNamed(context, '${AppRouter.workerProfile}/${_conversation!.otherUserId}');
+              }
+            },
+            child: CircleAvatar(
+              radius: 18, 
+              backgroundImage: _conversation!.isSupport 
+                ? null 
+                : NetworkImage(_conversation!.otherUserAvatar),
+              child: _conversation!.isSupport ? const Icon(Icons.support_agent, size: 20) : null,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -173,12 +189,76 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         ],
       ),
       actions: [
-        IconButton(
-          onPressed: () {}, 
+        PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert, color: AppColors.onSurfaceVariant),
+          onSelected: (value) {
+            switch (value) {
+              case 'view_profile':
+                _navigateToProfile();
+                break;
+              case 'report_user':
+                Navigator.pushNamed(context, '${AppRouter.fileReport}/${_conversation!.bookingId ?? 'placeholder'}');
+                break;
+              case 'clear_chat':
+                _confirmClearChat();
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            if (!_conversation!.isSupport)
+              const PopupMenuItem(
+                value: 'view_profile',
+                child: Text('View Profile'),
+              ),
+            const PopupMenuItem(
+              value: 'report_user',
+              child: Text('Report User'),
+            ),
+            const PopupMenuItem(
+              value: 'clear_chat',
+              child: Text('Clear Chat'),
+            ),
+          ],
         ),
       ],
     );
+  }
+
+  void _navigateToProfile() {
+    if (_conversation!.isSupport) return;
+    if (_conversation!.otherUserRole == 'Client') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Client profiles coming soon!')),
+      );
+    } else {
+      Navigator.pushNamed(context, '${AppRouter.workerProfile}/${_conversation!.otherUserId}');
+    }
+  }
+
+  Future<void> _confirmClearChat() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Chat'),
+        content: const Text('Are you sure you want to clear all messages in this conversation?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Clear', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await context.read<ChatProvider>().clearMessages(widget.conversationId);
+      if (mounted) {
+        setState(() {
+          _messages = [];
+        });
+      }
+    }
   }
 
   Widget _buildMessageBubble(Message message, bool isMe, bool showAvatar) {

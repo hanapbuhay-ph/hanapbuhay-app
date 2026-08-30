@@ -430,7 +430,7 @@ Screens are grouped in the order a user actually encounters them (user journey),
 ---
 
 ## Notes for the UI/UX Designer
-
+    
 1. **Component reuse:** Build the *Worker Card*, *Booking/Job Card*, *Status Badge*, and *Notification Row* as reusable Figma components early — they repeat across many screens.
 2. **Design system first:** Establish color palette (based on the HanapBuhay brand), typography scale, spacing units, and button/input styles as Figma styles/variables before wireframing individual screens, so all 34 screens stay visually consistent.
 3. **Wireframe fidelity:** These descriptions are written for **low-to-mid fidelity wireframes** first (grayscale, boxes/placeholders, no final branding) — full high-fidelity visual design should come after the wireframes are reviewed and approved by the team and instructor.

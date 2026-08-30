@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/booking_provider.dart';
+import '../../providers/worker_provider.dart';
+import '../../providers/report_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -50,9 +52,9 @@ class _FileReportScreenState extends State<FileReportScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await bookingRepository.getBookingById(widget.bookingId);
+    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await workerRepository.getWorkerById(booking.workerId);
+      final worker = await context.read<WorkerProvider>().getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -101,7 +103,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final result = await reportRepository.submitReport(
+      final result = await context.read<ReportProvider>().submitReport(
         bookingId: widget.bookingId,
         workerId: _worker!.id,
         reason: _selectedReason!,
@@ -115,7 +117,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result.message), backgroundColor: AppColors.primary),
         );
-        context.pushReplacement(AppRouter.reportStatus);
+        Navigator.pushReplacementNamed(context, AppRouter.reportStatus);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result.message), backgroundColor: AppColors.error),

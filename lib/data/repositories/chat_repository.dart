@@ -5,4 +5,5 @@ abstract class ChatRepository {
   Future<List<Message>> getMessages(String conversationId);
   Future<void> sendMessage(String conversationId, String senderId, {String? text, String? imageUrl});
   Future<void> markAsRead(String conversationId);
+  Future<void> clearMessages(String conversationId);
 }

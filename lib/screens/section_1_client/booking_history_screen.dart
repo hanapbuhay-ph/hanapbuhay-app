@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/booking_provider.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
@@ -35,7 +36,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   }
 
   void _loadBookings() {
-    _bookingsFuture = bookingRepository.getBookings();
+    _bookingsFuture = context.read<BookingProvider>().getBookings();
   }
 
   @override
@@ -63,7 +64,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
           // 1. Header
           AppHeader(
             title: 'My Bookings',
-            onBackPressed: () => context.go(AppRouter.clientHome),
+            onBackPressed: () => Navigator.pushReplacementNamed(context, AppRouter.clientHome),
           ),
 
           // 2. Segmented Control (Pill-shaped tabs)
@@ -145,7 +146,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
 
   Widget _buildBookingCard(Booking booking) {
     return FutureBuilder<Worker?>(
-      future: workerRepository.getWorkerById(booking.workerId),
+      future: context.read<WorkerProvider>().getWorkerById(booking.workerId),
       builder: (context, snapshot) {
         final worker = snapshot.data;
         return Container(
@@ -242,11 +243,29 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
 
   Widget _buildActionButtons(Booking booking) {
     if (booking.status == BookingStatus.active) {
-      return PrimaryButton(
-        label: 'Track',
-        onPressed: () {
-          context.push('${AppRouter.bookingDetail}/${booking.id}?track=true');
-        },
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _handleUpdateStatus(booking, BookingStatus.completed),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: const BorderSide(color: AppColors.outlineVariant),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Confirm Done', style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: PrimaryButton(
+              label: 'Track',
+              onPressed: () {
+                Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${booking.id}?track=true');
+              },
+            ),
+          ),
+        ],
       );
     }
     
@@ -255,22 +274,27 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
         if (booking.status == BookingStatus.upcoming) ...[
           Expanded(
             child: OutlinedButton(
-              onPressed: () => _showRescheduleDialog(booking),
+              onPressed: () => _handleUpdateStatus(booking, BookingStatus.cancelled),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: const BorderSide(color: AppColors.outlineVariant),
+                side: const BorderSide(color: AppColors.error),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Reschedule', style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(width: 12),
-        ],
-        if (booking.status == BookingStatus.completed && !booking.isRated) ...[
+          Expanded(
+            child: PrimaryButton(
+              label: 'Reschedule',
+              onPressed: () => _showRescheduleDialog(booking),
+            ),
+          ),
+        ] else if (booking.status == BookingStatus.completed && !booking.isRated) ...[
           Expanded(
             child: OutlinedButton(
               onPressed: () async {
-                final result = await context.push('${AppRouter.rateReview}/${booking.id}');
+                final result = await Navigator.pushNamed(context, '${AppRouter.rateReview}/${booking.id}');
                 if (result == true) {
                   _loadBookings();
                   setState(() {});
@@ -285,17 +309,52 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
             ),
           ),
           const SizedBox(width: 12),
-        ],
-        Expanded(
-          child: PrimaryButton(
-            label: 'Details',
-            onPressed: () {
-              context.push('${AppRouter.bookingDetail}/${booking.id}');
-            },
+          Expanded(
+            child: PrimaryButton(
+              label: 'Details',
+              onPressed: () {
+                Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${booking.id}');
+              },
+            ),
           ),
-        ),
+        ] else ...[
+          Expanded(
+            child: PrimaryButton(
+              label: 'Details',
+              onPressed: () {
+                Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${booking.id}');
+              },
+            ),
+          ),
+        ],
       ],
     );
+  }
+
+  Future<void> _handleUpdateStatus(Booking booking, BookingStatus newStatus) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(newStatus == BookingStatus.cancelled ? 'Cancel Booking' : 'Confirm Completion'),
+        content: Text('Are you sure you want to ${newStatus == BookingStatus.cancelled ? 'cancel this booking' : 'mark this booking as completed'}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Yes', style: TextStyle(color: newStatus == BookingStatus.cancelled ? AppColors.error : AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final result = await context.read<BookingProvider>().updateBookingStatus(bookingId: booking.id, status: newStatus);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+        _loadBookings();
+        setState(() {});
+      }
+    }
   }
 
   void _showRescheduleDialog(Booking booking) async {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -26,7 +26,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
 
   void _loadWorker() {
     // For demo, assume current worker is 'w1'
-    _workerFuture = workerRepository.getWorkerById('w1');
+    _workerFuture = context.read<WorkerProvider>().getWorkerById('w1');
   }
 
   @override
@@ -197,7 +197,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         const SizedBox(height: 48),
         PrimaryButton(
           label: 'Go to Dashboard',
-          onPressed: () => context.go(AppRouter.workerHome),
+          onPressed: () => Navigator.pushReplacementNamed(context, AppRouter.workerHome),
         ),
       ],
     );
@@ -263,7 +263,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         const SizedBox(height: 48),
         PrimaryButton(
           label: 'Resubmit Documents',
-          onPressed: () => context.push(AppRouter.verificationDocuments),
+          onPressed: () => Navigator.pushNamed(context, AppRouter.verificationDocuments),
         ),
         const SizedBox(height: 16),
         _buildSupportButton(),
@@ -276,7 +276,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       width: double.infinity,
       child: OutlinedButton(
         onPressed: () {
-          // TODO: Contact Support
+          Navigator.pushNamed(context, '${AppRouter.chatThread}/c2');
         },
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
@@ -46,11 +45,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     // Navigation logic
     if (authProvider.isAuthenticated) {
-      context.go(authProvider.getHomeRoute());
+      Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
     } else if (authProvider.hasSeenOnboarding) {
-      context.go(AppRouter.login);
+      Navigator.pushReplacementNamed(context, AppRouter.login);
     } else {
-      context.go(AppRouter.onboarding);
+      Navigator.pushReplacementNamed(context, AppRouter.onboarding);
     }
   }
 

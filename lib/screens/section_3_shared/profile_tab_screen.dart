@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/service_locator.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
@@ -31,8 +30,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   Future<void> _loadProfileData() async {
     final authProvider = context.read<AuthProvider>();
     if (authProvider.userRole == 'worker') {
-      // Fetching mock worker 'w1' for demo profile
-      final worker = await workerRepository.getWorkerById('w1');
+      final workerProvider = context.read<WorkerProvider>();
+      final worker = await workerProvider.getWorkerById('w1');
       if (mounted) {
         setState(() {
           _workerData = worker;
@@ -63,9 +62,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     );
 
     if (confirmed == true && mounted) {
-      await context.read<AuthProvider>().logout();
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.logout();
       if (mounted) {
-        context.go(AppRouter.login);
+        Navigator.pushNamedAndRemoveUntil(context, AppRouter.login, (_) => false);
       }
     }
   }
@@ -166,7 +166,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 bottom: 0,
                 right: 0,
                 child: GestureDetector(
-                  onTap: () => context.push(AppRouter.editProfile),
+                  onTap: () => Navigator.pushNamed(context, AppRouter.editProfile),
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
@@ -329,7 +329,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             icon: Icons.person_outline,
             title: 'Edit Profile',
             subtitle: 'Update your personal details',
-            onTap: () => context.push(AppRouter.editProfile),
+            onTap: () => Navigator.pushNamed(context, AppRouter.editProfile),
           ),
           if (isWorker) ...[
             const Divider(height: 1),
@@ -338,14 +338,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               title: 'Verification Status',
               subtitle: 'Manage trust documents',
               trailing: _buildStatusBadge(_workerData?.verificationStatus ?? VerificationStatus.notStarted),
-              onTap: () => context.push(AppRouter.verificationStatus),
+              onTap: () => Navigator.pushNamed(context, AppRouter.verificationStatus),
             ),
             const Divider(height: 1),
             _buildOptionRow(
               icon: Icons.architecture_outlined,
               title: 'Portfolio & Skills',
               subtitle: 'Showcase your work history',
-              onTap: () => context.push(AppRouter.portfolioSkills),
+              onTap: () => Navigator.pushNamed(context, AppRouter.portfolioSkills),
             ),
           ],
         ],
@@ -368,19 +368,19 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           _buildOptionRow(
             icon: Icons.security_outlined,
             title: 'Security Settings',
-            onTap: () => context.push(AppRouter.securitySettings),
+            onTap: () => Navigator.pushNamed(context, AppRouter.securitySettings),
           ),
           const Divider(height: 1),
           _buildOptionRow(
             icon: Icons.notifications_none_outlined,
             title: 'Notification Preferences',
-            onTap: () => context.push(AppRouter.notificationPreferences),
+            onTap: () => Navigator.pushNamed(context, AppRouter.notificationPreferences),
           ),
           const Divider(height: 1),
           _buildOptionRow(
             icon: Icons.help_outline,
             title: 'Help / FAQ',
-            onTap: () => context.push(AppRouter.help),
+            onTap: () => Navigator.pushNamed(context, AppRouter.help),
           ),
         ],
       ),

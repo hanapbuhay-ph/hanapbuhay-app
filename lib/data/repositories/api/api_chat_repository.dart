@@ -25,4 +25,10 @@ class ApiChatRepository implements ChatRepository {
     // TODO: POST /api/conversations/{id}/read
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> clearMessages(String conversationId) async {
+    // TODO: DELETE /api/conversations/{id}/messages
+    throw UnimplementedError();
+  }
 }

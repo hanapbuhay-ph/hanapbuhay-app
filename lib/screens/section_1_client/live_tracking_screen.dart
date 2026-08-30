@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/booking_provider.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -36,9 +37,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await bookingRepository.getBookingById(widget.bookingId);
+    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await workerRepository.getWorkerById(booking.workerId);
+      final worker = await context.read<WorkerProvider>().getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -165,7 +166,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 ),
               ),
               _buildIconButton(Icons.chat_bubble_outline, () {
-                context.push('${AppRouter.chatThread}/c1'); // Mock ID
+                Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
               }),
               const SizedBox(width: 12),
               _buildIconButton(Icons.call_outlined, () {}),
@@ -186,7 +187,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () => context.pop(),
+              onPressed: () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

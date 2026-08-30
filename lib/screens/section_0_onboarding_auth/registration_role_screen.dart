@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
@@ -25,14 +24,14 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
   void _onContinueManual() {
     if (_selectedRole == null) return;
     // We use push to keep the back stack for this registration wizard
-    context.push('${AppRouter.registerAccount}?role=$_selectedRole');
+    Navigator.pushNamed(context, '${AppRouter.registerAccount}?role=$_selectedRole');
   }
 
   Future<void> _onContinueWithGoogle() async {
     if (_selectedRole == null) return;
     await GoogleAuthService().signIn();
     if (mounted) {
-      context.push('${AppRouter.completeProfile}?role=$_selectedRole');
+      Navigator.pushNamed(context, '${AppRouter.completeProfile}?role=$_selectedRole');
     }
   }
 

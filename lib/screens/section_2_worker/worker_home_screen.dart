@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/service_locator.dart';
+import '../../providers/worker_provider.dart';
+import '../../providers/booking_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
@@ -30,20 +31,20 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
 
   void _loadData() {
     // For demo/mock, we assume worker ID 'w1'
-    _workerFuture = workerRepository.getWorkerById('w1');
-    _requestsFuture = bookingRepository.getBookings().then(
+    _workerFuture = context.read<WorkerProvider>().getWorkerById('w1');
+    _requestsFuture = context.read<BookingProvider>().getBookings().then(
       (list) => list.where((b) => b.status == BookingStatus.pending).toList()
     );
   }
 
   Future<void> _handleResponse(String bookingId, bool accept) async {
-    final result = await bookingRepository.respondToBooking(bookingId: bookingId, accept: accept);
+    final result = await context.read<BookingProvider>().respondToBooking(bookingId: bookingId, accept: accept);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result.message), backgroundColor: accept ? AppColors.primary : AppColors.error),
       );
       if (accept) {
-        context.push('${AppRouter.jobDetail}/$bookingId');
+        Navigator.pushNamed(context, '${AppRouter.jobDetail}/$bookingId');
       }
       setState(() => _loadData());
     }
@@ -118,7 +119,10 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+            IconButton(
+              icon: const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+              onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
+            ),
             const SizedBox(width: 16),
             const Text(
               'HanapBuhay',
@@ -132,7 +136,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             ),
             const Spacer(),
             GestureDetector(
-              onTap: () => context.push(AppRouter.notificationCenter),
+              onTap: () => Navigator.pushNamed(context, AppRouter.notificationCenter),
               child: Stack(
                 children: [
                   const Icon(Icons.notifications_none, color: AppColors.onSurfaceVariant),
@@ -140,7 +144,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                     right: 2,
                     top: 2,
                     child: StreamBuilder<int>(
-                      stream: notificationRepository.getUnreadCount(),
+                      stream: context.read<NotificationProvider>().getUnreadCount(),
                       builder: (context, snapshot) {
                         final count = snapshot.data ?? 0;
                         if (count == 0) return const SizedBox.shrink();
@@ -219,9 +223,9 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             child: ElevatedButton(
               onPressed: () {
                 if (worker.verificationStatus == VerificationStatus.notStarted) {
-                  context.push(AppRouter.verificationDocuments);
+                  Navigator.pushNamed(context, AppRouter.verificationDocuments);
                 } else {
-                  context.push(AppRouter.verificationStatus);
+                  Navigator.pushNamed(context, AppRouter.verificationStatus);
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -376,7 +380,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             Text('Incoming Requests', style: AppTypography.headlineMedium.copyWith(fontSize: 20, fontWeight: FontWeight.w800)),
             TextButton(
               onPressed: () {
-                context.push(AppRouter.bookingSchedule);
+                Navigator.pushNamed(context, AppRouter.bookingSchedule);
               },
               child: const Text('View All', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
             ),

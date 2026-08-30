@@ -59,4 +59,13 @@ class ApiBookingRepository implements BookingRepository {
     // TODO: POST /api/bookings/{id}/respond
     throw UnimplementedError();
   }
+
+  @override
+  Future<AuthResult> updateBookingStatus({
+    required String bookingId,
+    required BookingStatus status,
+  }) async {
+    // TODO: POST /api/bookings/{id}/status
+    throw UnimplementedError();
+  }
 }

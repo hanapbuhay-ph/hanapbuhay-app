@@ -228,4 +228,32 @@ class MockBookingRepository implements BookingRepository {
     }
     return AuthResult.success(message: accept ? 'Booking accepted!' : 'Booking declined.');
   }
+
+  @override
+  Future<AuthResult> updateBookingStatus({
+    required String bookingId,
+    required BookingStatus status,
+  }) async {
+    await Future.delayed(const Duration(seconds: 1));
+    final index = _mockBookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      final old = _mockBookings[index];
+      _mockBookings[index] = Booking(
+        id: old.id,
+        workerId: old.workerId,
+        clientId: old.clientId,
+        category: old.category,
+        date: old.date,
+        time: old.time,
+        barangay: old.barangay,
+        barangayCoordinates: old.barangayCoordinates,
+        notes: old.notes,
+        status: status,
+        timeline: old.timeline,
+        isRated: old.isRated,
+        isClientRated: old.isClientRated,
+      );
+    }
+    return AuthResult.success(message: 'Status updated to ${status.name}');
+  }
 }

@@ -35,6 +35,16 @@ class MockChatRepository implements ChatRepository {
       lastMessageTime: DateTime.now().subtract(const Duration(days: 1)),
       bookingId: 'HB-1055',
     ),
+    Conversation(
+      id: 'c4',
+      otherUserId: 'u1',
+      otherUserName: 'Juan Dela Cruz',
+      otherUserRole: 'Client',
+      otherUserAvatar: 'https://i.pravatar.cc/150?u=u1',
+      lastMessage: 'Is the price negotiable?',
+      lastMessageTime: DateTime.now().subtract(const Duration(hours: 3)),
+      bookingId: 'HB-2022',
+    ),
   ];
 
   final Map<String, List<Message>> _mockMessages = {
@@ -137,6 +147,31 @@ class MockChatRepository implements ChatRepository {
         otherUserAvatar: old.otherUserAvatar,
         lastMessage: old.lastMessage,
         lastMessageTime: old.lastMessageTime,
+        isUnread: false,
+        bookingId: old.bookingId,
+        isOnline: old.isOnline,
+        isSupport: old.isSupport,
+      );
+    }
+  }
+
+  @override
+  Future<void> clearMessages(String conversationId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    _mockMessages[conversationId] = [];
+    
+    // Update last message in conversation
+    final index = _mockConversations.indexWhere((c) => c.id == conversationId);
+    if (index != -1) {
+      final old = _mockConversations[index];
+      _mockConversations[index] = Conversation(
+        id: old.id,
+        otherUserId: old.otherUserId,
+        otherUserName: old.otherUserName,
+        otherUserRole: old.otherUserRole,
+        otherUserAvatar: old.otherUserAvatar,
+        lastMessage: 'Conversation cleared',
+        lastMessageTime: DateTime.now(),
         isUnread: false,
         bookingId: old.bookingId,
         isOnline: old.isOnline,

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/service_locator.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -44,7 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // NOTE: login() is currently Unimplemented in ApiAuthRepository
       // For now, this will throw an error which we catch below.
-      final result = await authRepository.login(
+      final authProvider = context.read<AuthProvider>();
+      final result = await authProvider.login(
         _identifierController.text.trim(),
         _passwordController.text,
       );
@@ -52,25 +51,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (result.success) {
-        final userData = result.data?['user'] as Map<String, dynamic>?;
-        final role = userData?['role'] as String? ?? 'client';
-        final token = result.data?['token'] as String? ?? '';
-        final email = userData?['email'] as String? ?? _identifierController.text.trim();
-        final name = userData?['name'] as String?;
-        final mobile = userData?['mobile_number'] as String?;
-        final avatar = userData?['avatar_url'] as String?;
-
         if (mounted) {
-          final authProvider = context.read<AuthProvider>();
-          await authProvider.setAuthenticated(
-            token, 
-            role, 
-            email: email,
-            name: name,
-            mobile: mobile,
-            avatar: avatar,
-          );
-          context.go(authProvider.getHomeRoute());
+          Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -104,11 +86,11 @@ class _LoginScreenState extends State<LoginScreen> {
           AppHeader(
             showBackButton: true,
             onBackPressed: () {
-              if (context.canPop()) {
-                context.pop();
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
               } else {
                 // If Login is the root (from Splash), back takes you to Onboarding
-                context.go(AppRouter.onboarding);
+                Navigator.pushReplacementNamed(context, AppRouter.onboarding);
               }
             },
           ),
@@ -205,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () => context.push(AppRouter.forgotPassword),
+                        onPressed: () => Navigator.pushNamed(context, AppRouter.forgotPassword),
                         child: Text(
                           'Forgot Password?',
                           style: AppTypography.labelSmall.copyWith(
@@ -244,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text("Don't have an account? ", style: AppTypography.bodySmall),
                     GestureDetector(
-                      onTap: () => context.push(AppRouter.registerRole),
+                      onTap: () => Navigator.pushNamed(context, AppRouter.registerRole),
                       child: Text(
                         'Sign Up',
                         style: AppTypography.labelSmall.copyWith(

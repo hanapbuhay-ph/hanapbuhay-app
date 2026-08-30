@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/app_back_button.dart';
@@ -12,11 +12,13 @@ import '../../widgets/buttons/primary_button.dart';
 class WorkerSearchScreen extends StatefulWidget {
   final String? initialQuery;
   final String? initialCategory;
+  final bool showFilterOnInit;
 
   const WorkerSearchScreen({
     super.key,
     this.initialQuery,
     this.initialCategory,
+    this.showFilterOnInit = false,
   });
 
   @override
@@ -41,13 +43,19 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
     _searchController.text = widget.initialQuery ?? '';
     _selectedCategory = widget.initialCategory;
     _fetchWorkers();
+    
+    if (widget.showFilterOnInit) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showFilterSheet();
+      });
+    }
   }
 
   Future<void> _fetchWorkers() async {
     setState(() => _isLoading = true);
     // In a real app, we would pass filters to the repository
     // For mock, we fetch all and filter client-side
-    _allWorkers = await workerRepository.getTopRatedWorkers();
+    _allWorkers = await context.read<WorkerProvider>().getTopRatedWorkers();
     _applyFilters();
     setState(() => _isLoading = false);
   }
@@ -200,7 +208,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
   Widget _buildWorkerCard(Worker worker) {
     return GestureDetector(
       onTap: () {
-        context.push('${AppRouter.workerProfile}/${worker.id}');
+        Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}');
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),

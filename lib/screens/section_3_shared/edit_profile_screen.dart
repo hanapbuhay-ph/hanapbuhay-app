@@ -1,13 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/service_locator.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -60,7 +57,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await authRepository.updateProfile(
+      final authProvider = context.read<AuthProvider>();
+      final result = await authProvider.updateProfile(
         name: _nameController.text.trim(),
         mobileNumber: _phoneController.text.trim(),
         avatarPath: _avatarPath,
@@ -69,18 +67,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
 
       if (result.success) {
-        // Update local provider state
-        await context.read<AuthProvider>().updateLocalProfile(
-          name: _nameController.text.trim(),
-          mobile: _phoneController.text.trim(),
-          avatar: _avatarPath,
-        );
-
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(result.message), backgroundColor: AppColors.primary),
           );
-          context.pop();
+          Navigator.pop(context);
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

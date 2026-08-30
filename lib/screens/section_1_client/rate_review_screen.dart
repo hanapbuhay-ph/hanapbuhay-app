@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../services/service_locator.dart';
+import '../../providers/booking_provider.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -37,9 +38,9 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await bookingRepository.getBookingById(widget.bookingId);
+    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await workerRepository.getWorkerById(booking.workerId);
+      final worker = await context.read<WorkerProvider>().getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -69,7 +70,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
     });
 
     try {
-      final result = await bookingRepository.submitReview(
+      final result = await context.read<BookingProvider>().submitReview(
         bookingId: widget.bookingId,
         workerId: _worker!.id,
         rating: _selectedRating,
@@ -86,7 +87,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
         await Future.delayed(const Duration(seconds: 2));
         
         if (mounted) {
-          context.pop(true); // Return success to history screen
+          Navigator.pop(context, true); // Return success to history screen
         }
       } else if (mounted) {
         setState(() => _isSubmitting = false);

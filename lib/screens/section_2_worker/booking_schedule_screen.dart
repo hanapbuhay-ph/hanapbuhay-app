@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../providers/auth_provider.dart';
@@ -35,7 +34,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   void _loadBookings() {
-    _bookingsFuture = bookingRepository.getBookings();
+    _bookingsFuture = context.read<BookingProvider>().getBookings();
   }
 
   @override
@@ -153,8 +152,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
             const Spacer(),
             GestureDetector(
               onTap: () {
-                // TODO: Navigate to Profile
-                debugPrint('Navigate to Profile');
+                Navigator.pushNamed(context, AppRouter.profile);
               },
               child: const CircleAvatar(
                 radius: 16, 
@@ -252,7 +250,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () async {
-                      final result = await context.push('${AppRouter.rateClient}/${booking.id}');
+                      final result = await Navigator.pushNamed(context, '${AppRouter.rateClient}/${booking.id}');
                       if (result == true) {
                         _loadBookings();
                         setState(() {});
@@ -271,7 +269,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    context.push('${AppRouter.jobDetail}/${booking.id}');
+                    Navigator.pushNamed(context, '${AppRouter.jobDetail}/${booking.id}');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: booking.status == BookingStatus.upcoming ? AppColors.primary : AppColors.surfaceContainerHigh,
@@ -291,7 +289,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                 ),
                 child: IconButton(
                   onPressed: () {
-                    context.push('${AppRouter.chatThread}/c1'); // Mock ID
+                    Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
                   },
                   icon: const Icon(Icons.chat_bubble_outline, color: AppColors.outline, size: 20),
                 ),

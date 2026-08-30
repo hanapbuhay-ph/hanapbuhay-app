@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/worker_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -46,7 +46,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
     setState(() => _isSubmitting = true);
 
     try {
-      final result = await workerRepository.submitVerificationDocuments(
+      final result = await context.read<WorkerProvider>().submitVerificationDocuments(
         workerId: 'w1', // Mock current worker
         govIdPath: _govId!.path,
         brgyCertPath: _brgyCert!.path,
@@ -54,7 +54,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
       );
 
       if (mounted && result.success) {
-        context.pushReplacement(AppRouter.verificationUnderReview);
+        Navigator.pushReplacementNamed(context, AppRouter.verificationUnderReview);
       } else if (mounted) {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(

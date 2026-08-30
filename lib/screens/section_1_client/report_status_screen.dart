@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/report_provider.dart';
 import '../../data/models/report_model.dart';
 import '../../widgets/navigation/app_header.dart';
 
@@ -25,7 +24,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
   }
 
   void _loadReports() {
-    _reportsFuture = reportRepository.getReports();
+    _reportsFuture = context.read<ReportProvider>().getReports();
   }
 
   void _toggleExpand(String id) {
@@ -335,7 +334,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
           TextButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
-              await reportRepository.addReportNote(reportId: reportId, note: controller.text.trim());
+              await context.read<ReportProvider>().addReportNote(reportId: reportId, note: controller.text.trim());
               if (mounted) {
                 Navigator.pop(context);
                 setState(() => _loadReports());

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -270,7 +269,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
           constraints: const BoxConstraints(maxWidth: 280),
           child: ElevatedButton.icon(
             onPressed: () {
-              context.push('${AppRouter.chatThread}/c2'); // Mock support ID
+              Navigator.pushNamed(context, '${AppRouter.chatThread}/c2'); // Mock support ID
             },
             icon: const Icon(Icons.headset_mic_outlined),
             label: const Text('Contact Support'),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../services/service_locator.dart';
+import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
 
@@ -40,7 +40,7 @@ class _RateClientScreenState extends State<RateClientScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await bookingRepository.getBookingById(widget.bookingId);
+    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
     if (mounted) {
       setState(() {
         _booking = booking;
@@ -66,7 +66,7 @@ class _RateClientScreenState extends State<RateClientScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final result = await bookingRepository.submitClientRating(
+      final result = await context.read<BookingProvider>().submitClientRating(
         bookingId: widget.bookingId,
         clientId: _booking!.clientId,
         rating: _selectedRating,
@@ -79,7 +79,7 @@ class _RateClientScreenState extends State<RateClientScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result.message), backgroundColor: AppColors.primary),
         );
-        context.pop(true);
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result.message), backgroundColor: AppColors.error),

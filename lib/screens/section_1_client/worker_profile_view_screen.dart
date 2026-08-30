@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -34,7 +35,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
   }
 
   Future<void> _fetchWorker() async {
-    final worker = await workerRepository.getWorkerById(widget.workerId);
+    final worker = await context.read<WorkerProvider>().getWorkerById(widget.workerId);
     if (mounted) {
       setState(() {
         _worker = worker;
@@ -342,26 +343,57 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
   }
 
   Widget _buildPortfolioTab(Worker worker) {
-    // TODO: Portfolio management is a Section 2 feature. This is a client-facing placeholder.
+    final authProvider = context.watch<AuthProvider>();
+    final isOwner = authProvider.userId == worker.id;
+
     if (worker.portfolioImages.isEmpty) {
-      return _buildEmptyTab('No portfolio items yet', Icons.image_outlined);
+      return Column(
+        children: [
+          const SizedBox(height: 40),
+          _buildEmptyTab('No portfolio items yet', Icons.image_outlined),
+          if (isOwner) ...[
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: PrimaryButton(
+                label: 'Add First Project',
+                onPressed: () => Navigator.pushNamed(context, AppRouter.portfolioSkills),
+              ),
+            ),
+          ],
+        ],
+      );
     }
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(24),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 4/3,
-      ),
-      itemCount: worker.portfolioImages.length,
-      itemBuilder: (context, index) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.network(worker.portfolioImages[index], fit: BoxFit.cover),
-        );
-      },
+    return Column(
+      children: [
+        if (isOwner)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: PrimaryButton(
+              label: 'Manage Portfolio',
+              onPressed: () => Navigator.pushNamed(context, AppRouter.portfolioSkills),
+            ),
+          ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(24),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 4/3,
+            ),
+            itemCount: worker.portfolioImages.length,
+            itemBuilder: (context, index) {
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(worker.portfolioImages[index], fit: BoxFit.cover),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -466,7 +498,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
           const SizedBox(width: 24),
           IconButton(
             onPressed: () {
-              context.push('${AppRouter.chatThread}/c1'); // Mock conversation ID
+              Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock conversation ID
             },
             icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
             style: IconButton.styleFrom(
@@ -482,7 +514,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
               label: 'Book Now',
               showArrow: true,
               onPressed: () {
-                context.push('${AppRouter.sendBookingRequest}/${worker.id}');
+                Navigator.pushNamed(context, '${AppRouter.sendBookingRequest}/${worker.id}');
               },
             ),
           ),

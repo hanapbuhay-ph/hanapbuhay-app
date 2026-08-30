@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../screens/section_0_onboarding_auth/splash_screen.dart';
 import '../../screens/section_0_onboarding_auth/onboarding_slides_screen.dart';
 import '../../screens/section_0_onboarding_auth/login_screen.dart';
@@ -72,195 +71,125 @@ class AppRouter {
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
   static const String notificationPreferences = '/notification-preferences';
-  
-  // Section 1 & 2 Home (Placeholder destinations)
   static const String clientHome = '/client-home';
   static const String workerHome = '/worker-home';
 
-  static final GoRouter router = GoRouter(
-    initialLocation: splash,
-    routes: [
-      GoRoute(
-        path: splash,
-        builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: onboarding,
-        builder: (context, state) => const OnboardingSlidesScreen(),
-      ),
-      GoRoute(
-        path: login,
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: registerRole,
-        builder: (context, state) => const RegistrationRoleScreen(),
-      ),
-      GoRoute(
-        path: registerAccount,
-        builder: (context, state) {
-          final role = state.uri.queryParameters['role'] ?? 'client';
-          return RegistrationAccountScreen(role: role);
-        },
-      ),
-      GoRoute(
-        path: verifyEmail,
-        builder: (context, state) {
-          final email = state.uri.queryParameters['email'] ?? '';
-          return EmailVerificationScreen(email: email);
-        },
-      ),
-      GoRoute(
-        path: completeProfile,
-        builder: (context, state) {
-          final role = state.uri.queryParameters['role'] ?? 'client';
-          return CompleteProfileScreen(role: role);
-        },
-      ),
-      GoRoute(
-        path: forgotPassword,
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
-      GoRoute(
-        path: securitySettings,
-        builder: (context, state) => const SecuritySettingsScreen(),
-      ),
-      GoRoute(
-        path: changePassword,
-        builder: (context, state) => const ChangePasswordScreen(),
-      ),
-      GoRoute(
-        path: bookingHistory,
-        builder: (context, state) => const BookingHistoryScreen(),
-      ),
-      GoRoute(
-        path: '$bookingDetail/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          final autoTrack = state.uri.queryParameters['track'] == 'true';
-          return BookingDetailScreen(bookingId: id, autoTrack: autoTrack);
-        },
-      ),
-      GoRoute(
-        path: '$bookingDetail/:id/tracking',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return LiveTrackingScreen(bookingId: id);
-        },
-      ),
-      GoRoute(
-        path: '$rateReview/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return RateReviewScreen(bookingId: id);
-        },
-      ),
-      GoRoute(
-        path: '$fileReport/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return FileReportScreen(bookingId: id);
-        },
-      ),
-      GoRoute(
-        path: reportStatus,
-        builder: (context, state) => const ReportStatusScreen(),
-      ),
-      GoRoute(
-        path: portfolioSkills,
-        builder: (context, state) => const PortfolioSkillsScreen(),
-      ),
-      GoRoute(
-        path: bookingSchedule,
-        builder: (context, state) => const BookingScheduleScreen(),
-      ),
-      GoRoute(
-        path: '$jobDetail/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return JobDetailScreen(bookingId: id);
-        },
-      ),
-      GoRoute(
-        path: '$rateClient/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return RateClientScreen(bookingId: id);
-        },
-      ),
-      GoRoute(
-        path: chatInbox,
-        builder: (context, state) => const ChatInboxScreen(),
-      ),
-      GoRoute(
-        path: notificationCenter,
-        builder: (context, state) => const NotificationCenterScreen(),
-      ),
-      GoRoute(
-        path: help,
-        builder: (context, state) => const HelpFaqScreen(),
-      ),
-      GoRoute(
-        path: profile,
-        builder: (context, state) => const ProfileTabScreen(),
-      ),
-      GoRoute(
-        path: editProfile,
-        builder: (context, state) => const EditProfileScreen(),
-      ),
-      GoRoute(
-        path: notificationPreferences,
-        builder: (context, state) => const NotificationPreferencesScreen(),
-      ),
-      GoRoute(
-        path: '$chatThread/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return ChatThreadScreen(conversationId: id);
-        },
-      ),
-      GoRoute(
-        path: clientHome,
-        builder: (context, state) => const ClientHomeScreen(),
-      ),
-      GoRoute(
-        path: workerHome,
-        builder: (context, state) => const WorkerHomeScreen(),
-      ),
-      GoRoute(
-        path: workerSearch,
-        builder: (context, state) {
-          final query = state.uri.queryParameters['query'];
-          final category = state.uri.queryParameters['category'];
-          return WorkerSearchScreen(initialQuery: query, initialCategory: category);
-        },
-      ),
-      GoRoute(
-        path: '$workerProfile/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return WorkerProfileViewScreen(workerId: id);
-        },
-      ),
-      GoRoute(
-        path: '$sendBookingRequest/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return SendBookingRequestScreen(workerId: id);
-        },
-      ),
-      GoRoute(
-        path: verificationDocuments,
-        builder: (context, state) => const VerificationDocumentScreen(),
-      ),
-      GoRoute(
-        path: verificationUnderReview,
-        builder: (context, state) => const VerificationUnderReviewScreen(),
-      ),
-      GoRoute(
-        path: verificationStatus,
-        builder: (context, state) => const VerificationStatusScreen(),
-      ),
-    ],
-  );
+  static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    final Uri uri = Uri.parse(settings.name ?? '');
+    final String path = uri.path;
+
+    switch (path) {
+      case splash:
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
+      case onboarding:
+        return MaterialPageRoute(builder: (_) => const OnboardingSlidesScreen());
+      case login:
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
+      case registerRole:
+        return MaterialPageRoute(builder: (_) => const RegistrationRoleScreen());
+      case registerAccount:
+        final role = uri.queryParameters['role'] ?? 'client';
+        return MaterialPageRoute(builder: (_) => RegistrationAccountScreen(role: role));
+      case verifyEmail:
+        final email = uri.queryParameters['email'] ?? '';
+        return MaterialPageRoute(builder: (_) => EmailVerificationScreen(email: email));
+      case completeProfile:
+        final role = uri.queryParameters['role'] ?? 'client';
+        return MaterialPageRoute(builder: (_) => CompleteProfileScreen(role: role));
+      case forgotPassword:
+        return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+      case securitySettings:
+        return MaterialPageRoute(builder: (_) => const SecuritySettingsScreen());
+      case changePassword:
+        return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
+      case bookingHistory:
+        return MaterialPageRoute(builder: (_) => const BookingHistoryScreen());
+      case reportStatus:
+        return MaterialPageRoute(builder: (_) => const ReportStatusScreen());
+      case portfolioSkills:
+        return MaterialPageRoute(builder: (_) => const PortfolioSkillsScreen());
+      case bookingSchedule:
+        return MaterialPageRoute(builder: (_) => const BookingScheduleScreen());
+      case chatInbox:
+        return MaterialPageRoute(builder: (_) => const ChatInboxScreen());
+      case notificationCenter:
+        return MaterialPageRoute(builder: (_) => const NotificationCenterScreen());
+      case help:
+        return MaterialPageRoute(builder: (_) => const HelpFaqScreen());
+      case profile:
+        return MaterialPageRoute(builder: (_) => const ProfileTabScreen());
+      case editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
+      case notificationPreferences:
+        return MaterialPageRoute(builder: (_) => const NotificationPreferencesScreen());
+      case clientHome:
+        return MaterialPageRoute(builder: (_) => const ClientHomeScreen());
+      case workerHome:
+        return MaterialPageRoute(builder: (_) => const WorkerHomeScreen());
+      case workerSearch:
+        final query = uri.queryParameters['query'];
+        final category = uri.queryParameters['category'];
+        final showFilter = uri.queryParameters['filter'] == 'true';
+        return MaterialPageRoute(
+          builder: (_) => WorkerSearchScreen(
+            initialQuery: query,
+            initialCategory: category,
+            showFilterOnInit: showFilter,
+          ),
+        );
+      case verificationDocuments:
+        return MaterialPageRoute(builder: (_) => const VerificationDocumentScreen());
+      case verificationUnderReview:
+        return MaterialPageRoute(builder: (_) => const VerificationUnderReviewScreen());
+      case verificationStatus:
+        return MaterialPageRoute(builder: (_) => const VerificationStatusScreen());
+      
+      // Dynamic Routes
+      default:
+        // Handle routes with path parameters
+        if (path.startsWith(workerProfile)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => WorkerProfileViewScreen(workerId: id));
+        }
+        if (path.startsWith(sendBookingRequest)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => SendBookingRequestScreen(workerId: id));
+        }
+        if (path.startsWith(bookingDetail)) {
+          final parts = path.split('/');
+          final id = parts[2];
+          if (parts.length > 3 && parts[3] == 'tracking') {
+            return MaterialPageRoute(builder: (_) => LiveTrackingScreen(bookingId: id));
+          }
+          final autoTrack = uri.queryParameters['track'] == 'true';
+          return MaterialPageRoute(builder: (_) => BookingDetailScreen(bookingId: id, autoTrack: autoTrack));
+        }
+        if (path.startsWith(jobDetail)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => JobDetailScreen(bookingId: id));
+        }
+        if (path.startsWith(rateReview)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => RateReviewScreen(bookingId: id));
+        }
+        if (path.startsWith(rateClient)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => RateClientScreen(bookingId: id));
+        }
+        if (path.startsWith(fileReport)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => FileReportScreen(bookingId: id));
+        }
+        if (path.startsWith(chatThread)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => ChatThreadScreen(conversationId: id));
+        }
+
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(child: Text('No route defined for ${settings.name}')),
+          ),
+        );
+    }
+  }
 }

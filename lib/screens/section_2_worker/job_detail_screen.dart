@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/booking_provider.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -37,9 +38,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await bookingRepository.getBookingById(widget.bookingId);
+    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await workerRepository.getWorkerById(booking.workerId);
+      final worker = await context.read<WorkerProvider>().getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -129,7 +130,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   const SizedBox(height: 16),
                   Center(
                     child: TextButton.icon(
-                      onPressed: () => context.push('${AppRouter.fileReport}/${booking.id}'),
+                      onPressed: () => Navigator.pushNamed(context, '${AppRouter.fileReport}/${booking.id}'),
                       icon: const Icon(Icons.report_problem_outlined, size: 16, color: AppColors.error),
                       label: const Text(
                         'File a Report',
@@ -181,7 +182,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           ),
           IconButton(
             onPressed: () {
-              context.push('${AppRouter.chatThread}/c1'); // Mock ID
+              Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
             },
             icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
             style: IconButton.styleFrom(
@@ -220,7 +221,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             right: 12,
             child: FloatingActionButton.small(
               heroTag: 'view_map_worker',
-              onPressed: () => context.push('${AppRouter.bookingDetail}/${booking.id}/tracking'),
+              onPressed: () => Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${booking.id}/tracking'),
               backgroundColor: Colors.white,
               child: const Icon(Icons.fullscreen, color: AppColors.onSurfaceVariant),
             ),

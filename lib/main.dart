@@ -3,6 +3,11 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_typography.dart';
 import 'providers/auth_provider.dart';
+import 'providers/worker_provider.dart';
+import 'providers/booking_provider.dart';
+import 'providers/report_provider.dart';
+import 'providers/chat_provider.dart';
+import 'providers/notification_provider.dart';
 import 'services/service_locator.dart';
 import 'core/routing/app_router.dart';
 
@@ -11,6 +16,11 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
+        ChangeNotifierProvider(create: (_) => WorkerProvider(workerRepository)),
+        ChangeNotifierProvider(create: (_) => BookingProvider(bookingRepository)),
+        ChangeNotifierProvider(create: (_) => ReportProvider(reportRepository)),
+        ChangeNotifierProvider(create: (_) => ChatProvider(chatRepository)),
+        ChangeNotifierProvider(create: (_) => NotificationProvider(notificationRepository)),
       ],
       child: const HanapBuhayApp(),
     ),
@@ -22,10 +32,11 @@ class HanapBuhayApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return MaterialApp(
       title: 'HanapBuhay',
       debugShowCheckedModeBanner: false,
-      routerConfig: AppRouter.router,
+      onGenerateRoute: AppRouter.onGenerateRoute,
+      initialRoute: AppRouter.splash,
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.background,
         colorScheme: ColorScheme.fromSeed(

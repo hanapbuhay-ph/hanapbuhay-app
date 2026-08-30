@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/service_locator.dart';
+import '../../providers/worker_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 
@@ -29,9 +29,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   void _loadData() {
-    _categoriesFuture = workerRepository.getCategories();
-    _topRatedFuture = workerRepository.getTopRatedWorkers();
-    _recentlyViewedFuture = workerRepository.getRecentlyViewedWorkers();
+    final workerProvider = context.read<WorkerProvider>();
+    _categoriesFuture = workerProvider.getCategories();
+    _topRatedFuture = workerProvider.getTopRatedWorkers();
+    _recentlyViewedFuture = workerProvider.getRecentlyViewedWorkers();
   }
 
   @override
@@ -118,6 +119,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         ),
         child: Row(
           children: [
+            IconButton(
+              icon: const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+              onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
+            ),
+            const SizedBox(width: 8),
             Container(
               width: 44,
               height: 44,
@@ -151,14 +157,14 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 IconButton(
                   icon: const Icon(Icons.notifications_none_outlined, color: AppColors.onSurface),
                   onPressed: () {
-                    context.push(AppRouter.notificationCenter);
+                    Navigator.pushNamed(context, AppRouter.notificationCenter);
                   },
                 ),
                 Positioned(
                   right: 12,
                   top: 12,
                   child: StreamBuilder<int>(
-                    stream: notificationRepository.getUnreadCount(),
+                    stream: context.read<NotificationProvider>().getUnreadCount(),
                     builder: (context, snapshot) {
                       final count = snapshot.data ?? 0;
                       if (count == 0) return const SizedBox.shrink();
@@ -200,7 +206,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               controller: _searchController,
               onSubmitted: (value) {
                 if (value.isNotEmpty) {
-                  context.push('${AppRouter.workerSearch}?query=$value');
+                  Navigator.pushNamed(context, '${AppRouter.workerSearch}?query=$value');
                 }
               },
               decoration: const InputDecoration(
@@ -214,7 +220,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () {
-                context.push(AppRouter.workerSearch);
+                Navigator.pushNamed(context, '${AppRouter.workerSearch}?filter=true');
               },
               child: Container(
                 padding: const EdgeInsets.all(8),
@@ -260,7 +266,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                         fontSize: 13,
                       ),
                       onSelected: (_) {
-                        context.push('${AppRouter.workerSearch}?category=${category.label}');
+                        Navigator.pushNamed(context, '${AppRouter.workerSearch}?category=${category.label}');
                       },
                       avatar: Icon(
                         category.icon,
@@ -292,7 +298,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               Text('Top Rated Near You', style: AppTypography.headlineMedium.copyWith(fontSize: 20)),
               TextButton(
                 onPressed: () {
-                  context.push(AppRouter.workerSearch);
+                  Navigator.pushNamed(context, AppRouter.workerSearch);
                 },
                 child: const Text('See all', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
               ),
@@ -326,7 +332,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   Widget _buildWorkerCard(Worker worker) {
     return GestureDetector(
       onTap: () {
-        context.push('${AppRouter.workerProfile}/${worker.id}');
+        Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}');
       },
       child: Container(
         width: 260,
@@ -422,7 +428,18 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text('Recently Viewed', style: AppTypography.headlineMedium.copyWith(fontSize: 20)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Recently Viewed', style: AppTypography.headlineMedium.copyWith(fontSize: 20)),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRouter.workerSearch);
+                },
+                child: const Text('See all', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         FutureBuilder<List<Worker>>(
@@ -446,7 +463,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   Widget _buildRecentWorkerRow(Worker worker) {
     return GestureDetector(
       onTap: () {
-        context.push('${AppRouter.workerProfile}/${worker.id}');
+        Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}');
       },
       child: Container(
         padding: const EdgeInsets.all(12),

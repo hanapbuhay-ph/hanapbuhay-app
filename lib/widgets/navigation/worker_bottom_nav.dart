@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/notification_provider.dart';
 
 class WorkerBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -18,19 +18,19 @@ class WorkerBottomNav extends StatelessWidget {
 
     switch (index) {
       case 0:
-        context.go(AppRouter.workerHome);
+        Navigator.pushReplacementNamed(context, AppRouter.workerHome);
         break;
       case 1:
-        context.go(AppRouter.bookingSchedule);
+        Navigator.pushReplacementNamed(context, AppRouter.bookingSchedule);
         break;
       case 2:
-        context.go(AppRouter.chatInbox);
+        Navigator.pushReplacementNamed(context, AppRouter.chatInbox);
         break;
       case 3:
-        context.go(AppRouter.notificationCenter);
+        Navigator.pushReplacementNamed(context, AppRouter.notificationCenter);
         break;
       case 4:
-        context.go(AppRouter.profile);
+        Navigator.pushReplacementNamed(context, AppRouter.profile);
         break;
     }
   }
@@ -70,7 +70,7 @@ class WorkerBottomNav extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: StreamBuilder<int>(
-              stream: notificationRepository.getUnreadCount(),
+              stream: context.read<NotificationProvider>().getUnreadCount(),
               builder: (context, snapshot) {
                 final count = snapshot.data ?? 0;
                 return Stack(

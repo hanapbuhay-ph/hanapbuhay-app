@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../services/service_locator.dart';
+import '../../providers/notification_provider.dart';
 import '../../data/models/notification_model.dart';
 import '../../widgets/navigation/app_header.dart';
 
@@ -23,7 +24,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
   }
 
   Future<void> _loadPreferences() async {
-    final prefs = await notificationRepository.getPreferences();
+    final prefs = await context.read<NotificationProvider>().getPreferences();
     if (mounted) {
       setState(() {
         _prefs = prefs;
@@ -34,7 +35,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
 
   void _updatePreference(NotificationPreferences newPrefs) {
     setState(() => _prefs = newPrefs);
-    notificationRepository.updatePreferences(newPrefs);
+    context.read<NotificationProvider>().updatePreferences(newPrefs);
   }
 
   @override

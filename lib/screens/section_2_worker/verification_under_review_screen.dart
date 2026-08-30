@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
@@ -100,7 +99,7 @@ class VerificationUnderReviewScreen extends StatelessWidget {
             child: PrimaryButton(
               label: 'Back to Home',
               showArrow: false,
-              onPressed: () => context.go(AppRouter.workerHome),
+              onPressed: () => Navigator.pushReplacementNamed(context, AppRouter.workerHome),
             ),
           ),
         ],

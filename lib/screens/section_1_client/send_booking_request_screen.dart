@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/service_locator.dart';
+import '../../providers/worker_provider.dart';
+import '../../providers/booking_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -50,7 +50,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
   }
 
   Future<void> _fetchWorker() async {
-    final worker = await workerRepository.getWorkerById(widget.workerId);
+    final worker = await context.read<WorkerProvider>().getWorkerById(widget.workerId);
     if (mounted) {
       setState(() {
         _worker = worker;
@@ -132,7 +132,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
     final clientBarangay = 'Poblacion'; 
 
     try {
-      final result = await bookingRepository.createBooking(
+      final result = await context.read<BookingProvider>().createBooking(
         workerId: widget.workerId,
         category: _selectedCategory!,
         date: _selectedDate!,
@@ -152,7 +152,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
           ),
         );
         // TODO: Eventually go to booking_detail_screen (1.6)
-        context.pop(); 
+        Navigator.pop(context); 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result.message), backgroundColor: AppColors.error),

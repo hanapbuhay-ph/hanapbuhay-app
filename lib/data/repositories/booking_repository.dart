@@ -32,4 +32,9 @@ abstract class BookingRepository {
     required String bookingId,
     required bool accept,
   });
+
+  Future<AuthResult> updateBookingStatus({
+    required String bookingId,
+    required BookingStatus status,
+  });
 }

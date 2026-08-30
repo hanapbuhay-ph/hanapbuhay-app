@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/service_locator.dart';
+import '../../providers/chat_provider.dart';
 import '../../data/models/chat_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
@@ -29,7 +28,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   }
 
   void _loadConversations() {
-    _conversationsFuture = chatRepository.getConversations();
+    _conversationsFuture = context.read<ChatProvider>().getConversations();
   }
 
   @override
@@ -97,8 +96,11 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Row(
           children: [
-            const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
-            const SizedBox(width: 16),
+            IconButton(
+              onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
+              icon: const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+            ),
+            const SizedBox(width: 8),
             Text('Messages', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
             const Spacer(),
             const CircleAvatar(radius: 18, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=current_user')),
@@ -159,7 +161,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   Widget _buildConversationRow(Conversation conversation) {
     return InkWell(
       onTap: () async {
-        await context.push('${AppRouter.chatThread}/${conversation.id}');
+        await Navigator.pushNamed(context, '${AppRouter.chatThread}/${conversation.id}');
         setState(() => _loadConversations()); // Refresh in case marked as read
       },
       child: Container(
@@ -169,7 +171,19 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
         ),
         child: Row(
           children: [
-            _buildAvatar(conversation),
+            GestureDetector(
+              onTap: () {
+                if (conversation.isSupport) return;
+                if (conversation.otherUserRole == 'Client') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Client profiles coming soon!')),
+                  );
+                } else {
+                  Navigator.pushNamed(context, '${AppRouter.workerProfile}/${conversation.otherUserId}');
+                }
+              },
+              child: _buildAvatar(conversation),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

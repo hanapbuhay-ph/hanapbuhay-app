@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -48,7 +48,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
 
   Future<void> _loadWorkerData() async {
     // Assuming worker 'w1' for demo
-    final worker = await workerRepository.getWorkerById('w1');
+    final worker = await context.read<WorkerProvider>().getWorkerById('w1');
     if (mounted && worker != null) {
       setState(() {
         _worker = worker;
@@ -118,7 +118,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final result = await workerRepository.updateProfile(
+      final result = await context.read<WorkerProvider>().updateWorkerProfile(
         workerId: _worker!.id,
         categories: _selectedCategories,
         photoPaths: _portfolioPaths,

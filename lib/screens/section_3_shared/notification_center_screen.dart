@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/service_locator.dart';
+import '../../providers/notification_provider.dart';
 import '../../data/models/notification_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
@@ -27,7 +26,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   void _loadNotifications() {
-    _notificationsFuture = notificationRepository.getNotifications();
+    _notificationsFuture = context.read<NotificationProvider>().getNotifications();
   }
 
   @override
@@ -99,11 +98,17 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Row(
           children: [
-            const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
-            const SizedBox(width: 16),
+            IconButton(
+              onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
+              icon: const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+            ),
+            const SizedBox(width: 8),
             Text('Notifications', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
             const Spacer(),
-            const CircleAvatar(radius: 18, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=current_user')),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, AppRouter.profile),
+              child: const CircleAvatar(radius: 18, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=current_user')),
+            ),
           ],
         ),
       ),
@@ -242,7 +247,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   void _handleNotificationTap(AppNotification notification) async {
-    await notificationRepository.markAsRead(notification.id);
+    final notificationProvider = context.read<NotificationProvider>();
+    await notificationProvider.markAsRead(notification.id);
     if (!mounted) return;
 
     setState(() => _loadNotifications());
@@ -253,25 +259,25 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       case NotificationType.bookingCompleted:
         final role = context.read<AuthProvider>().userRole;
         if (role == 'worker') {
-          context.push('${AppRouter.jobDetail}/${notification.relatedId}');
+          Navigator.pushNamed(context, '${AppRouter.jobDetail}/${notification.relatedId}');
         } else {
-          context.push('${AppRouter.bookingDetail}/${notification.relatedId}');
+          Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${notification.relatedId}');
         }
         break;
       case NotificationType.newChatMessage:
-        context.push('${AppRouter.chatThread}/${notification.relatedId}');
+        Navigator.pushNamed(context, '${AppRouter.chatThread}/${notification.relatedId}');
         break;
       case NotificationType.verificationApproved:
-        context.push(AppRouter.verificationStatus);
+        Navigator.pushNamed(context, AppRouter.verificationStatus);
         break;
       case NotificationType.newRatingReceived:
         final role = context.read<AuthProvider>().userRole;
         if (role == 'worker') {
            // For worker, rate client screen or jobs list? Instruction says "own Profile/reviews tab"
            // For now, go to schedule to see completed jobs
-           context.push(AppRouter.bookingSchedule);
+           Navigator.pushNamed(context, AppRouter.bookingSchedule);
         } else {
-           context.push(AppRouter.bookingHistory);
+           Navigator.pushNamed(context, AppRouter.bookingHistory);
         }
         break;
       default:

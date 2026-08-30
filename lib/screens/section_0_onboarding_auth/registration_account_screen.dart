@@ -1,10 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../services/service_locator.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -67,7 +67,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
     });
 
     try {
-      final result = await authRepository.register(
+      final result = await context.read<AuthProvider>().register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -79,7 +79,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
       if (!mounted) return;
 
       if (result.success) {
-        context.push('${AppRouter.verifyEmail}?email=${_emailController.text.trim()}');
+        Navigator.pushNamed(context, '${AppRouter.verifyEmail}?email=${_emailController.text.trim()}');
       } else {
         if (result.errors != null) {
           setState(() {
@@ -154,7 +154,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                           ),
                           const SizedBox(width: 12),
                           GestureDetector(
-                            onTap: () => context.pop(),
+                            onTap: () => Navigator.pop(context),
                             child: Text(
                               'Change',
                               style: AppTypography.labelSmall.copyWith(
@@ -336,7 +336,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                   children: [
                     Text('Already have an account? ', style: AppTypography.bodySmall),
                     GestureDetector(
-                      onTap: () => context.push(AppRouter.login),
+                      onTap: () => Navigator.pushNamed(context, AppRouter.login),
                       child: Text(
                         'Log In',
                         style: AppTypography.labelSmall.copyWith(
