@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
 
 class AppTypography {
   AppTypography._();
@@ -12,7 +11,6 @@ class AppTypography {
     fontWeight: FontWeight.w800,
     height: 56 / 48,
     letterSpacing: -0.02 * 48,
-    color: AppColors.primary,
   );
 
   static const TextStyle headlineLarge = TextStyle(
@@ -20,7 +18,6 @@ class AppTypography {
     fontSize: 32,
     fontWeight: FontWeight.w700,
     height: 40 / 32,
-    color: AppColors.onSurface,
   );
 
   static const TextStyle headlineMedium = TextStyle(
@@ -28,7 +25,6 @@ class AppTypography {
     fontSize: 24,
     fontWeight: FontWeight.w700,
     height: 32 / 24,
-    color: AppColors.onSurface,
   );
 
   static const TextStyle headlineSmall = TextStyle(
@@ -36,7 +32,6 @@ class AppTypography {
     fontSize: 20,
     fontWeight: FontWeight.w700,
     height: 28 / 20,
-    color: AppColors.onSurface,
   );
 
   static const TextStyle bodyLarge = TextStyle(
@@ -44,7 +39,6 @@ class AppTypography {
     fontSize: 18,
     fontWeight: FontWeight.w400,
     height: 28 / 18,
-    color: AppColors.onSurface,
   );
 
   static const TextStyle bodyMedium = TextStyle(
@@ -52,7 +46,6 @@ class AppTypography {
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 24 / 16,
-    color: AppColors.onSurface,
   );
 
   static const TextStyle bodySmall = TextStyle(
@@ -60,7 +53,6 @@ class AppTypography {
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 16 / 12,
-    color: AppColors.onSurfaceVariant,
   );
 
   static const TextStyle labelLarge = TextStyle(
@@ -69,7 +61,6 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     height: 20 / 14,
     letterSpacing: 0.01 * 14,
-    color: AppColors.onSurface,
   );
 
   static const TextStyle labelSmall = TextStyle(
@@ -78,6 +69,5 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     height: 16 / 12,
     letterSpacing: 0.02 * 12,
-    color: AppColors.primary,
   );
 }

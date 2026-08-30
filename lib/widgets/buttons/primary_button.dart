@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
 /// Reusable Primary Button matching the Stitch design.
@@ -21,8 +20,13 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final bool isEnabled = onPressed != null && !isLoading;
     
+    final backgroundColor = isEnabled ? colorScheme.primary : colorScheme.surfaceVariant;
+    final contentColor = isEnabled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
+
     return GestureDetector(
       onTap: isEnabled ? onPressed : null,
       child: Container(
@@ -30,22 +34,22 @@ class PrimaryButton extends StatelessWidget {
         constraints: width == null ? const BoxConstraints(maxWidth: 400) : null,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isEnabled ? AppColors.primary : AppColors.disabled,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: isEnabled ? [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.2),
+              color: colorScheme.primary.withValues(alpha: 0.2),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ] : null,
         ),
         child: isLoading 
-          ? const Center(
+          ? Center(
               child: SizedBox(
                 height: 20, 
                 width: 20, 
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                child: CircularProgressIndicator(color: contentColor, strokeWidth: 2)
               ),
             )
           : Row(
@@ -54,7 +58,7 @@ class PrimaryButton extends StatelessWidget {
                 Text(
                   label,
                   style: AppTypography.labelLarge.copyWith(
-                    color: isEnabled ? Colors.white : AppColors.onSurfaceVariant,
+                    color: contentColor,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -62,7 +66,7 @@ class PrimaryButton extends StatelessWidget {
                   const SizedBox(width: 8),
                   Icon(
                     Icons.arrow_forward,
-                    color: isEnabled ? Colors.white : AppColors.onSurfaceVariant,
+                    color: contentColor,
                     size: 20,
                   ),
                 ],

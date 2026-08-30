@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -35,9 +34,10 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final isWorker = authProvider.userRole == 'worker';
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.background,
       body: Column(
         children: [
           _buildHeader(),
@@ -48,16 +48,14 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
               future: _conversationsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
                 }
 
                 final allConversations = snapshot.data ?? [];
                 final filtered = allConversations.where((c) {
-                  // Search filter
                   if (_searchQuery.isNotEmpty && !c.otherUserName.toLowerCase().contains(_searchQuery.toLowerCase())) {
                     return false;
                   }
-                  // Type filter
                   if (_filter == 'Unread' && !c.isUnread) return false;
                   if (_filter == 'Bookings' && c.bookingId == null) return false;
                   return true;
@@ -71,7 +69,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
                   onRefresh: () async {
                     setState(() => _loadConversations());
                   },
-                  color: AppColors.primary,
+                  color: theme.colorScheme.primary,
                   child: ListView.builder(
                     padding: const EdgeInsets.only(top: 8, bottom: 24),
                     itemCount: filtered.length,
@@ -90,6 +88,10 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final authProvider = context.read<AuthProvider>();
+
     return SafeArea(
       bottom: false,
       child: Container(
@@ -98,12 +100,15 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
           children: [
             IconButton(
               onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
-              icon: const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+              icon: Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(width: 8),
-            Text('Messages', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
+            Text('Messages', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
             const Spacer(),
-            const CircleAvatar(radius: 18, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=current_user')),
+            CircleAvatar(
+              radius: 18, 
+              backgroundImage: NetworkImage(authProvider.userAvatar ?? 'https://i.pravatar.cc/150?u=current_user'),
+            ),
           ],
         ),
       ),
@@ -111,15 +116,20 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   }
 
   Widget _buildSearchBar() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: TextField(
         onChanged: (val) => setState(() => _searchQuery = val),
+        style: TextStyle(color: colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: 'Search messages...',
-          prefixIcon: const Icon(Icons.search, color: AppColors.outline),
+          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+          prefixIcon: Icon(Icons.search, color: colorScheme.outline),
           filled: true,
-          fillColor: AppColors.surfaceContainerLow,
+          fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.symmetric(vertical: 0),
         ),
@@ -128,6 +138,9 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   }
 
   Widget _buildFilterChips() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -140,16 +153,16 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
               label: Text(label),
               selected: isSelected,
               onSelected: (val) => setState(() => _filter = label),
-              backgroundColor: Colors.white,
-              selectedColor: AppColors.primary.withOpacity(0.1),
+              backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+              selectedColor: colorScheme.primary.withValues(alpha: 0.15),
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.onSurfaceVariant,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
-              checkmarkColor: AppColors.primary,
+              checkmarkColor: colorScheme.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: isSelected ? AppColors.primary : AppColors.outlineVariant),
+                side: BorderSide(color: isSelected ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.3)),
               ),
             ),
           );
@@ -159,15 +172,20 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   }
 
   Widget _buildConversationRow(Conversation conversation) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isUnread = conversation.isUnread;
+
     return InkWell(
       onTap: () async {
         await Navigator.pushNamed(context, '${AppRouter.chatThread}/${conversation.id}');
-        setState(() => _loadConversations()); // Refresh in case marked as read
+        setState(() => _loadConversations()); 
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppColors.surfaceContainerHigh, width: 0.5)),
+        decoration: BoxDecoration(
+          color: isUnread ? colorScheme.primary.withValues(alpha: 0.05) : Colors.transparent,
+          border: Border(bottom: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.15), width: 0.5)),
         ),
         child: Row(
           children: [
@@ -194,11 +212,14 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
                     children: [
                       Text(
                         '${conversation.otherUserName} ${conversation.isSupport ? "" : "(${conversation.otherUserRole})" }',
-                        style: AppTypography.bodyLarge.copyWith(fontWeight: conversation.isUnread ? FontWeight.w800 : FontWeight.w700),
+                        style: AppTypography.bodyLarge.copyWith(
+                          fontWeight: isUnread ? FontWeight.w800 : FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                       Text(
                         _formatTime(conversation.lastMessageTime),
-                        style: AppTypography.bodySmall.copyWith(fontSize: 10),
+                        style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -209,18 +230,18 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
                         child: Text(
                           conversation.lastMessage,
                           style: AppTypography.bodyMedium.copyWith(
-                            color: conversation.isUnread ? AppColors.onSurface : AppColors.onSurfaceVariant,
-                            fontWeight: conversation.isUnread ? FontWeight.w700 : FontWeight.w400,
+                            color: isUnread ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+                            fontWeight: isUnread ? FontWeight.w700 : FontWeight.w400,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (conversation.isUnread)
+                      if (isUnread)
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(color: AppColors.leafBright, shape: BoxShape.circle),
+                          decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
                         ),
                     ],
                   ),
@@ -228,10 +249,10 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: AppColors.surfaceContainer, borderRadius: BorderRadius.circular(6)),
+                      decoration: BoxDecoration(color: colorScheme.surfaceVariant.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(6)),
                       child: Text(
                         'Re: Booking #${conversation.bookingId}',
-                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant),
+                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
                       ),
                     ),
                   ],
@@ -245,12 +266,15 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   }
 
   Widget _buildAvatar(Conversation conversation) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (conversation.isSupport) {
       return Container(
         width: 52,
         height: 52,
-        decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-        child: const Icon(Icons.support_agent, color: Colors.white, size: 28),
+        decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+        child: Icon(Icons.support_agent, color: colorScheme.onPrimary, size: 28),
       );
     }
 
@@ -265,9 +289,9 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
               width: 14,
               height: 14,
               decoration: BoxDecoration(
-                color: AppColors.leafBright,
+                color: const Color(0xFF4CAF50),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(color: colorScheme.surface, width: 2),
               ),
             ),
           ),
@@ -284,15 +308,16 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.chat_bubble_outline, size: 64, color: AppColors.outlineVariant),
+          Icon(Icons.chat_bubble_outline, size: 64, color: theme.colorScheme.outlineVariant),
           const SizedBox(height: 16),
-          const Text('No messages found', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text('No messages found', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
           const SizedBox(height: 8),
-          const Text('Try adjusting your search or filters.', style: TextStyle(color: AppColors.onSurfaceVariant)),
+          Text('Try adjusting your search or filters.', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
         ],
       ),
     );

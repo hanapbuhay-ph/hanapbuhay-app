@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -51,10 +50,12 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final userName = authProvider.userEmail?.split('@').first ?? 'Maria'; // Demo fallback
+    final userName = authProvider.userName ?? authProvider.userEmail?.split('@').first ?? 'User';
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB), // Surface Cream
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           // 1. Sticky Header
@@ -66,7 +67,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               onRefresh: () async {
                 setState(() => _loadData());
               },
-              color: AppColors.primary,
+              color: colorScheme.primary,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 physics: const BouncingScrollPhysics(),
@@ -103,15 +104,20 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildHeader(String name) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final authProvider = context.read<AuthProvider>();
+    final avatar = authProvider.userAvatar;
+
     return SafeArea(
       bottom: false,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: colorScheme.surface.withValues(alpha: 0.9),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -120,33 +126,27 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+              icon: Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
               onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
             ),
             const SizedBox(width: 8),
-            Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage('https://i.pravatar.cc/150?u=maria'),
-                  fit: BoxFit.cover,
-                ),
-              ),
+            CircleAvatar(
+              radius: 22,
+              backgroundImage: NetworkImage(avatar ?? 'https://i.pravatar.cc/150?u=client'),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_getGreeting(), style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant)),
+                  Text(_getGreeting(), style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant)),
                   Text(
                     name,
                     style: AppTypography.headlineMedium.copyWith(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.5,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -155,7 +155,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             Stack(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.notifications_none_outlined, color: AppColors.onSurface),
+                  icon: Icon(Icons.notifications_none_outlined, color: colorScheme.onSurface),
                   onPressed: () {
                     Navigator.pushNamed(context, AppRouter.notificationCenter);
                   },
@@ -172,9 +172,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                         width: 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: AppColors.error,
+                          color: colorScheme.error,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
+                          border: Border.all(color: colorScheme.surface, width: 1.5),
                         ),
                       );
                     },
@@ -189,17 +189,20 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildSearchBar() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 16, right: 12),
-            child: Icon(Icons.search, color: AppColors.onSurfaceVariant),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 12),
+            child: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
           ),
           Expanded(
             child: TextField(
@@ -209,10 +212,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                   Navigator.pushNamed(context, '${AppRouter.workerSearch}?query=$value');
                 }
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search for services (e.g. plumbing)',
                 border: InputBorder.none,
-                hintStyle: TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
+                hintStyle: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
               ),
             ),
           ),
@@ -225,10 +228,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.tune, color: Colors.white, size: 20),
+                child: Icon(Icons.tune, color: colorScheme.onPrimary, size: 20),
               ),
             ),
           ),
@@ -238,6 +241,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildCategoriesSection() {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -262,7 +266,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                     child: FilterChip(
                       label: Text(category.label),
                       labelStyle: AppTypography.labelLarge.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                        color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 13,
                       ),
                       onSelected: (_) {
@@ -271,9 +275,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                       avatar: Icon(
                         category.icon,
                         size: 14,
-                        color: AppColors.onSurfaceVariant,
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
-                      backgroundColor: AppColors.surfaceContainer,
+                      backgroundColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.2),
                       showCheckmark: false,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30), side: BorderSide.none),
                     ),
@@ -288,6 +292,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildTopRatedSection() {
+    final theme = Theme.of(context);
     return Column(
       children: [
         Padding(
@@ -300,7 +305,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 onPressed: () {
                   Navigator.pushNamed(context, AppRouter.workerSearch);
                 },
-                child: const Text('See all', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                child: Text('See all', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w700)),
               ),
             ],
           ),
@@ -312,7 +317,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             future: _topRatedFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
               }
               final workers = snapshot.data ?? [];
               return ListView.builder(
@@ -330,6 +335,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildWorkerCard(Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}');
@@ -339,12 +347,12 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         margin: const EdgeInsets.only(right: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.outlineVariant.withOpacity(0.2)),
+          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -363,8 +371,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                         right: 0,
                         child: Container(
                           padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                          child: const Icon(Icons.check, color: Colors.white, size: 10),
+                          decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+                          child: Icon(Icons.check, color: colorScheme.onPrimary, size: 10),
                         ),
                       ),
                   ],
@@ -381,7 +389,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: const Color(0xFFFEFDFB), borderRadius: BorderRadius.circular(6)),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceVariant.withValues(alpha: 0.2), 
+                    borderRadius: BorderRadius.circular(6)
+                  ),
                   child: Row(
                     children: [
                       const Icon(Icons.star, color: Colors.amber, size: 12),
@@ -393,21 +404,21 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               ],
             ),
             const Spacer(),
-            const Divider(height: 1, color: AppColors.surfaceContainerHigh),
+            Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 14, color: AppColors.onSurfaceVariant),
+                    Icon(Icons.location_on_outlined, size: 14, color: colorScheme.onSurfaceVariant),
                     const SizedBox(width: 4),
-                    Text(worker.distance, style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant, fontSize: 11)),
+                    Text(worker.distance, style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11)),
                   ],
                 ),
                 RichText(
                   text: TextSpan(
-                    style: AppTypography.headlineMedium.copyWith(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.w800),
+                    style: AppTypography.headlineMedium.copyWith(color: colorScheme.primary, fontSize: 16, fontWeight: FontWeight.w800),
                     children: [
                       TextSpan(text: '₱${worker.hourlyRate.toInt()}'),
                       TextSpan(text: '/hr', style: AppTypography.bodySmall.copyWith(fontSize: 10)),
@@ -436,7 +447,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 onPressed: () {
                   Navigator.pushNamed(context, AppRouter.workerSearch);
                 },
-                child: const Text('See all', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                child: Text('See all', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w700)),
               ),
             ],
           ),
@@ -461,6 +472,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildRecentWorkerRow(Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}');
@@ -468,9 +482,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.outlineVariant.withOpacity(0.2)),
+          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -502,8 +516,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                     children: worker.tags.map((tag) => Container(
                       margin: const EdgeInsets.only(right: 6),
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: AppColors.surfaceContainerLow, borderRadius: BorderRadius.circular(4)),
-                      child: Text(tag, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.onSurfaceVariant)),
+                      decoration: BoxDecoration(color: colorScheme.surfaceVariant.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
+                      child: Text(tag, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant)),
                     )).toList(),
                   ),
                 ],

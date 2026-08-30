@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
@@ -57,26 +56,23 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.background,
       body: Column(
         children: [
-          // 1. Header
           AppHeader(
             title: 'My Bookings',
             onBackPressed: () => Navigator.pushReplacementNamed(context, AppRouter.clientHome),
           ),
-
-          // 2. Segmented Control (Pill-shaped tabs)
           _buildSegmentedControl(),
-
-          // 3. Bookings List
           Expanded(
             child: FutureBuilder<List<Booking>>(
               future: _bookingsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
                 }
                 
                 final allBookings = snapshot.data ?? [];
@@ -92,6 +88,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                       onRefresh: () async {
                         setState(() => _loadBookings());
                       },
+                      color: theme.colorScheme.primary,
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                         physics: const BouncingScrollPhysics(),
@@ -111,25 +108,27 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   }
 
   Widget _buildSegmentedControl() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHighest,
+        color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(32),
       ),
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.onSurfaceVariant,
+        labelColor: colorScheme.primary,
+        unselectedLabelColor: colorScheme.onSurfaceVariant,
         indicatorSize: TabBarIndicatorSize.tab,
         indicator: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -145,6 +144,9 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   }
 
   Widget _buildBookingCard(Booking booking) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return FutureBuilder<Worker?>(
       future: context.read<WorkerProvider>().getWorkerById(booking.workerId),
       builder: (context, snapshot) {
@@ -153,12 +155,12 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.surfaceContainerHigh),
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -179,11 +181,14 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                       children: [
                         Text(
                           worker?.name ?? 'Loading...',
-                          style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800),
+                          style: AppTypography.bodyLarge.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: colorScheme.onSurface,
+                          ),
                         ),
                         Text(
                           booking.category,
-                          style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+                          style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -195,16 +200,19 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
+                  color: colorScheme.surfaceVariant.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.onSurfaceVariant),
+                    Icon(Icons.calendar_today_outlined, size: 16, color: colorScheme.onSurfaceVariant),
                     const SizedBox(width: 8),
                     Text(
                       '${_formatDate(booking.date)} • ${booking.time}',
-                      style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600),
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ],
                 ),
@@ -219,19 +227,21 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   }
 
   Widget _buildStatusPill(BookingStatus status) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     Color color;
     switch (status) {
       case BookingStatus.upcoming: color = Colors.amber; break;
-      case BookingStatus.active: color = AppColors.primary; break;
-      case BookingStatus.completed: color = AppColors.onSurfaceVariant; break;
-      case BookingStatus.cancelled: color = AppColors.error; break;
+      case BookingStatus.active: color = colorScheme.primary; break;
+      case BookingStatus.completed: color = colorScheme.onSurfaceVariant; break;
+      case BookingStatus.cancelled: color = colorScheme.error; break;
       default: color = Colors.grey;
     }
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -242,6 +252,9 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   }
 
   Widget _buildActionButtons(Booking booking) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (booking.status == BookingStatus.active) {
       return Row(
         children: [
@@ -250,10 +263,10 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
               onPressed: () => _handleUpdateStatus(booking, BookingStatus.completed),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: const BorderSide(color: AppColors.outlineVariant),
+                side: BorderSide(color: colorScheme.outlineVariant),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Confirm Done', style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
+              child: Text('Confirm Done', style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(width: 12),
@@ -277,10 +290,10 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
               onPressed: () => _handleUpdateStatus(booking, BookingStatus.cancelled),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: const BorderSide(color: AppColors.error),
+                side: BorderSide(color: colorScheme.error),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
+              child: Text('Cancel', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(width: 12),
@@ -302,10 +315,10 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: const BorderSide(color: AppColors.outlineVariant),
+                side: BorderSide(color: colorScheme.outlineVariant),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Rate', style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
+              child: Text('Rate', style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(width: 12),
@@ -332,6 +345,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   }
 
   Future<void> _handleUpdateStatus(Booking booking, BookingStatus newStatus) async {
+    final theme = Theme.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -341,7 +355,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Yes', style: TextStyle(color: newStatus == BookingStatus.cancelled ? AppColors.error : AppColors.primary)),
+            child: Text('Yes', style: TextStyle(color: newStatus == BookingStatus.cancelled ? theme.colorScheme.error : theme.colorScheme.primary)),
           ),
         ],
       ),
@@ -372,7 +386,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
       );
       
       if (pickedTime != null && mounted) {
-        // TODO: Call repository to update booking
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Booking rescheduled successfully! (Mock)')),
         );
@@ -386,21 +399,22 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   }
 
   Widget _buildEmptyState(BookingStatus status) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_busy_outlined, size: 64, color: AppColors.outlineVariant),
+          Icon(Icons.event_busy_outlined, size: 64, color: theme.colorScheme.outlineVariant),
           const SizedBox(height: 16),
           Text(
             'No ${_getStatusLabel(status).toLowerCase()} bookings',
-            style: AppTypography.headlineMedium.copyWith(fontSize: 20),
+            style: AppTypography.headlineMedium.copyWith(fontSize: 20, color: theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 8),
           Text(
             'You don\'t have any ${_getStatusLabel(status).toLowerCase()} service requests at the moment.',
             textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+            style: AppTypography.bodyMedium.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
         ],
       ),

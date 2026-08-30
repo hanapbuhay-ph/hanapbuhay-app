@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 
 /// A reusable glass-themed back button in a circle container.
 /// 
@@ -18,6 +17,9 @@ class AppBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final baseColor = color ?? theme.colorScheme.primary;
+
     return ClipOval(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
@@ -26,9 +28,9 @@ class AppBackButton extends StatelessWidget {
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: (color ?? AppColors.primary).withOpacity(0.12),
+            color: baseColor.withValues(alpha: 0.12),
             border: Border.all(
-              color: (color ?? AppColors.primary).withOpacity(0.2),
+              color: baseColor.withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -43,7 +45,7 @@ class AppBackButton extends StatelessWidget {
               child: Icon(
                 Icons.arrow_back_ios_new,
                 size: 18,
-                color: color ?? AppColors.onSurfaceVariant,
+                color: color ?? theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ),

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../providers/chat_provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../data/models/chat_model.dart';
@@ -110,12 +109,15 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary)));
+      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -143,10 +145,14 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
       elevation: 0.5,
-      leading: const BackButton(color: AppColors.onSurface),
+      leading: BackButton(color: colorScheme.onSurface),
       titleSpacing: 0,
       title: Row(
         children: [
@@ -166,7 +172,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               backgroundImage: _conversation!.isSupport 
                 ? null 
                 : NetworkImage(_conversation!.otherUserAvatar),
-              child: _conversation!.isSupport ? const Icon(Icons.support_agent, size: 20) : null,
+              child: _conversation!.isSupport ? Icon(Icons.support_agent, size: 20, color: colorScheme.onPrimary) : null,
+              backgroundColor: _conversation!.isSupport ? colorScheme.primary : colorScheme.surfaceVariant,
             ),
           ),
           const SizedBox(width: 12),
@@ -176,12 +183,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               children: [
                 Text(
                   _conversation!.otherUserName, 
-                  style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16),
+                  style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16, color: colorScheme.onSurface),
                 ),
                 if (_conversation!.bookingId != null)
                   Text(
                     'Re: ${_conversation!.otherUserRole} #${_conversation!.bookingId}',
-                    style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.bold),
                   ),
               ],
             ),
@@ -190,7 +197,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       ),
       actions: [
         PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, color: AppColors.onSurfaceVariant),
+          icon: Icon(Icons.more_vert, color: colorScheme.onSurfaceVariant),
           onSelected: (value) {
             switch (value) {
               case 'view_profile':
@@ -236,6 +243,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   Future<void> _confirmClearChat() async {
+    final theme = Theme.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -245,7 +253,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear', style: TextStyle(color: AppColors.error)),
+            child: Text('Clear', style: TextStyle(color: theme.colorScheme.error)),
           ),
         ],
       ),
@@ -262,6 +270,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   Widget _buildMessageBubble(Message message, bool isMe, bool showAvatar) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -284,7 +295,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isMe ? AppColors.primary : AppColors.surfaceContainerLow,
+                    color: isMe ? colorScheme.primary : colorScheme.surfaceVariant.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(20),
                       topRight: const Radius.circular(20),
@@ -297,7 +308,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                     : Text(
                         message.text ?? '',
                         style: AppTypography.bodyMedium.copyWith(
-                          color: isMe ? Colors.white : AppColors.onSurface,
+                          color: isMe ? colorScheme.onPrimary : colorScheme.onSurface,
                         ),
                       ),
                 ),
@@ -307,11 +318,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                   children: [
                     Text(
                       '${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}',
-                      style: const TextStyle(fontSize: 9, color: AppColors.onSurfaceVariant),
+                      style: TextStyle(fontSize: 9, color: colorScheme.onSurfaceVariant),
                     ),
                     if (isMe) ...[
                       const SizedBox(width: 4),
-                      Icon(Icons.done_all, size: 12, color: message.isRead ? AppColors.primary : AppColors.outlineVariant),
+                      Icon(Icons.done_all, size: 12, color: message.isRead ? colorScheme.primary : colorScheme.outlineVariant),
                     ],
                   ],
                 ),
@@ -358,13 +369,14 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   Widget _buildTypingIndicator() {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12, left: 40),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         width: 60,
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow,
+          color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -376,28 +388,32 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   Widget _buildDot() {
+    final theme = Theme.of(context);
     return Container(
       width: 4, height: 4,
-      decoration: const BoxDecoration(color: AppColors.outline, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: theme.colorScheme.outline, shape: BoxShape.circle),
     );
   }
 
   Widget _buildInputBar() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, -2))],
+        color: colorScheme.surface,
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, -2))],
       ),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.add, color: AppColors.outline),
+            icon: Icon(Icons.add, color: colorScheme.outline),
             onPressed: () => _pickImage(ImageSource.gallery),
           ),
           IconButton(
-            icon: const Icon(Icons.camera_alt_outlined, color: AppColors.outline),
+            icon: Icon(Icons.camera_alt_outlined, color: colorScheme.outline),
             onPressed: () => _pickImage(ImageSource.camera),
           ),
           const SizedBox(width: 8),
@@ -405,11 +421,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
             child: TextField(
               controller: _messageController,
               maxLines: null,
-              style: AppTypography.bodyMedium,
+              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
               decoration: InputDecoration(
                 hintText: 'Type a message...',
                 filled: true,
-                fillColor: AppColors.surfaceContainerLow,
+                fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.3),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
@@ -420,8 +436,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
             onTap: () => _handleSend(text: _messageController.text),
             child: Container(
               padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-              child: const Icon(Icons.send, color: Colors.white, size: 20),
+              decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+              child: Icon(Icons.send, color: colorScheme.onPrimary, size: 20),
             ),
           ),
         ],

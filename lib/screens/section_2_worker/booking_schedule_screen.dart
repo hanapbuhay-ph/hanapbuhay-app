@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
-import '../../data/models/worker_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
 
@@ -56,9 +54,11 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           _buildHeader(authProvider),
@@ -71,11 +71,11 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Job Schedule', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
+                      Text('Job Schedule', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                       const SizedBox(height: 4),
                       Text(
                         'Manage your upcoming and past bookings.',
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+                        style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -87,7 +87,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                     future: _bookingsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                        return Center(child: CircularProgressIndicator(color: colorScheme.primary));
                       }
                       
                       final allBookings = snapshot.data ?? [];
@@ -103,6 +103,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                             onRefresh: () async {
                               setState(() => _loadBookings());
                             },
+                            color: colorScheme.primary,
                             child: ListView.builder(
                               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                               physics: const BouncingScrollPhysics(),
@@ -125,27 +126,30 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildHeader(AuthProvider authProvider) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SafeArea(
       bottom: false,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: colorScheme.surface.withValues(alpha: 0.9),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Row(
           children: [
-            const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+            Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
             const SizedBox(width: 16),
-            const Text(
+            Text(
               'HanapBuhay',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: AppColors.primary,
+                color: colorScheme.primary,
                 letterSpacing: -1,
               ),
             ),
@@ -154,9 +158,9 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
               onTap: () {
                 Navigator.pushNamed(context, AppRouter.profile);
               },
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 radius: 16, 
-                backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=worker'),
+                backgroundImage: NetworkImage(authProvider.userAvatar ?? 'https://i.pravatar.cc/150?u=worker'),
               ),
             ),
           ],
@@ -166,25 +170,28 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildSegmentedControl() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: colorScheme.surfaceVariant.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(32),
       ),
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.onSurfaceVariant,
+        labelColor: colorScheme.primary,
+        unselectedLabelColor: colorScheme.onSurfaceVariant,
         indicatorSize: TabBarIndicatorSize.tab,
         indicator: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -200,16 +207,19 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildJobCard(Booking booking) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -225,11 +235,11 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
+                    Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                      child: Text(booking.category, style: const TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.bold)),
+                      decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                      child: Text(booking.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -238,7 +248,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
             ],
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1),
+          Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
           const SizedBox(height: 16),
           _buildInfoRow(Icons.calendar_today_outlined, _getRelativeDate(booking.date), '${_formatDate(booking.date)} • ${booking.time}'),
           const SizedBox(height: 12),
@@ -258,10 +268,10 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: AppColors.outlineVariant),
+                      side: BorderSide(color: colorScheme.outlineVariant),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Rate Client', style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
+                    child: Text('Rate Client', style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.w700)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -272,8 +282,8 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                     Navigator.pushNamed(context, '${AppRouter.jobDetail}/${booking.id}');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: booking.status == BookingStatus.upcoming ? AppColors.primary : AppColors.surfaceContainerHigh,
-                    foregroundColor: booking.status == BookingStatus.upcoming ? Colors.white : AppColors.onSurface,
+                    backgroundColor: booking.status == BookingStatus.upcoming ? colorScheme.primary : colorScheme.surfaceVariant,
+                    foregroundColor: booking.status == BookingStatus.upcoming ? colorScheme.onPrimary : colorScheme.onSurface,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -284,14 +294,14 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
               const SizedBox(width: 12),
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.outlineVariant),
+                  border: Border.all(color: colorScheme.outlineVariant),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
                   },
-                  icon: const Icon(Icons.chat_bubble_outline, color: AppColors.outline, size: 20),
+                  icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
                 ),
               ),
             ],
@@ -302,6 +312,8 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildStatusPill(BookingStatus status) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     Color color;
     String label = _getStatusLabel(status);
     
@@ -311,18 +323,18 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
         label = 'Scheduled';
         break;
       case BookingStatus.active: 
-        color = AppColors.primary;
+        color = colorScheme.primary;
         label = 'Confirmed';
         break;
-      case BookingStatus.completed: color = AppColors.onSurfaceVariant; break;
-      case BookingStatus.cancelled: color = AppColors.error; break;
+      case BookingStatus.completed: color = colorScheme.onSurfaceVariant; break;
+      case BookingStatus.cancelled: color = colorScheme.error; break;
       default: color = Colors.grey;
     }
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -333,16 +345,17 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildInfoRow(IconData icon, String label, String sublabel) {
+    final theme = Theme.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: AppColors.outline),
+        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-            Text(sublabel, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: AppColors.outline)),
+            Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+            Text(sublabel, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: theme.colorScheme.onSurfaceVariant)),
           ],
         ),
       ],
@@ -365,15 +378,16 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildEmptyState(BookingStatus status) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.outlineVariant),
+          Icon(Icons.inventory_2_outlined, size: 64, color: theme.colorScheme.outlineVariant),
           const SizedBox(height: 16),
           Text(
             'No more ${_getStatusLabel(status).toLowerCase()} jobs.',
-            style: AppTypography.headlineMedium.copyWith(fontSize: 20),
+            style: AppTypography.headlineMedium.copyWith(fontSize: 20, color: theme.colorScheme.onSurface),
           ),
         ],
       ),

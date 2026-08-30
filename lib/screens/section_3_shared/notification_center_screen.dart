@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -33,9 +32,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final isWorker = authProvider.userRole == 'worker';
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.background,
       body: Column(
         children: [
           _buildHeader(),
@@ -44,7 +44,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
               future: _notificationsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
                 }
 
                 final allNotifications = snapshot.data ?? [];
@@ -62,7 +62,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                   onRefresh: () async {
                     setState(() => _loadNotifications());
                   },
-                  color: AppColors.primary,
+                  color: theme.colorScheme.primary,
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                     children: [
@@ -92,6 +92,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final authProvider = context.read<AuthProvider>();
+
     return SafeArea(
       bottom: false,
       child: Container(
@@ -100,14 +104,17 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
           children: [
             IconButton(
               onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
-              icon: const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+              icon: Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(width: 8),
-            Text('Notifications', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
+            Text('Notifications', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
             const Spacer(),
             GestureDetector(
               onTap: () => Navigator.pushNamed(context, AppRouter.profile),
-              child: const CircleAvatar(radius: 18, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=current_user')),
+              child: CircleAvatar(
+                radius: 18, 
+                backgroundImage: NetworkImage(authProvider.userAvatar ?? 'https://i.pravatar.cc/150?u=current_user'),
+              ),
             ),
           ],
         ),
@@ -116,24 +123,27 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Widget _buildSectionHeader(String title) {
+    final theme = Theme.of(context);
     return Text(
       title,
-      style: AppTypography.labelLarge.copyWith(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w700),
+      style: AppTypography.labelLarge.copyWith(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
     );
   }
 
   Widget _buildNotificationCard(AppNotification notification) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isUnread = !notification.isRead;
     
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: isUnread ? Colors.white : Colors.white.withValues(alpha: 0.8),
+        color: isUnread ? colorScheme.surfaceVariant.withValues(alpha: 0.2) : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         boxShadow: isUnread ? [
-          BoxShadow(color: AppColors.primary.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
         ] : null,
-        border: Border.all(color: AppColors.surfaceVariant.withValues(alpha: 0.3)),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.15)),
       ),
       child: InkWell(
         onTap: () => _handleNotificationTap(notification),
@@ -153,7 +163,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     const SizedBox(height: 8),
                     Text(
                       _formatRelativeTime(notification.createdAt),
-                      style: AppTypography.bodySmall.copyWith(fontSize: 10),
+                      style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -162,7 +172,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
                 ),
             ],
           ),
@@ -172,6 +182,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Widget _buildIconCircle(AppNotification notification) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     IconData icon;
     Color color;
     Color bgColor;
@@ -180,41 +192,38 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       case NotificationType.bookingAccepted:
       case NotificationType.bookingUpdated:
         icon = Icons.work;
-        color = AppColors.primary;
-        bgColor = AppColors.secondaryContainer.withValues(alpha: 0.3);
+        color = colorScheme.primary;
+        bgColor = colorScheme.primary.withValues(alpha: 0.1);
         break;
       case NotificationType.newChatMessage:
         icon = Icons.chat;
-        color = const Color(0xFF835400); // Tertiary
-        bgColor = const Color(0xFFFFDDB5).withValues(alpha: 0.3);
+        color = const Color(0xFF835400); 
+        bgColor = const Color(0xFFFFDDB5).withValues(alpha: 0.2);
         break;
       case NotificationType.verificationApproved:
         icon = Icons.verified_user;
-        color = AppColors.primary;
-        bgColor = AppColors.primaryContainer.withValues(alpha: 0.1);
+        color = colorScheme.primary;
+        bgColor = colorScheme.primary.withValues(alpha: 0.1);
         break;
       case NotificationType.bookingCompleted:
         icon = Icons.history;
-        color = AppColors.onSurfaceVariant;
-        bgColor = AppColors.surfaceVariant.withValues(alpha: 0.5);
+        color = colorScheme.onSurfaceVariant;
+        bgColor = colorScheme.surfaceVariant.withValues(alpha: 0.3);
         break;
       case NotificationType.newRatingReceived:
         icon = Icons.star;
-        color = AppColors.onSurfaceVariant;
-        bgColor = AppColors.surfaceVariant.withValues(alpha: 0.5);
+        color = Colors.amber;
+        bgColor = Colors.amber.withValues(alpha: 0.1);
         break;
       default:
         icon = Icons.notifications;
-        color = AppColors.primary;
-        bgColor = AppColors.surfaceContainer;
+        color = colorScheme.primary;
+        bgColor = colorScheme.primary.withValues(alpha: 0.1);
     }
 
-    if (!notification.isRead) {
-       // Already handled by colors above based on type
-    } else {
-       // Greyscale for read
-       color = AppColors.onSurfaceVariant;
-       bgColor = AppColors.surfaceVariant.withValues(alpha: 0.5);
+    if (notification.isRead) {
+       color = colorScheme.onSurfaceVariant;
+       bgColor = colorScheme.surfaceVariant.withValues(alpha: 0.3);
     }
 
     return Container(
@@ -226,13 +235,15 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Widget _buildFormattedText(String body, bool isUnread) {
-    // Basic markdown-like bold support
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final parts = body.split('**');
     return RichText(
       text: TextSpan(
         style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.onSurface,
-          fontWeight: isUnread ? FontWeight.w500 : FontWeight.w400,
+          color: colorScheme.onSurface,
+          fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
           height: 1.4,
         ),
         children: List.generate(parts.length, (index) {
@@ -273,8 +284,6 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       case NotificationType.newRatingReceived:
         final role = context.read<AuthProvider>().userRole;
         if (role == 'worker') {
-           // For worker, rate client screen or jobs list? Instruction says "own Profile/reviews tab"
-           // For now, go to schedule to see completed jobs
            Navigator.pushNamed(context, AppRouter.bookingSchedule);
         } else {
            Navigator.pushNamed(context, AppRouter.bookingHistory);
@@ -299,20 +308,23 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.notifications_off_outlined, size: 80, color: AppColors.outlineVariant),
+            Icon(Icons.notifications_off_outlined, size: 80, color: colorScheme.outlineVariant),
             const SizedBox(height: 24),
-            Text('No Notifications', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
+            Text('No Notifications', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'You haven\'t received any notifications yet. Updates about your bookings and messages will appear here.',
               textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium,
+              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
             ),
           ],
         ),

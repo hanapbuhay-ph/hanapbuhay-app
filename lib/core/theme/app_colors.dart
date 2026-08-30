@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
+  // Light Palette
   static const Color primary = Color(0xFF006E11);
   static const Color primaryContainer = Color(0xFF34A835);
   static const Color onPrimary = Color(0xFFFFFFFF);
@@ -33,10 +34,31 @@ class AppColors {
   static const Color errorContainer = Color(0xFFFFDAD6);
   static const Color onErrorContainer = Color(0xFF93000A);
 
-  static const Color success = Color(0xFF006E11); // Reuse primary for success
+  static const Color success = Color(0xFF006E11);
   static const Color leafBright = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFF59E0B);
   
   static const Color divider = Color(0xFFBECAB6);
   static const Color disabled = Color(0xFFE1E3E2);
+
+  // Dark Palette
+  static const Color darkBackground = Color(0xFF101410);
+  static const Color darkSurface = Color(0xFF101410);
+  static const Color darkOnBackground = Color(0xFFE1E3E2);
+  static const Color darkOnSurface = Color(0xFFE1E3E2);
+  static const Color darkSurfaceVariant = Color(0xFF3F4A3B);
+  static const Color darkOnSurfaceVariant = Color(0xFFC2CCBC);
+  static const Color darkPrimary = Color(0xFF6CDF64);
+  static const Color darkOnPrimary = Color(0xFF003404);
+  static const Color darkPrimaryContainer = Color(0xFF00530A);
+  static const Color darkOnPrimaryContainer = Color(0xFF88FC7D);
+  static const Color darkSecondary = Color(0xFF91D78A);
+  static const Color darkOnSecondary = Color(0xFF002203);
+  static const Color darkSecondaryContainer = Color(0xFF307231);
+  static const Color darkOnSecondaryContainer = Color(0xFFACF4A4);
+  static const Color darkOutline = Color(0xFF899383);
+  static const Color darkError = Color(0xFFFFB4AB);
+  static const Color darkOnError = Color(0xFF690005);
+  static const Color darkErrorContainer = Color(0xFF93000A);
+  static const Color darkOnErrorContainer = Color(0xFFFFDAD6);
 }

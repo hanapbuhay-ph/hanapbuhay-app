@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
@@ -54,41 +53,27 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Future<void> _updateStatus(BookingStatus newStatus) async {
-    // In a real app, we'd call an API. For mock, we'll update the local state.
-    // Tapping 'Start Traveling' -> status becomes active (En Route)
-    // Tapping 'I've Arrived' -> status stays active but we stop simulation, or moves to inProgress
-    
-    // For this mock flow:
-    // Accepted -> tapping button -> status: active (En Route)
-    // Active -> tapping button -> status: inProgress
-    // In Progress -> tapping button -> status: completed
-
     setState(() => _isLoading = true);
-    // TODO: POST /api/bookings/{id}/respond or /api/bookings/{id}/status
-    await Future.delayed(const Duration(milliseconds: 500));
+    final bookingProvider = context.read<BookingProvider>();
+    final result = await bookingProvider.updateBookingStatus(bookingId: widget.bookingId, status: newStatus);
     
     if (mounted) {
-      // Logic to move to next status based on current
-      BookingStatus next;
-      switch (_booking!.status) {
-        case BookingStatus.upcoming: next = BookingStatus.active; break;
-        case BookingStatus.active: next = BookingStatus.completed; break; // Simple jump for now
-        default: next = _booking!.status;
+      if (result.success) {
+        await _loadData();
+      } else {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
       }
-      
-      // Update repository mock state if needed, or just refresh
-      // Since our mock repository currently doesn't persist status changes across navigations 
-      // without a proper state management solution (which we have in Provider, but repository is the source here)
-      // we'll just simulate the local UI update.
-      
-      await _loadData(); // Refresh from repository
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary)));
+      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
     if (_booking == null || _worker == null) {
@@ -100,7 +85,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     final showMap = booking.status == BookingStatus.active;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Job Details'),
@@ -131,10 +116,10 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   Center(
                     child: TextButton.icon(
                       onPressed: () => Navigator.pushNamed(context, '${AppRouter.fileReport}/${booking.id}'),
-                      icon: const Icon(Icons.report_problem_outlined, size: 16, color: AppColors.error),
-                      label: const Text(
+                      icon: Icon(Icons.report_problem_outlined, size: 16, color: colorScheme.error),
+                      label: Text(
                         'File a Report',
-                        style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
+                        style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -150,15 +135,18 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildClientCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -175,8 +163,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Maria Santos', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
-                Text('Client', style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant)),
+                Text('Maria Santos', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                Text('Client', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ),
@@ -184,9 +172,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             onPressed: () {
               Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
             },
-            icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
+            icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
             style: IconButton.styleFrom(
-              backgroundColor: AppColors.primary.withOpacity(0.1),
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
@@ -196,15 +184,17 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildMapSection(Booking booking, Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     const clientLoc = LatLng(9.9575, 124.3517);
     final workerLoc = worker.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
 
     return Container(
       height: 280,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -222,8 +212,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             child: FloatingActionButton.small(
               heroTag: 'view_map_worker',
               onPressed: () => Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${booking.id}/tracking'),
-              backgroundColor: Colors.white,
-              child: const Icon(Icons.fullscreen, color: AppColors.onSurfaceVariant),
+              backgroundColor: colorScheme.surface,
+              child: Icon(Icons.fullscreen, color: colorScheme.onSurfaceVariant),
             ),
           ),
 
@@ -234,9 +224,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8)],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)],
               ),
               child: Row(
                 children: [
@@ -247,11 +237,11 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                       children: [
                         Text(
                           _isTracking ? 'Traveling to client' : 'Arrived at destination',
-                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700),
+                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
                         ),
                         Text(
                           _isTracking ? 'Estimated arrival: 10 mins' : 'Please proceed with the service',
-                          style: AppTypography.bodySmall.copyWith(fontSize: 10),
+                          style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -260,8 +250,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                     ElevatedButton(
                       onPressed: () => setState(() => _isTracking = false),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -277,18 +267,21 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildBookingDetails(Booking booking) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Booking Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
+          Text('Booking Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
           const SizedBox(height: 20),
           _buildDetailRow(Icons.build_outlined, 'Service Type', booking.category),
           const SizedBox(height: 16),
@@ -296,26 +289,29 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           const SizedBox(height: 16),
           _buildLocationRow(booking),
           const SizedBox(height: 20),
-          const Divider(),
+          Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
-          Text('Notes', style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w700)),
+          Text('Notes', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
-          Text(booking.notes, style: AppTypography.bodyMedium),
+          Text(booking.notes, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
         ],
       ),
     );
   }
 
   Widget _buildDetailRow(IconData icon, String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.primary),
+        Icon(icon, size: 18, color: colorScheme.primary),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant, fontSize: 10)),
-            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+            Text(label, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10)),
+            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
           ],
         ),
       ],
@@ -323,37 +319,42 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildLocationRow(Booking booking) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       children: [
-        const Icon(Icons.location_on_outlined, size: 18, color: AppColors.primary),
+        Icon(Icons.location_on_outlined, size: 18, color: colorScheme.primary),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Location', style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant, fontSize: 10)),
-              Text('Trinidad (${booking.barangay})', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+              Text('Location', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10)),
+              Text('Trinidad (${booking.barangay})', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
             ],
           ),
         ),
         TextButton(
           onPressed: () {
-            // Toggles map section visibility by changing status to active if it was upcoming
             if (_booking!.status == BookingStatus.upcoming) {
               _updateStatus(BookingStatus.active);
             }
           },
-          child: const Text('View on Map', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+          child: Text('View on Map', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w700)),
         ),
       ],
     );
   }
 
   Widget _buildTimeline(Booking booking) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Job Status', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
+        Text('Job Status', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
         const SizedBox(height: 24),
         ...booking.timeline.asMap().entries.map((entry) {
           final idx = entry.key;
@@ -369,19 +370,19 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: step.isCompleted ? AppColors.primary : AppColors.surfaceContainerHighest,
+                        color: step.isCompleted ? colorScheme.primary : colorScheme.surfaceVariant,
                         shape: BoxShape.circle,
-                        border: step.isCompleted ? null : Border.all(color: AppColors.outlineVariant),
+                        border: step.isCompleted ? null : Border.all(color: colorScheme.outlineVariant),
                       ),
                       child: step.isCompleted 
-                        ? const Icon(Icons.check, size: 12, color: Colors.white) 
+                        ? Icon(Icons.check, size: 12, color: colorScheme.onPrimary) 
                         : null,
                     ),
                     if (!isLast)
                       Expanded(
                         child: Container(
                           width: 2,
-                          color: step.isCompleted ? AppColors.primary : AppColors.surfaceContainerHighest,
+                          color: step.isCompleted ? colorScheme.primary : colorScheme.surfaceVariant,
                         ),
                       ),
                   ],
@@ -397,13 +398,13 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                           step.label,
                           style: AppTypography.bodyMedium.copyWith(
                             fontWeight: step.isCompleted ? FontWeight.w700 : FontWeight.w400,
-                            color: step.isCompleted ? AppColors.onSurface : AppColors.onSurfaceVariant,
+                            color: step.isCompleted ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
                           ),
                         ),
                         if (step.timestamp != null)
                           Text(
                             '${step.timestamp!.hour}:${step.timestamp!.minute.toString().padLeft(2, '0')}',
-                            style: AppTypography.bodySmall.copyWith(fontSize: 10),
+                            style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
                           ),
                       ],
                     ),
@@ -425,8 +426,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       );
     }
     
-    // Status In Progress logic (not explicitly in enum yet but simulated)
-    // For now, if active and NOT tracking (meaning arrived), show complete
     if (booking.status == BookingStatus.active && !_isTracking) {
       return PrimaryButton(
         label: 'Mark as Completed',

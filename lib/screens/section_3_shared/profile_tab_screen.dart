@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
@@ -46,6 +46,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Future<void> _handleLogout() async {
+    final theme = Theme.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -55,7 +56,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Logout', style: TextStyle(color: AppColors.error)),
+            child: Text('Logout', style: TextStyle(color: theme.colorScheme.error)),
           ),
         ],
       ),
@@ -74,13 +75,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final isWorker = authProvider.userRole == 'worker';
+    final theme = Theme.of(context);
 
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary)));
+      return Scaffold(body: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)));
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB), // Surface Cream
+      backgroundColor: theme.colorScheme.background,
       body: Column(
         children: [
           _buildHeader(authProvider),
@@ -139,6 +141,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Widget _buildUserSummary(AuthProvider authProvider) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final name = authProvider.userName ?? _workerData?.name ?? 'User';
     final bio = _workerData?.bio ?? 'Passionate about finding quality services in our community.';
     final avatar = authProvider.userAvatar ?? _workerData?.avatarUrl ?? 'https://i.pravatar.cc/150?u=client';
@@ -147,9 +151,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 4))],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -157,7 +162,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             children: [
               CircleAvatar(
                 radius: 48,
-                backgroundColor: AppColors.surfaceVariant,
+                backgroundColor: colorScheme.surfaceVariant,
                 backgroundImage: avatar.startsWith('http') 
                     ? NetworkImage(avatar) 
                     : FileImage(File(avatar)) as ImageProvider,
@@ -170,11 +175,11 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: colorScheme.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: colorScheme.surface, width: 2),
                     ),
-                    child: const Icon(Icons.edit, size: 14, color: Colors.white),
+                    child: Icon(Icons.edit, size: 14, color: colorScheme.onPrimary),
                   ),
                 ),
               ),
@@ -186,7 +191,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -195,12 +200,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 Icon(
                   authProvider.userRole == 'worker' ? Icons.work : Icons.person,
                   size: 14,
-                  color: AppColors.primary,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   authProvider.userRole?.toUpperCase() ?? 'CLIENT',
-                  style: TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                  style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                 ),
               ],
             ),
@@ -209,7 +214,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           Text(
             bio,
             textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -219,13 +224,16 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Widget _buildTrustTierCard(bool isWorker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final status = isWorker ? (_workerData?.verificationStatus ?? VerificationStatus.notStarted) : VerificationStatus.verified;
+    
     String label = 'Standard';
-    Color color = AppColors.onSurfaceVariant;
+    Color color = colorScheme.onSurfaceVariant;
 
     if (status == VerificationStatus.verified) {
       label = 'Verified';
-      color = AppColors.primary;
+      color = colorScheme.primary;
     } else if (status == VerificationStatus.pending) {
       label = 'Under Review';
       color = Colors.amber;
@@ -234,15 +242,15 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(Icons.shield_outlined, color: color, size: 24),
           ),
           const SizedBox(width: 16),
@@ -250,7 +258,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('TRUST TIER', style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant, letterSpacing: 1.2)),
+                Text('TRUST TIER', style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant, letterSpacing: 1.2)),
                 Row(
                   children: [
                     Flexible(
@@ -272,6 +280,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Widget _buildQuickStats(bool isWorker) {
+    final theme = Theme.of(context);
     final rating = isWorker ? (_workerData?.rating ?? 0.0) : 5.0;
     final jobs = isWorker ? (_workerData?.completedJobsCount ?? 0) : 12;
 
@@ -282,30 +291,32 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildStatCard(jobs.toString(), isWorker ? 'Jobs Done' : 'Bookings', Icons.task_alt, AppColors.secondary),
+          child: _buildStatCard(jobs.toString(), isWorker ? 'Jobs Done' : 'Bookings', Icons.task_alt, theme.colorScheme.secondary),
         ),
       ],
     );
   }
 
   Widget _buildStatCard(String value, String label, IconData icon, Color color) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
-          Text(value, style: AppTypography.headlineMedium.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800)),
+          Text(value, style: AppTypography.headlineMedium.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 12, color: color),
               const SizedBox(width: 4),
-              Text(label, style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant)),
+              Text(label, style: AppTypography.labelSmall.copyWith(color: theme.colorScheme.onSurfaceVariant)),
             ],
           ),
         ],
@@ -314,11 +325,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Widget _buildAccountOptions(bool isWorker) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -354,11 +366,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Widget _buildPreferencesCard() {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -382,19 +395,34 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             title: 'Help / FAQ',
             onTap: () => Navigator.pushNamed(context, AppRouter.help),
           ),
+          const Divider(height: 1),
+          _buildOptionRow(
+            icon: Icons.palette_outlined,
+            title: 'Appearance',
+            onTap: _showAppearancePicker,
+          ),
         ],
       ),
     );
   }
 
+  void _showAppearancePicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _AppearanceBottomSheet(),
+    );
+  }
+
   Widget _buildCardHeader(String title) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: AppColors.surfaceContainerLow,
+      color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
       child: Text(
         title,
-        style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w700),
+        style: AppTypography.labelSmall.copyWith(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -406,11 +434,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     Widget? trailing,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppColors.surfaceContainerLow, shape: BoxShape.circle),
-        child: Icon(icon, size: 20, color: AppColors.onSurfaceVariant),
+        decoration: BoxDecoration(color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3), shape: BoxShape.circle),
+        child: Icon(icon, size: 20, color: theme.colorScheme.onSurfaceVariant),
       ),
       title: Row(
         children: [
@@ -424,19 +453,20 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         ],
       ),
       subtitle: subtitle != null ? Text(subtitle, style: AppTypography.bodySmall) : null,
-      trailing: const Icon(Icons.chevron_right, size: 20, color: AppColors.outlineVariant),
+      trailing: Icon(Icons.chevron_right, size: 20, color: theme.colorScheme.outlineVariant),
       onTap: onTap,
     );
   }
 
   Widget _buildStatusBadge(VerificationStatus status) {
+    final theme = Theme.of(context);
     String label = 'NOT STARTED';
-    Color color = AppColors.onSurfaceVariant;
+    Color color = theme.colorScheme.onSurfaceVariant;
 
     switch (status) {
       case VerificationStatus.verified:
         label = 'ACTIVE';
-        color = AppColors.primary;
+        color = theme.colorScheme.primary;
         break;
       case VerificationStatus.pending:
         label = 'PENDING';
@@ -444,7 +474,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         break;
       case VerificationStatus.rejected:
         label = 'REJECTED';
-        color = AppColors.error;
+        color = theme.colorScheme.error;
         break;
       default:
         break;
@@ -452,22 +482,131 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
       child: Text(label, style: TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.bold)),
     );
   }
 
   Widget _buildLogoutButton() {
+    final theme = Theme.of(context);
     return SizedBox(
       width: double.infinity,
       child: TextButton.icon(
         onPressed: _handleLogout,
-        icon: const Icon(Icons.logout, size: 20, color: AppColors.error),
-        label: const Text('Logout', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w800, fontSize: 16)),
+        icon: Icon(Icons.logout, size: 20, color: theme.colorScheme.error),
+        label: Text('Logout', style: TextStyle(color: theme.colorScheme.error, fontWeight: FontWeight.w800, fontSize: 16)),
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          backgroundColor: AppColors.error.withOpacity(0.05),
+          backgroundColor: theme.colorScheme.error.withValues(alpha: 0.05),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      ),
+    );
+  }
+}
+
+class _AppearanceBottomSheet extends StatelessWidget {
+  const _AppearanceBottomSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final currentMode = themeProvider.themeMode;
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Appearance',
+            style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 32),
+          _buildThemeOption(
+            context,
+            mode: ThemeMode.system,
+            label: 'System Default',
+            icon: Icons.brightness_auto_outlined,
+            isSelected: currentMode == ThemeMode.system,
+          ),
+          const SizedBox(height: 12),
+          _buildThemeOption(
+            context,
+            mode: ThemeMode.light,
+            label: 'Light Mode',
+            icon: Icons.light_mode_outlined,
+            isSelected: currentMode == ThemeMode.light,
+          ),
+          const SizedBox(height: 12),
+          _buildThemeOption(
+            context,
+            mode: ThemeMode.dark,
+            label: 'Dark Mode',
+            icon: Icons.dark_mode_outlined,
+            isSelected: currentMode == ThemeMode.dark,
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context, {
+    required ThemeMode mode,
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+  }) {
+    final theme = Theme.of(context);
+    final color = isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface;
+
+    return InkWell(
+      onTap: () {
+        context.read<ThemeProvider>().setThemeMode(mode);
+        Navigator.pop(context);
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.05) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: AppTypography.bodyLarge.copyWith(
+                color: color,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 24),
+          ],
         ),
       ),
     );

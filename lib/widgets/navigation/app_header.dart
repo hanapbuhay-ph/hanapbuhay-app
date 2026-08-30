@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'app_back_button.dart';
 
@@ -23,6 +22,8 @@ class AppHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Container(
       color: backgroundColor,
       child: SafeArea(
@@ -40,7 +41,7 @@ class AppHeader extends StatelessWidget {
               Text(
                 title,
                 style: AppTypography.headlineMedium.copyWith(
-                  color: AppColors.primary,
+                  color: theme.colorScheme.primary,
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
                 ),

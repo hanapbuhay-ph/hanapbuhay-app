@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -135,8 +134,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(),
@@ -152,13 +154,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                     width: 96,
                     height: 96,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: colorScheme.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.mark_email_unread_outlined,
                       size: 48,
-                      color: AppColors.primary,
+                      color: colorScheme.primary,
                     ),
                   ),
                   
@@ -167,7 +169,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                   Text(
                     'Verify your email',
                     textAlign: TextAlign.center,
-                    style: AppTypography.headlineLarge.copyWith(fontSize: 28),
+                    style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface),
                   ),
                   
                   const SizedBox(height: 12),
@@ -175,13 +177,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                      style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                       children: [
                         const TextSpan(text: 'We sent a verification code to your email address\n'),
                         TextSpan(
                           text: widget.email,
                           style: AppTypography.labelLarge.copyWith(
-                            color: AppColors.primary,
+                            color: colorScheme.primary,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -210,7 +212,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                     Text(
                       _errorMessage!,
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodySmall.copyWith(color: AppColors.error),
+                      style: AppTypography.bodySmall.copyWith(color: colorScheme.error),
                     ),
                   ],
                   
@@ -220,7 +222,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                     _canResend 
                       ? "Didn't receive the code?"
                       : "Resend code in 00:${_secondsRemaining.toString().padLeft(2, '0')}",
-                    style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+                    style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
                   
                   const SizedBox(height: 8),
@@ -230,7 +232,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                     child: Text(
                       'Resend Code',
                       style: AppTypography.labelLarge.copyWith(
-                        color: _canResend ? AppColors.primary : AppColors.outlineVariant,
+                        color: _canResend ? colorScheme.primary : colorScheme.outlineVariant,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -242,9 +244,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
           
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
             child: PrimaryButton(
               label: 'Verify',
@@ -259,14 +261,17 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
   }
 
   Widget _buildOtpBox(int index) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: 48,
       height: 56,
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _focusNodes[index].hasFocus ? AppColors.primary : AppColors.outlineVariant,
+          color: _focusNodes[index].hasFocus ? colorScheme.primary : colorScheme.outlineVariant,
           width: _focusNodes[index].hasFocus ? 2 : 1,
         ),
       ),
@@ -290,7 +295,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
             FilteringTextInputFormatter.digitsOnly,
           ],
           style: AppTypography.headlineMedium.copyWith(
-            color: AppColors.primary,
+            color: colorScheme.primary,
             fontWeight: FontWeight.w800,
           ),
           decoration: const InputDecoration(

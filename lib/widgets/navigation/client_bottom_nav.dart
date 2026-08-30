@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/notification_provider.dart';
@@ -37,19 +36,22 @@ class ClientBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        border: const Border(top: BorderSide(color: AppColors.surfaceContainerHigh, width: 0.5)),
+        color: colorScheme.surface.withValues(alpha: 0.9),
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3), width: 0.5)),
       ),
       child: BottomNavigationBar(
-        currentIndex: currentIndex,
+        currentIndex: currentIndex == -1 ? 0 : currentIndex,
         onTap: (index) => _onTap(context, index),
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.onSurfaceVariant,
+        selectedItemColor: colorScheme.primary,
+        unselectedItemColor: colorScheme.onSurfaceVariant,
         selectedLabelStyle: AppTypography.labelSmall.copyWith(fontSize: 10, fontWeight: FontWeight.w700),
         unselectedLabelStyle: AppTypography.labelSmall.copyWith(fontSize: 10),
         items: [
@@ -83,9 +85,9 @@ class ClientBottomNav extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(1),
                           decoration: BoxDecoration(
-                            color: AppColors.error,
+                            color: colorScheme.error,
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.white, width: 1),
+                            border: Border.all(color: colorScheme.surface, width: 1),
                           ),
                           constraints: const BoxConstraints(minWidth: 8, minHeight: 8),
                         ),

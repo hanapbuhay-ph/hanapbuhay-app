@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
@@ -55,8 +54,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
     if (_booking == null || _worker == null) {
@@ -68,7 +70,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     final showMap = booking.status == BookingStatus.accepted || booking.status == BookingStatus.active;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Booking Details'),
@@ -98,9 +100,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       onPressed: () {
                         Navigator.pushNamed(context, '${AppRouter.fileReport}/${booking.id}');
                       },
-                      child: const Text(
+                      child: Text(
                         'File an Issue Report',
-                        style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
+                        style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -116,15 +118,18 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Widget _buildWorkerCard(Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -138,12 +143,12 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(worker.name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
+                Text(worker.name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                 Row(
                   children: [
                     const Icon(Icons.star, color: Colors.amber, size: 14),
                     const SizedBox(width: 4),
-                    Text(worker.rating.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(worker.rating.toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: colorScheme.onSurface)),
                   ],
                 ),
               ],
@@ -153,9 +158,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             onPressed: () {
               Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
             },
-            icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
+            icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
             style: IconButton.styleFrom(
-              backgroundColor: AppColors.primary.withOpacity(0.1),
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
@@ -165,6 +170,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Widget _buildMapSection(Booking booking, Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     // Conceptual client location: Poblacion center
     const clientLoc = LatLng(9.9575, 124.3517);
     final workerLoc = worker.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
@@ -172,9 +179,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     return Container(
       height: 280,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -193,8 +200,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             child: FloatingActionButton.small(
               heroTag: 'view_map',
               onPressed: () => Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${booking.id}/tracking'),
-              backgroundColor: Colors.white,
-              child: const Icon(Icons.fullscreen, color: AppColors.onSurfaceVariant),
+              backgroundColor: colorScheme.surface,
+              child: Icon(Icons.fullscreen, color: colorScheme.onSurfaceVariant),
             ),
           ),
 
@@ -205,9 +212,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8)],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)],
               ),
               child: Row(
                 children: [
@@ -218,11 +225,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       children: [
                         Text(
                           _isTracking ? 'Worker is en route' : 'Booking Confirmed',
-                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700),
+                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
                         ),
                         Text(
                           _isTracking ? 'Arriving in ~10 mins' : 'Worker will arrive on schedule',
-                          style: AppTypography.bodySmall.copyWith(fontSize: 10),
+                          style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -231,8 +238,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   ElevatedButton(
                     onPressed: () => setState(() => _isTracking = !_isTracking),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _isTracking ? AppColors.errorContainer : AppColors.primary,
-                      foregroundColor: _isTracking ? AppColors.error : Colors.white,
+                      backgroundColor: _isTracking ? colorScheme.errorContainer : colorScheme.primary,
+                      foregroundColor: _isTracking ? colorScheme.error : colorScheme.onPrimary,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -249,18 +256,21 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Widget _buildJobDetails(Booking booking) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Job Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
+          Text('Job Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
           const SizedBox(height: 20),
           _buildDetailRow(Icons.category_outlined, 'Service', booking.category),
           const SizedBox(height: 16),
@@ -268,26 +278,29 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           const SizedBox(height: 16),
           _buildDetailRow(Icons.location_on_outlined, 'Service Barangay', booking.barangay),
           const SizedBox(height: 20),
-          const Divider(),
+          Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
-          Text('Notes', style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w700)),
+          Text('Notes', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
-          Text(booking.notes, style: AppTypography.bodyMedium),
+          Text(booking.notes, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
         ],
       ),
     );
   }
 
   Widget _buildDetailRow(IconData icon, String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.primary),
+        Icon(icon, size: 18, color: colorScheme.primary),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant, fontSize: 10)),
-            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+            Text(label, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10)),
+            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
           ],
         ),
       ],
@@ -295,10 +308,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Widget _buildTimeline(Booking booking) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Status Timeline', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
+        Text('Status Timeline', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
         const SizedBox(height: 24),
         ...booking.timeline.asMap().entries.map((entry) {
           final idx = entry.key;
@@ -314,19 +330,19 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: step.isCompleted ? AppColors.primary : AppColors.surfaceContainerHighest,
+                        color: step.isCompleted ? colorScheme.primary : colorScheme.surfaceVariant,
                         shape: BoxShape.circle,
-                        border: step.isCompleted ? null : Border.all(color: AppColors.outlineVariant),
+                        border: step.isCompleted ? null : Border.all(color: colorScheme.outlineVariant),
                       ),
                       child: step.isCompleted 
-                        ? const Icon(Icons.check, size: 12, color: Colors.white) 
+                        ? Icon(Icons.check, size: 12, color: colorScheme.onPrimary) 
                         : null,
                     ),
                     if (!isLast)
                       Expanded(
                         child: Container(
                           width: 2,
-                          color: step.isCompleted ? AppColors.primary : AppColors.surfaceContainerHighest,
+                          color: step.isCompleted ? colorScheme.primary : colorScheme.surfaceVariant,
                         ),
                       ),
                   ],
@@ -342,13 +358,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                           step.label,
                           style: AppTypography.bodyMedium.copyWith(
                             fontWeight: step.isCompleted ? FontWeight.w700 : FontWeight.w400,
-                            color: step.isCompleted ? AppColors.onSurface : AppColors.onSurfaceVariant,
+                            color: step.isCompleted ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
                           ),
                         ),
                         if (step.timestamp != null)
                           Text(
                             '${step.timestamp!.hour}:${step.timestamp!.minute.toString().padLeft(2, '0')}',
-                            style: AppTypography.bodySmall.copyWith(fontSize: 10),
+                            style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
                           ),
                       ],
                     ),

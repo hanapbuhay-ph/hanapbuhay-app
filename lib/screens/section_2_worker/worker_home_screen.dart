@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/routing/app_router.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
@@ -30,18 +29,23 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   void _loadData() {
+    final workerProvider = context.read<WorkerProvider>();
+    final bookingProvider = context.read<BookingProvider>();
+    
     // For demo/mock, we assume worker ID 'w1'
-    _workerFuture = context.read<WorkerProvider>().getWorkerById('w1');
-    _requestsFuture = context.read<BookingProvider>().getBookings().then(
+    _workerFuture = workerProvider.getWorkerById('w1');
+    _requestsFuture = bookingProvider.getBookings().then(
       (list) => list.where((b) => b.status == BookingStatus.pending).toList()
     );
   }
 
   Future<void> _handleResponse(String bookingId, bool accept) async {
-    final result = await context.read<BookingProvider>().respondToBooking(bookingId: bookingId, accept: accept);
+    final bookingProvider = context.read<BookingProvider>();
+    final result = await bookingProvider.respondToBooking(bookingId: bookingId, accept: accept);
     if (mounted) {
+      final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message), backgroundColor: accept ? AppColors.primary : AppColors.error),
+        SnackBar(content: Text(result.message), backgroundColor: accept ? theme.colorScheme.primary : theme.colorScheme.error),
       );
       if (accept) {
         Navigator.pushNamed(context, '${AppRouter.jobDetail}/$bookingId');
@@ -53,15 +57,16 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final firstName = authProvider.userEmail?.split('@').first ?? 'Ricardo';
+    final firstName = authProvider.userName?.split(' ').first ?? authProvider.userEmail?.split('@').first ?? 'Ricardo';
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.background,
       body: FutureBuilder<Worker?>(
         future: _workerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
           }
           final worker = snapshot.data;
           if (worker == null) return const Center(child: Text('Worker profile not found'));
@@ -74,7 +79,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                   onRefresh: () async {
                     setState(() => _loadData());
                   },
-                  color: AppColors.primary,
+                  color: theme.colorScheme.primary,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                     physics: const BouncingScrollPhysics(),
@@ -107,30 +112,35 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildHeader(Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final authProvider = context.read<AuthProvider>();
+    final avatar = authProvider.userAvatar ?? worker.avatarUrl;
+
     return SafeArea(
       bottom: false,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: colorScheme.surface.withValues(alpha: 0.9),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.menu, color: AppColors.onSurfaceVariant),
+              icon: Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
               onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
             ),
             const SizedBox(width: 16),
-            const Text(
+            Text(
               'HanapBuhay',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: AppColors.primary,
+                color: colorScheme.primary,
                 letterSpacing: -1,
               ),
             ),
@@ -139,7 +149,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
               onTap: () => Navigator.pushNamed(context, AppRouter.notificationCenter),
               child: Stack(
                 children: [
-                  const Icon(Icons.notifications_none, color: AppColors.onSurfaceVariant),
+                  Icon(Icons.notifications_none, color: colorScheme.onSurfaceVariant),
                   Positioned(
                     right: 2,
                     top: 2,
@@ -152,9 +162,9 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                           width: 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: AppColors.error,
+                            color: colorScheme.error,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
+                            border: Border.all(color: colorScheme.surface, width: 1.5),
                           ),
                         );
                       },
@@ -164,7 +174,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
               ),
             ),
             const SizedBox(width: 16),
-            CircleAvatar(radius: 16, backgroundImage: NetworkImage(worker.avatarUrl)),
+            CircleAvatar(radius: 16, backgroundImage: NetworkImage(avatar)),
           ],
         ),
       ),
@@ -183,12 +193,15 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildVerificationBanner(Worker worker) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFE082).withOpacity(0.3), // Amber/Tertiary fixed-ish
+        color: Colors.orange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -210,7 +223,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                       worker.verificationStatus == VerificationStatus.rejected
                         ? 'Please review the reason and try again.'
                         : 'Verified workers get more bookings.', 
-                      style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -249,14 +262,16 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildAvailabilityCard() {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,12 +281,12 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLow,
+              color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(30),
             ),
             child: Row(
               children: [
-                _buildStatusToggle(WorkerAvailability.available, 'Available', AppColors.primary),
+                _buildStatusToggle(WorkerAvailability.available, 'Available', theme.colorScheme.primary),
                 _buildStatusToggle(WorkerAvailability.busy, 'Busy', Colors.orange),
                 _buildStatusToggle(WorkerAvailability.offline, 'Offline', Colors.grey),
               ],
@@ -283,6 +298,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildStatusToggle(WorkerAvailability status, String label, Color color) {
+    final theme = Theme.of(context);
     final isSelected = _currentStatus == status;
     return Expanded(
       child: GestureDetector(
@@ -290,9 +306,9 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
+            color: isSelected ? theme.colorScheme.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(28),
-            boxShadow: isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))] : null,
+            boxShadow: isSelected ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))] : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -304,7 +320,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? AppColors.onSurface : AppColors.onSurfaceVariant,
+                  color: isSelected ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   fontSize: 12,
                 ),
@@ -317,13 +333,14 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildStatsRow(Worker worker) {
+    final theme = Theme.of(context);
     return Row(
       children: [
         _buildStatCard(
           icon: Icons.verified,
           label: 'Trust Tier',
           value: worker.isVerified ? 'Verified' : 'Unverified',
-          color: AppColors.primary,
+          color: theme.colorScheme.primary,
         ),
         const SizedBox(width: 12),
         _buildStatCard(
@@ -337,32 +354,34 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           icon: Icons.work,
           label: 'Jobs',
           value: '${worker.completedJobsCount} Done',
-          color: AppColors.secondary,
+          color: theme.colorScheme.secondary,
         ),
       ],
     );
   }
 
   Widget _buildStatCard({required IconData icon, required String label, required String value, required Color color}) {
+    final theme = Theme.of(context);
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2)),
           ],
+          border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 20),
             ),
             const SizedBox(height: 8),
-            Text(label, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: AppColors.onSurfaceVariant)),
+            Text(label, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: theme.colorScheme.onSurfaceVariant)),
             const SizedBox(height: 2),
             Text(value, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 13)),
           ],
@@ -382,7 +401,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
               onPressed: () {
                 Navigator.pushNamed(context, AppRouter.bookingSchedule);
               },
-              child: const Text('View All', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+              child: Text('View All', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -392,19 +411,20 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           builder: (context, snapshot) {
             final requests = snapshot.data ?? [];
             if (requests.isEmpty) {
+              final theme = Theme.of(context);
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.surfaceContainerHigh),
+                  border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.inbox_outlined, size: 48, color: AppColors.outlineVariant),
-                    SizedBox(height: 12),
-                    Text('No pending requests', style: TextStyle(color: AppColors.onSurfaceVariant)),
+                    Icon(Icons.inbox_outlined, size: 48, color: theme.colorScheme.outlineVariant),
+                    const SizedBox(height: 12),
+                    Text('No pending requests', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
               );
@@ -419,15 +439,19 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildRequestCard(Booking request) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -442,8 +466,8 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                     Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                      child: Text(request.category, style: const TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.bold)),
+                      decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                      child: Text(request.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -454,11 +478,11 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(Icons.calendar_today, size: 14, color: AppColors.onSurfaceVariant),
+              Icon(Icons.calendar_today, size: 14, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 6),
               Text('${request.date.day}/${request.date.month}/${request.date.year} • ${request.time}', style: AppTypography.bodySmall),
               const Spacer(),
-              const Icon(Icons.location_on, size: 14, color: AppColors.onSurfaceVariant),
+              Icon(Icons.location_on, size: 14, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 6),
               Text(request.barangay, style: AppTypography.bodySmall),
             ],
@@ -471,10 +495,10 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                   onPressed: () => _handleResponse(request.id, false),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: const BorderSide(color: AppColors.outlineVariant),
+                    side: BorderSide(color: colorScheme.outline),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Decline', style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.bold)),
+                  child: Text('Decline', style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -482,8 +506,8 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                 child: ElevatedButton(
                   onPressed: () => _handleResponse(request.id, true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
