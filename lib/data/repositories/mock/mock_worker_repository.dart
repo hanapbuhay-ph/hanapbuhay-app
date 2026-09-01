@@ -3,9 +3,32 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/worker_model.dart';
 import '../worker_repository.dart';
 import '../../models/auth_result_model.dart';
+import '../../models/job_post_model.dart';
+import '../../models/trust_tier.dart';
 
 class MockWorkerRepository implements WorkerRepository {
-  final List<Worker> _workers = [
+  final List<JobPost> _mockJobPosts = [
+    JobPost(
+      id: 'jp1',
+      workerId: 'w1',
+      category: 'Plumbing',
+      title: 'Expert Pipe & Leak Repair',
+      description: 'Quick fixing for all household plumbing issues.',
+      startingRate: 350,
+      rateType: RateType.perSession,
+    ),
+    JobPost(
+      id: 'jp2',
+      workerId: 'w1',
+      category: 'Cleaning',
+      title: 'Deep House Cleaning',
+      description: 'Professional cleaning for your home.',
+      startingRate: 150,
+      rateType: RateType.perHour,
+    ),
+  ];
+
+  late final List<Worker> _workers = [
     Worker(
       id: 'w1',
       name: 'Ricardo Dalisay',
@@ -39,6 +62,8 @@ class MockWorkerRepository implements WorkerRepository {
           date: DateTime.now().subtract(const Duration(days: 2)),
         ),
       ],
+      jobPosts: _mockJobPosts,
+      trustTier: null, // Unverified
     ),
     Worker(
       id: 'w2',
@@ -56,6 +81,7 @@ class MockWorkerRepository implements WorkerRepository {
       distance: '2.5 km',
       bio: 'Expert electrician for home and commercial projects. Safe and certified.',
       services: ['Wiring', 'Troubleshooting', 'Panel Upgrades'],
+      trustTier: TrustTier.verified,
     ),
     Worker(
       id: 'w3',
@@ -73,6 +99,7 @@ class MockWorkerRepository implements WorkerRepository {
       services: ['Algebra', 'Calculus', 'Geometry'],
       isVerified: true,
       verificationStatus: VerificationStatus.verified,
+      trustTier: TrustTier.trusted,
     ),
     Worker(
       id: 'w4',
@@ -90,6 +117,7 @@ class MockWorkerRepository implements WorkerRepository {
       services: ['Deep Cleaning', 'Organization', 'Post-Construction Cleaning'],
       isVerified: true,
       verificationStatus: VerificationStatus.verified,
+      trustTier: TrustTier.verified,
     ),
     Worker(
       id: 'w5',
@@ -106,8 +134,46 @@ class MockWorkerRepository implements WorkerRepository {
       rejectionReason: 'The uploaded ID was blurry and unreadable. Please ensure the document is clearly visible and well-lit.',
       tags: ['Repairs'],
       distance: '0.5 km',
+      trustTier: null,
+    ),
+    Worker(
+      id: 'w6',
+      name: 'Flagged Worker',
+      avatarUrl: 'https://i.pravatar.cc/150?u=w6',
+      specialty: 'Painter',
+      rating: 3.5,
+      reviewCount: 10,
+      barangay: 'Poblacion',
+      hourlyRate: 300,
+      isVerified: true,
+      verificationStatus: VerificationStatus.verified,
+      tags: ['Painting'],
+      distance: '1.0 km',
+      trustTier: TrustTier.flagged,
+    ),
+    Worker(
+      id: 'w7',
+      name: 'Revoked Worker',
+      avatarUrl: 'https://i.pravatar.cc/150?u=w7',
+      specialty: 'Mason',
+      rating: 2.0,
+      reviewCount: 2,
+      barangay: 'Poblacion',
+      hourlyRate: 450,
+      isVerified: true,
+      verificationStatus: VerificationStatus.verified,
+      tags: ['Masonry'],
+      distance: '1.5 km',
+      trustTier: TrustTier.revoked,
     ),
   ];
+
+  List<Worker> _getFilteredAndSortedWorkers() {
+    return _workers
+        .where((w) => w.trustTier != TrustTier.flagged && w.trustTier != TrustTier.revoked)
+        .toList()
+      ..sort((a, b) => b.trustTier.sortPriority.compareTo(a.trustTier.sortPriority));
+  }
 
   @override
   Future<List<ServiceCategory>> getCategories() async {
@@ -124,12 +190,13 @@ class MockWorkerRepository implements WorkerRepository {
   @override
   Future<List<Worker>> getTopRatedWorkers() async {
     await Future.delayed(const Duration(milliseconds: 400));
-    return _workers;
+    return _getFilteredAndSortedWorkers();
   }
 
   @override
   Future<List<Worker>> getRecentlyViewedWorkers() async {
-    return [_workers[2]];
+    final list = _getFilteredAndSortedWorkers();
+    return list.isNotEmpty ? [list.first] : [];
   }
 
   @override
@@ -138,7 +205,7 @@ class MockWorkerRepository implements WorkerRepository {
     try {
       return _workers.firstWhere((w) => w.id == id);
     } catch (e) {
-      return _workers.first;
+      return null;
     }
   }
 
@@ -176,6 +243,7 @@ class MockWorkerRepository implements WorkerRepository {
         reviews: old.reviews,
         trustTier: old.trustTier,
         completedJobsCount: old.completedJobsCount,
+        jobPosts: old.jobPosts,
       );
     }
     return AuthResult.success(message: 'Verification submitted.');
@@ -215,8 +283,33 @@ class MockWorkerRepository implements WorkerRepository {
         reviews: old.reviews,
         trustTier: old.trustTier,
         completedJobsCount: old.completedJobsCount,
+        jobPosts: old.jobPosts,
       );
     }
     return AuthResult.success(message: 'Profile updated successfully!');
+  }
+
+  @override
+  Future<AuthResult> createJobPost(JobPost post) async {
+    await Future.delayed(const Duration(seconds: 1));
+    _mockJobPosts.add(post);
+    return AuthResult.success(message: 'Job post created successfully!');
+  }
+
+  @override
+  Future<AuthResult> updateJobPost(JobPost post) async {
+    await Future.delayed(const Duration(seconds: 1));
+    final index = _mockJobPosts.indexWhere((jp) => jp.id == post.id);
+    if (index != -1) {
+      _mockJobPosts[index] = post;
+    }
+    return AuthResult.success(message: 'Job post updated successfully!');
+  }
+
+  @override
+  Future<AuthResult> deleteJobPost(String postId) async {
+    await Future.delayed(const Duration(seconds: 1));
+    _mockJobPosts.removeWhere((jp) => jp.id == postId);
+    return AuthResult.success(message: 'Job post deleted successfully!');
   }
 }

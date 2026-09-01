@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../data/models/worker_model.dart';
+import '../../data/models/trust_tier.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
 
@@ -226,18 +227,11 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   Widget _buildTrustTierCard(bool isWorker) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final status = isWorker ? (_workerData?.verificationStatus ?? VerificationStatus.notStarted) : VerificationStatus.verified;
+    final trustInfo = isWorker ? _workerData?.trustTier.info : TrustTier.verified.info;
     
-    String label = 'Standard';
-    Color color = colorScheme.onSurfaceVariant;
-
-    if (status == VerificationStatus.verified) {
-      label = 'Verified';
-      color = colorScheme.primary;
-    } else if (status == VerificationStatus.pending) {
-      label = 'Under Review';
-      color = Colors.amber;
-    }
+    final label = trustInfo?.label ?? 'Standard';
+    final color = trustInfo?.color ?? colorScheme.onSurfaceVariant;
+    final icon = trustInfo?.icon ?? Icons.shield_outlined;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -251,7 +245,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-            child: Icon(Icons.shield_outlined, color: color, size: 24),
+            child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -264,7 +258,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     Flexible(
                       child: Text(label, style: AppTypography.headlineMedium.copyWith(fontSize: 18, color: color, fontWeight: FontWeight.w800), overflow: TextOverflow.ellipsis),
                     ),
-                    if (status == VerificationStatus.verified)
+                    if (isWorker && _workerData?.trustTier != null)
                       Padding(
                         padding: const EdgeInsets.only(left: 6),
                         child: Icon(Icons.check_circle, color: color, size: 18),

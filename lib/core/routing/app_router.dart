@@ -28,6 +28,8 @@ import '../../screens/section_2_worker/portfolio_skills_screen.dart';
 import '../../screens/section_2_worker/booking_schedule_screen.dart';
 import '../../screens/section_2_worker/job_detail_screen.dart';
 import '../../screens/section_2_worker/rate_client_screen.dart';
+import '../../screens/section_2_worker/create_job_post_screen.dart';
+import '../../screens/section_2_worker/edit_job_post_screen.dart';
 import '../../screens/section_3_shared/chat_inbox_screen.dart';
 import '../../screens/section_3_shared/chat_thread_screen.dart';
 import '../../screens/section_3_shared/notification_center_screen.dart';
@@ -75,6 +77,8 @@ class AppRouter {
   static const String notificationPreferences = '/notification-preferences';
   static const String clientHome = '/client-home';
   static const String workerHome = '/worker-home';
+  static const String createJobPost = '/create-job-post';
+  static const String editJobPost = '/edit-job-post';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final Uri uri = Uri.parse(settings.name ?? '');
@@ -130,6 +134,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ClientHomeScreen());
       case workerHome:
         return MaterialPageRoute(builder: (_) => const WorkerHomeScreen());
+      case createJobPost:
+        return MaterialPageRoute(builder: (_) => const CreateJobPostScreen());
       case workerSearch:
         final query = uri.queryParameters['query'];
         final category = uri.queryParameters['category'];
@@ -151,6 +157,10 @@ class AppRouter {
       // Dynamic Routes
       default:
         // Handle routes with path parameters
+        if (path.startsWith(editJobPost)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => EditJobPostScreen(postId: id));
+        }
         if (path.startsWith(workerProfile)) {
           final id = path.split('/').last;
           return MaterialPageRoute(builder: (_) => WorkerProfileViewScreen(workerId: id));

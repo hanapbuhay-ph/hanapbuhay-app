@@ -4,6 +4,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
+import '../../data/models/trust_tier.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/app_back_button.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -240,10 +241,8 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                       Row(
                         children: [
                           Text(worker.name, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 18, color: colorScheme.onSurface)),
-                          if (worker.isVerified) ...[
-                            const SizedBox(width: 4),
-                            Icon(Icons.verified, color: colorScheme.primary, size: 18),
-                          ],
+                          const SizedBox(width: 4),
+                          Icon(worker.trustTier.info.icon, color: worker.trustTier.info.color, size: 18),
                         ],
                       ),
                       Text(worker.specialty, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),

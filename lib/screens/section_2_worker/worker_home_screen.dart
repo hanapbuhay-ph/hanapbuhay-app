@@ -8,6 +8,7 @@ import '../../providers/booking_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/booking_model.dart';
+import '../../data/models/job_post_model.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
 
 class WorkerHomeScreen extends StatefulWidget {
@@ -96,6 +97,8 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                         const SizedBox(height: 24),
                         _buildStatsRow(worker),
                         const SizedBox(height: 32),
+                        _buildActivePostsSection(worker),
+                        const SizedBox(height: 32),
                         _buildIncomingRequestsSection(),
                         const SizedBox(height: 32),
                       ],
@@ -106,6 +109,13 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             ],
           );
         }
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.pushNamed(context, AppRouter.createJobPost),
+        label: const Text('New Post', style: TextStyle(fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
       ),
       bottomNavigationBar: const WorkerBottomNav(currentIndex: 0),
     );
@@ -386,6 +396,118 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             Text(value, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 13)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActivePostsSection(Worker worker) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Your Active Posts', style: AppTypography.headlineMedium.copyWith(fontSize: 20, fontWeight: FontWeight.w800)),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, AppRouter.profile), // Should go to Manage Posts eventually
+              child: Text('Manage', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (worker.jobPosts.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.post_add_outlined, size: 48, color: theme.colorScheme.outlineVariant),
+                const SizedBox(height: 12),
+                Text('No active posts yet', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, AppRouter.createJobPost),
+                  child: const Text('Create your first post'),
+                ),
+              ],
+            ),
+          )
+        else
+          ...worker.jobPosts.map((post) => _buildJobPostCard(post)),
+      ],
+    );
+  }
+
+  Widget _buildJobPostCard(JobPost post) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.work_outline, color: colorScheme.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(post.title, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
+                Text(post.category, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 4),
+                Text(
+                  'From ₱${post.startingRate.toStringAsFixed(0)}${post.rateType.shortLabel}',
+                  style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: post.isAvailable ? Colors.green : Colors.orange,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.pushNamed(context, '${AppRouter.editJobPost}/${post.id}'),
+                style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('Edit', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

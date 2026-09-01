@@ -1,6 +1,7 @@
 import '../../models/worker_model.dart';
 import '../worker_repository.dart';
 import '../../models/auth_result_model.dart';
+import '../../models/job_post_model.dart';
 
 class ApiWorkerRepository implements WorkerRepository {
   @override
@@ -46,6 +47,24 @@ class ApiWorkerRepository implements WorkerRepository {
     required String bio,
   }) async {
     // TODO: POST /api/workers/profile/update
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AuthResult> createJobPost(JobPost post) async {
+    // TODO: POST /api/worker/posts
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AuthResult> updateJobPost(JobPost post) async {
+    // TODO: PUT /api/worker/posts/{id}
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AuthResult> deleteJobPost(String postId) async {
+    // TODO: DELETE /api/worker/posts/{id}
     throw UnimplementedError();
   }
 }

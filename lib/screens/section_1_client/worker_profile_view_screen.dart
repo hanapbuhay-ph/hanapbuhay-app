@@ -5,6 +5,7 @@ import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
+import '../../data/models/trust_tier.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -169,8 +170,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
                 style: AppTypography.headlineLarge.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
               ),
               const SizedBox(width: 8),
-              if (worker.isVerified)
-                Icon(Icons.verified, color: colorScheme.primary, size: 24),
+              Icon(worker.trustTier.info.icon, color: worker.trustTier.info.color, size: 24),
             ],
           ),
           const SizedBox(height: 8),

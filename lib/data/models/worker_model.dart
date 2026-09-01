@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import 'job_post_model.dart';
+import 'trust_tier.dart';
+
 enum WorkerAvailability {
   available,
   busy,
@@ -40,8 +43,9 @@ class Worker {
   final List<WorkerReview> reviews;
 
   // New fields for 2.1
-  final String trustTier;
+  final TrustTier? trustTier;
   final int completedJobsCount;
+  final List<JobPost> jobPosts;
 
   Worker({
     required this.id,
@@ -65,8 +69,9 @@ class Worker {
     this.responseTime = '15 mins',
     this.portfolioImages = const [],
     this.reviews = const [],
-    this.trustTier = 'Standard',
+    this.trustTier,
     this.completedJobsCount = 0,
+    this.jobPosts = const [],
   });
 }
 

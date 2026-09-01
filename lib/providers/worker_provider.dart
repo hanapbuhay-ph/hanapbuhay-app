@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/repositories/worker_repository.dart';
 import '../data/models/worker_model.dart';
 import '../data/models/auth_result_model.dart';
+import '../data/models/job_post_model.dart';
 
 class WorkerProvider extends ChangeNotifier {
   final WorkerRepository _repository;
@@ -41,6 +42,24 @@ class WorkerProvider extends ChangeNotifier {
       photoPaths: photoPaths,
       bio: bio,
     );
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> createJobPost(JobPost post) async {
+    final result = await _repository.createJobPost(post);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> updateJobPost(JobPost post) async {
+    final result = await _repository.updateJobPost(post);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> deleteJobPost(String postId) async {
+    final result = await _repository.deleteJobPost(postId);
     notifyListeners();
     return result;
   }

@@ -1,5 +1,6 @@
 import '../models/worker_model.dart';
 import '../models/auth_result_model.dart';
+import '../models/job_post_model.dart';
 
 abstract class WorkerRepository {
   Future<List<Worker>> getTopRatedWorkers();
@@ -18,4 +19,7 @@ abstract class WorkerRepository {
     required List<String> photoPaths,
     required String bio,
   });
+  Future<AuthResult> createJobPost(JobPost post);
+  Future<AuthResult> updateJobPost(JobPost post);
+  Future<AuthResult> deleteJobPost(String postId);
 }

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_typography.dart';
 
 /// Reusable Primary Button matching the Stitch design.
+/// Updated with backgroundColor support.
 class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
   final bool showArrow;
   final double? width;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   const PrimaryButton({
     super.key,
@@ -16,6 +19,8 @@ class PrimaryButton extends StatelessWidget {
     this.isLoading = false,
     this.showArrow = false,
     this.width,
+    this.backgroundColor,
+    this.foregroundColor,
   });
 
   @override
@@ -24,8 +29,8 @@ class PrimaryButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final bool isEnabled = onPressed != null && !isLoading;
     
-    final backgroundColor = isEnabled ? colorScheme.primary : colorScheme.surfaceVariant;
-    final contentColor = isEnabled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
+    final effectiveBackgroundColor = backgroundColor ?? (isEnabled ? colorScheme.primary : colorScheme.surfaceVariant);
+    final contentColor = foregroundColor ?? (isEnabled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant);
 
     return GestureDetector(
       onTap: isEnabled ? onPressed : null,
@@ -34,11 +39,11 @@ class PrimaryButton extends StatelessWidget {
         constraints: width == null ? const BoxConstraints(maxWidth: 400) : null,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: effectiveBackgroundColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: isEnabled ? [
             BoxShadow(
-              color: colorScheme.primary.withValues(alpha: 0.2),
+              color: effectiveBackgroundColor.withValues(alpha: 0.2),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

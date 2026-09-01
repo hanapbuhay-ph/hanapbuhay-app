@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../data/models/worker_model.dart';
+import '../../data/models/trust_tier.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 
 class ClientHomeScreen extends StatefulWidget {
@@ -365,16 +366,15 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 Stack(
                   children: [
                     CircleAvatar(radius: 28, backgroundImage: NetworkImage(worker.avatarUrl)),
-                    if (worker.isVerified)
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
-                          child: Icon(Icons.check, color: colorScheme.onPrimary, size: 10),
-                        ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(color: worker.trustTier.info.color, shape: BoxShape.circle),
+                        child: Icon(worker.trustTier.info.icon, color: Colors.white, size: 10),
                       ),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 12),
