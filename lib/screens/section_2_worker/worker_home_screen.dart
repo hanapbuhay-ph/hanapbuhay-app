@@ -192,12 +192,13 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildGreeting(String name) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Hi, $name!', style: AppTypography.headlineMedium.copyWith(fontSize: 28, fontWeight: FontWeight.w800)),
+        Text('Hi, $name!', style: AppTypography.headlineMedium.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
         const SizedBox(height: 4),
-        const Text('Ready for a great day of work.', style: AppTypography.bodyMedium),
+        Text('Ready for a great day of work.', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
       ],
     );
   }

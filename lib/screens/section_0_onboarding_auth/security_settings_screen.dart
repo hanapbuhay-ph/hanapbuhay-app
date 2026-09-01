@@ -112,7 +112,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                       children: [
                         // Row 1: Change Password
                         _buildSettingsRow(
-                          title: 'Change Password',
+                          title: authProvider.isGoogleLinked ? 'Set a Password' : 'Change Password',
                           onTap: () => Navigator.pushNamed(context, AppRouter.changePassword),
                         ),
                         Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
@@ -137,17 +137,17 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                                     Text('Two-Factor Authentication', style: AppTypography.bodyLarge.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w600)),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Email verification is required for all accounts and cannot be disabled.',
+                                      'Enhance security by requiring an email OTP code when you log in.',
                                       style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                                     ),
                                   ],
                                 ),
                               ),
                               Switch(
-                                value: _twoFactorEnabled,
+                                value: authProvider.twoFactorEnabled,
                                 activeTrackColor: colorScheme.primary.withValues(alpha: 0.5),
                                 activeColor: colorScheme.primary,
-                                onChanged: null, // Disabled as mandatory
+                                onChanged: (val) => authProvider.toggleTwoFactor(val),
                               ),
                             ],
                           ),

@@ -5,8 +5,7 @@ import '../../core/theme/app_typography.dart';
 
 /// Reusable Google Sign-In Button.
 /// 
-/// Uses a local asset 'assets/icons/google_logo.png'. 
-/// If the asset is missing, it falls back to a generic G icon to avoid HTTP errors.
+/// Uses a local asset 'assets/icons/google.svg'.
 class GoogleSignInButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String label;

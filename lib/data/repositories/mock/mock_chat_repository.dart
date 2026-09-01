@@ -12,7 +12,7 @@ class MockChatRepository implements ChatRepository {
       lastMessage: 'I will be there at 9 AM tomorrow.',
       lastMessageTime: DateTime.now().subtract(const Duration(minutes: 2)),
       isUnread: true,
-      bookingId: 'HB-1042',
+      bookingId: 'HB-2026-00001',
       isOnline: true,
     ),
     Conversation(
@@ -33,7 +33,7 @@ class MockChatRepository implements ChatRepository {
       otherUserAvatar: 'https://i.pravatar.cc/150?u=w2',
       lastMessage: 'Please send a photo of the breaker.',
       lastMessageTime: DateTime.now().subtract(const Duration(days: 1)),
-      bookingId: 'HB-1055',
+      bookingId: 'HB-2026-00002',
     ),
     Conversation(
       id: 'c4',
@@ -43,7 +43,7 @@ class MockChatRepository implements ChatRepository {
       otherUserAvatar: 'https://i.pravatar.cc/150?u=u1',
       lastMessage: 'Is the price negotiable?',
       lastMessageTime: DateTime.now().subtract(const Duration(hours: 3)),
-      bookingId: 'HB-2022',
+      bookingId: 'HB-2026-00004',
     ),
   ];
 

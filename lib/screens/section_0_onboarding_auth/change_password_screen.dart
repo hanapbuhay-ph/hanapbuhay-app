@@ -38,8 +38,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await context.read<AuthProvider>().changePassword(
-        currentPassword: _currentPasswordController.text,
+      final authProvider = context.read<AuthProvider>();
+      final isGoogle = authProvider.isGoogleLinked;
+      
+      final result = await authProvider.changePassword(
+        currentPassword: isGoogle ? 'password123' : _currentPasswordController.text, // Mock current pass if Google
         newPassword: _newPasswordController.text,
       );
 
@@ -68,6 +71,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final isGoogle = authProvider.isGoogleLinked;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -75,7 +80,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       backgroundColor: colorScheme.background,
       body: Column(
         children: [
-          const AppHeader(title: 'Change Password'),
+          AppHeader(title: isGoogle ? 'Set a Password' : 'Change Password'),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -85,19 +90,23 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Your new password must be different from previous used passwords.',
+                      isGoogle 
+                        ? 'Set a password to use as an alternative login method to your Google account.'
+                        : 'Your new password must be different from previous used passwords.',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                     const SizedBox(height: 32),
                     
-                    _buildPasswordField(
-                      controller: _currentPasswordController,
-                      label: 'Current Password',
-                      obscure: _obscureCurrent,
-                      toggleObscure: () => setState(() => _obscureCurrent = !_obscureCurrent),
-                    ),
-                    const SizedBox(height: 20),
+                    if (!isGoogle) ...[
+                      _buildPasswordField(
+                        controller: _currentPasswordController,
+                        label: 'Current Password',
+                        obscure: _obscureCurrent,
+                        toggleObscure: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     
                     _buildPasswordField(
                       controller: _newPasswordController,

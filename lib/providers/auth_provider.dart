@@ -28,6 +28,9 @@ class AuthProvider extends ChangeNotifier {
   String? _userMobile;
   String? get userMobile => _userMobile;
 
+  String? _userBarangay;
+  String? get userBarangay => _userBarangay;
+
   String? _userAvatar;
   String? get userAvatar => _userAvatar;
 
@@ -36,6 +39,9 @@ class AuthProvider extends ChangeNotifier {
 
   bool _hasSeenOnboarding = false;
   bool get hasSeenOnboarding => _hasSeenOnboarding;
+
+  bool _twoFactorEnabled = true;
+  bool get twoFactorEnabled => _twoFactorEnabled;
 
   String getHomeRoute() {
     return _userRole == 'worker' ? '/worker-home' : '/client-home';
@@ -52,8 +58,10 @@ class AuthProvider extends ChangeNotifier {
     _userRole = prefs.getString('user_role');
     _userName = prefs.getString('user_name');
     _userMobile = prefs.getString('user_mobile');
+    _userBarangay = prefs.getString('user_barangay');
     _userAvatar = prefs.getString('user_avatar');
     _signInMethod = prefs.getString('sign_in_method');
+    _twoFactorEnabled = prefs.getBool('2fa_enabled') ?? true;
 
     notifyListeners();
   }
@@ -67,9 +75,23 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> toggleTwoFactor(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('2fa_enabled', value);
+    _twoFactorEnabled = value;
+    notifyListeners();
+  }
+
   Future<AuthResult> login(String email, String password) async {
     final result = await _authRepository.login(email, password);
     if (result.success) {
+      if (_twoFactorEnabled) {
+        return AuthResult.success(
+          message: 'Two-factor authentication required.',
+          data: {'email': email, 'requiresOtp': true},
+        );
+      }
+
       final userData = result.data?['user'] as Map<String, dynamic>?;
       await setAuthenticated(
         result.data?['token'] ?? '',
@@ -78,6 +100,7 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         name: userData?['name'],
         mobile: userData?['mobile_number'],
+        barangay: userData?['barangay']?['name'],
         avatar: userData?['avatar_url'],
         method: userData?['sign_in_method'] ?? 'email',
       );
@@ -114,6 +137,7 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         name: userData?['name'],
         mobile: userData?['mobile_number'],
+        barangay: userData?['barangay']?['name'],
         avatar: userData?['avatar_url'],
         method: userData?['sign_in_method'] ?? 'email',
       );
@@ -126,6 +150,7 @@ class AuthProvider extends ChangeNotifier {
     String? email, 
     String? name, 
     String? mobile, 
+    String? barangay,
     String? avatar,
     String method = 'email',
   }) async {
@@ -153,6 +178,10 @@ class AuthProvider extends ChangeNotifier {
     if (mobile != null) {
       await prefs.setString('user_mobile', mobile);
       _userMobile = mobile;
+    }
+    if (barangay != null) {
+      await prefs.setString('user_barangay', barangay);
+      _userBarangay = barangay;
     }
     if (avatar != null) {
       await prefs.setString('user_avatar', avatar);
@@ -184,7 +213,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<AuthResult> changePassword({required String currentPassword, required String newPassword}) async {
-    return await _authRepository.changePassword(currentPassword: currentPassword, newPassword: newPassword);
+    final result = await _authRepository.changePassword(currentPassword: currentPassword, newPassword: newPassword);
+    if (result.success && _signInMethod == 'google') {
+      final prefs = await SharedPreferences.getInstance();
+      _signInMethod = 'email'; // Or 'both'
+      await prefs.setString('sign_in_method', _signInMethod!);
+      notifyListeners();
+    }
+    return result;
   }
 
   Future<void> updateLocalProfile({required String name, required String mobile, String? avatar}) async {

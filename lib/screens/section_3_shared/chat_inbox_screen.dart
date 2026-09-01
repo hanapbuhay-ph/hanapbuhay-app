@@ -5,6 +5,7 @@ import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../data/models/chat_model.dart';
+import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
 
@@ -251,7 +252,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: colorScheme.surfaceVariant.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(6)),
                       child: Text(
-                        'Re: Booking #${conversation.bookingId}',
+                        'Re: Booking #${Booking.formatBookingCode(conversation.bookingId!, conversation.lastMessageTime)}',
                         style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
                       ),
                     ),

@@ -373,7 +373,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
             onTap: () => _removePhoto(index),
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5), shape: BoxShape.circle),
               child: const Icon(Icons.close, size: 12, color: Colors.white),
             ),
           ),

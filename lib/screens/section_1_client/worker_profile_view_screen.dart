@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/trust_tier.dart';
+import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -442,6 +443,22 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
               review.comment,
               style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
             ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'Re: Booking #${Booking.formatBookingCode(review.id, review.date)}',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ),
           ],
         );
       },
@@ -460,6 +477,73 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
         ],
       ),
     );
+  }
+
+  Future<void> _handleBooking(Worker worker) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    // Check if worker is verified or trusted
+    final bool isVerified = worker.trustTier == TrustTier.verified || worker.trustTier == TrustTier.trusted;
+
+    if (!isVerified) {
+      final bool? proceed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 28),
+              const SizedBox(width: 12),
+              const Expanded(child: Text('Not Yet Verified')),
+            ],
+          ),
+          content: const Text(
+            'This worker has not yet completed barangay document verification. '
+            'HanapBuhay cannot fully guarantee their identity at this time.\n\n'
+            'Do you want to proceed with the booking at your own discretion?'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Find Verified Worker path
+                context.read<WorkerProvider>().setQuickFilter('Verified');
+                Navigator.pop(context, false); // Return to feed
+              },
+              child: Text(
+                'Find Verified Worker',
+                style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w700),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Book Anyway'),
+            ),
+          ],
+        ),
+      );
+
+      if (proceed == false) {
+        if (mounted) {
+          // If they chose "Find Verified Worker", we already set the filter.
+          // Now we just need to go back to the Home screen.
+          Navigator.popUntil(context, (route) => route.settings.name == AppRouter.clientHome || route.isFirst);
+        }
+        return;
+      }
+      if (proceed == null) return; // Dismissed without choice
+    }
+
+    // Proceed to booking form
+    if (mounted) {
+      Navigator.pushNamed(context, '${AppRouter.sendBookingRequest}/${worker.id}');
+    }
   }
 
   Widget _buildBottomBar(Worker worker) {
@@ -516,9 +600,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
             child: PrimaryButton(
               label: 'Book Now',
               showArrow: true,
-              onPressed: () {
-                Navigator.pushNamed(context, '${AppRouter.sendBookingRequest}/${worker.id}');
-              },
+              onPressed: () => _handleBooking(worker),
             ),
           ),
         ],

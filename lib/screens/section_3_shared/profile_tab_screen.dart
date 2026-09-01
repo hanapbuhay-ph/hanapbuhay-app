@@ -340,6 +340,13 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           if (isWorker) ...[
             const Divider(height: 1),
             _buildOptionRow(
+              icon: Icons.star_outline_rounded,
+              title: 'My Reviews',
+              subtitle: 'View client feedback and ratings',
+              onTap: () => Navigator.pushNamed(context, AppRouter.receivedReviews),
+            ),
+            const Divider(height: 1),
+            _buildOptionRow(
               icon: Icons.verified_user_outlined,
               title: 'Verification Status',
               subtitle: 'Manage trust documents',

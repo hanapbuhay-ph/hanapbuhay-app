@@ -96,16 +96,25 @@ class _RateClientScreenState extends State<RateClientScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary)));
+      return Scaffold(
+        backgroundColor: colorScheme.background,
+        body: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
+      );
     }
 
     if (_booking == null) {
-      return const Scaffold(body: Center(child: Text('Booking details not found')));
+      return Scaffold(
+        backgroundColor: colorScheme.background,
+        body: const Center(child: Text('Booking details not found')),
+      );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB), // Surface Cream
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Rate Client'),
@@ -137,6 +146,8 @@ class _RateClientScreenState extends State<RateClientScreen> {
   }
 
   Widget _buildClientSummary() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         Container(
@@ -144,15 +155,15 @@ class _RateClientScreenState extends State<RateClientScreen> {
           height: 96,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
             ],
-            border: Border.all(color: AppColors.primaryContainer.withOpacity(0.2), width: 2),
+            border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2), width: 2),
           ),
           child: const ClipOval(
             child: Image(
@@ -164,36 +175,46 @@ class _RateClientScreenState extends State<RateClientScreen> {
         const SizedBox(height: 16),
         Text(
           'Maria Santos', 
-          style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800),
+          style: AppTypography.headlineMedium.copyWith(
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
         ),
         Text(
           _booking!.category,
-          style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         ),
       ],
     );
   }
 
   Widget _buildRatingCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
           Text(
             'How was your experience?',
-            style: AppTypography.headlineMedium.copyWith(fontSize: 20, fontWeight: FontWeight.w700),
+            style: AppTypography.headlineMedium.copyWith(
+              fontSize: 20, 
+              fontWeight: FontWeight.w700,
+              color: colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 24),
           Row(
@@ -208,7 +229,7 @@ class _RateClientScreenState extends State<RateClientScreen> {
                   child: Icon(
                     isSelected ? Icons.star : Icons.star_border,
                     size: 48,
-                    color: isSelected ? const Color(0xFFFFB957) : AppColors.surfaceVariant,
+                    color: isSelected ? const Color(0xFFFFB957) : colorScheme.outlineVariant,
                   ),
                 ),
               );
@@ -219,7 +240,7 @@ class _RateClientScreenState extends State<RateClientScreen> {
             Text(
               _feedbackWords[_selectedRating - 1],
               style: AppTypography.labelLarge.copyWith(
-                color: AppColors.primary,
+                color: colorScheme.primary,
                 fontWeight: FontWeight.w800,
                 fontSize: 16,
               ),
@@ -232,33 +253,39 @@ class _RateClientScreenState extends State<RateClientScreen> {
   }
 
   Widget _buildReviewInput() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Write a Review (Optional)',
-          style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
+          style: AppTypography.labelLarge.copyWith(
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 12),
         TextFormField(
           controller: _commentController,
           maxLines: 4,
-          style: AppTypography.bodyMedium,
+          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: 'Share your experience working with Maria...',
+            hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: colorScheme.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppColors.outlineVariant),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppColors.outlineVariant),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1),
+              borderSide: BorderSide(color: colorScheme.primary, width: 1),
             ),
           ),
         ),
@@ -267,29 +294,30 @@ class _RateClientScreenState extends State<RateClientScreen> {
   }
 
   Widget _buildBottomButton() {
+    final colorScheme = Theme.of(context).colorScheme;
     final bool isEnabled = _selectedRating > 0 && !_isSubmitting;
 
     return Container(
       padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
-        border: const Border(top: BorderSide(color: AppColors.surfaceVariant)),
+        color: colorScheme.surface.withValues(alpha: 0.95),
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
       ),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
           onPressed: isEnabled ? _handleSubmit : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: AppColors.surfaceVariant,
-            disabledForegroundColor: AppColors.onSurfaceVariant,
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            disabledBackgroundColor: colorScheme.surfaceContainerHighest,
+            disabledForegroundColor: colorScheme.onSurfaceVariant,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: isEnabled ? 2 : 0,
           ),
           child: _isSubmitting
-              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.onPrimary))
               : const Text('Submit Rating', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ),
       ),

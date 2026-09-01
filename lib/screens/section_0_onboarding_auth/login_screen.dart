@@ -48,7 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (result.success) {
-        if (mounted) {
+        if (result.data?['requiresOtp'] == true) {
+          Navigator.pushNamed(
+            context, 
+            '${AppRouter.verifyEmail}?email=${_identifierController.text.trim()}',
+          );
+        } else {
           Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
         }
       } else {

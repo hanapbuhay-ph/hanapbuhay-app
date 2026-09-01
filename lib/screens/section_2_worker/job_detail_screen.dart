@@ -88,7 +88,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       backgroundColor: colorScheme.background,
       body: Column(
         children: [
-          const AppHeader(title: 'Job Details'),
+          AppHeader(title: 'Job ${booking.bookingCode}'),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

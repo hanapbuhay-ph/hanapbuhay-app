@@ -28,6 +28,7 @@ import '../../screens/section_2_worker/portfolio_skills_screen.dart';
 import '../../screens/section_2_worker/booking_schedule_screen.dart';
 import '../../screens/section_2_worker/job_detail_screen.dart';
 import '../../screens/section_2_worker/rate_client_screen.dart';
+import '../../screens/section_2_worker/received_reviews_screen.dart';
 import '../../screens/section_2_worker/create_job_post_screen.dart';
 import '../../screens/section_2_worker/edit_job_post_screen.dart';
 import '../../screens/section_3_shared/chat_inbox_screen.dart';
@@ -79,6 +80,7 @@ class AppRouter {
   static const String workerHome = '/worker-home';
   static const String createJobPost = '/create-job-post';
   static const String editJobPost = '/edit-job-post';
+  static const String receivedReviews = '/received-reviews';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final Uri uri = Uri.parse(settings.name ?? '');
@@ -134,6 +136,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ClientHomeScreen());
       case workerHome:
         return MaterialPageRoute(builder: (_) => const WorkerHomeScreen());
+      case receivedReviews:
+        return MaterialPageRoute(builder: (_) => const ReceivedReviewsScreen());
       case createJobPost:
         return MaterialPageRoute(builder: (_) => const CreateJobPostScreen());
       case workerSearch:

@@ -82,6 +82,7 @@ class MockWorkerRepository implements WorkerRepository {
       bio: 'Expert electrician for home and commercial projects. Safe and certified.',
       services: ['Wiring', 'Troubleshooting', 'Panel Upgrades'],
       trustTier: TrustTier.verified,
+      isAvailable: true,
     ),
     Worker(
       id: 'w3',
@@ -100,6 +101,7 @@ class MockWorkerRepository implements WorkerRepository {
       isVerified: true,
       verificationStatus: VerificationStatus.verified,
       trustTier: TrustTier.trusted,
+      isAvailable: true,
     ),
     Worker(
       id: 'w4',
@@ -118,6 +120,7 @@ class MockWorkerRepository implements WorkerRepository {
       isVerified: true,
       verificationStatus: VerificationStatus.verified,
       trustTier: TrustTier.verified,
+      isAvailable: false,
     ),
     Worker(
       id: 'w5',
@@ -135,6 +138,7 @@ class MockWorkerRepository implements WorkerRepository {
       tags: ['Repairs'],
       distance: '0.5 km',
       trustTier: null,
+      isAvailable: true,
     ),
     Worker(
       id: 'w6',

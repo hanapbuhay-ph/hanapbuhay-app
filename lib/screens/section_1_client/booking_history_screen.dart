@@ -190,6 +190,11 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                           booking.category,
                           style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Code: ${booking.bookingCode}',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                        ),
                       ],
                     ),
                   ),

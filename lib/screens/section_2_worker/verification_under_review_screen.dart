@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -10,8 +9,11 @@ class VerificationUnderReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Verification', showBackButton: true),
@@ -26,26 +28,30 @@ class VerificationUnderReviewScreen extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.06),
+                          color: colorScheme.primary.withValues(alpha: 0.06),
                           blurRadius: 32,
                           offset: const Offset(0, 8),
                         ),
                       ],
-                      border: Border.all(color: AppColors.surfaceContainerHigh.withOpacity(0.5)),
+                      border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
                     ),
                     child: Column(
                       children: [
                         // Pulsing Icon Simulation
-                        _buildStatusIcon(),
+                        _buildStatusIcon(context),
                         const SizedBox(height: 32),
                         
                         Text(
                           'Documents Under Review',
-                          style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, fontSize: 24),
+                          style: AppTypography.headlineMedium.copyWith(
+                            fontWeight: FontWeight.w800, 
+                            fontSize: 24,
+                            color: colorScheme.onSurface,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
@@ -53,11 +59,11 @@ class VerificationUnderReviewScreen extends StatelessWidget {
                         RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
-                            style: AppTypography.bodyLarge.copyWith(color: AppColors.onSurfaceVariant),
-                            children: const [
-                              TextSpan(text: 'Your documents are currently being processed. This usually takes '),
-                              TextSpan(text: '1–3 business days', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                              TextSpan(text: '.'),
+                            style: AppTypography.bodyLarge.copyWith(color: colorScheme.onSurfaceVariant),
+                            children: [
+                              const TextSpan(text: 'Your documents are currently being processed. This usually takes '),
+                              TextSpan(text: '1–3 business days', style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                              const TextSpan(text: '.'),
                             ],
                           ),
                         ),
@@ -67,19 +73,19 @@ class VerificationUnderReviewScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceContainer,
+                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
+                            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                              Icon(Icons.info_outline, color: colorScheme.primary, size: 20),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   'We\'ll notify you once your verification is complete. In the meantime, you can still explore the app.',
-                                  style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant, height: 1.5),
+                                  style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, height: 1.5),
                                 ),
                               ),
                             ],
@@ -107,7 +113,9 @@ class VerificationUnderReviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusIcon() {
+  Widget _buildStatusIcon(BuildContext context) {
+    const amberColor = Colors.amber;
+
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -116,7 +124,7 @@ class VerificationUnderReviewScreen extends StatelessWidget {
           width: 120,
           height: 120,
           decoration: BoxDecoration(
-            color: const Color(0xFFFFDD80).withOpacity(0.2), // Light Amber
+            color: amberColor.withValues(alpha: 0.2), // Light Amber
             shape: BoxShape.circle,
           ),
         ),
@@ -124,10 +132,10 @@ class VerificationUnderReviewScreen extends StatelessWidget {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: const Color(0xFFFFDD80).withOpacity(0.1),
+            color: amberColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.pending_actions, size: 48, color: Color(0xFFCA8400)), // Amber/Tertiary
+          child: Icon(Icons.pending_actions, size: 48, color: amberColor),
         ),
       ],
     );

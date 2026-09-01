@@ -1,3 +1,5 @@
+import 'worker_model.dart';
+
 enum RateType {
   perHour,
   perDay,
@@ -70,4 +72,15 @@ class JobPost {
       isAvailable: isAvailable ?? this.isAvailable,
     );
   }
+}
+
+/// A view model representing a specific job post listing in the feed.
+class JobPostListing {
+  final Worker worker;
+  final JobPost post;
+
+  JobPostListing({
+    required this.worker,
+    required this.post,
+  });
 }

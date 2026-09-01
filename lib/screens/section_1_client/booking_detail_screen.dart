@@ -73,7 +73,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       backgroundColor: colorScheme.background,
       body: Column(
         children: [
-          const AppHeader(title: 'Booking Details'),
+          AppHeader(title: 'Booking ${booking.bookingCode}'),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

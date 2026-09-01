@@ -241,6 +241,11 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                       decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
                       child: Text(booking.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Ref: ${booking.bookingCode}',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant),
+                    ),
                   ],
                 ),
               ),

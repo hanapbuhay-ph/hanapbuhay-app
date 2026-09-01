@@ -7,6 +7,7 @@ import '../../providers/chat_provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../data/models/chat_model.dart';
+import '../../data/models/booking_model.dart';
 
 class ChatThreadScreen extends StatefulWidget {
   final String conversationId;
@@ -187,7 +188,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 ),
                 if (_conversation!.bookingId != null)
                   Text(
-                    'Re: ${_conversation!.otherUserRole} #${_conversation!.bookingId}',
+                    'Re: ${_conversation!.otherUserRole} #${Booking.formatBookingCode(_conversation!.bookingId!, _conversation!.lastMessageTime)}',
                     style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.bold),
                   ),
               ],

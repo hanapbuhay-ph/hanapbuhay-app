@@ -14,6 +14,7 @@ class Booking {
   final List<BookingTimelineStep> timeline;
   final bool isRated; // Client rated the worker
   final bool isClientRated; // Worker rated the client
+  final DateTime createdAt;
 
   Booking({
     required this.id,
@@ -29,7 +30,20 @@ class Booking {
     this.timeline = const [],
     this.isRated = false,
     this.isClientRated = false,
-  });
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
+
+  String get bookingCode {
+    return formatBookingCode(id, createdAt);
+  }
+
+  static String formatBookingCode(String id, DateTime createdAt) {
+    if (id.startsWith('HB-')) return id; // Already formatted
+    // Extract numbers from ID if possible (e.g. 'b1' -> '1')
+    final numericId = id.replaceAll(RegExp(r'[^0-9]'), '');
+    final sequence = numericId.isEmpty ? '0' : numericId;
+    return 'HB-${createdAt.year}-${sequence.padLeft(5, '0')}';
+  }
 }
 
 class BookingTimelineStep {

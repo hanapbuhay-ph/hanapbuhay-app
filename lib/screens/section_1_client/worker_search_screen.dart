@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/trust_tier.dart';
+import '../../data/models/job_post_model.dart';
+import '../../data/models/barangay_model.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
 import '../../widgets/navigation/app_back_button.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -27,22 +30,27 @@ class WorkerSearchScreen extends StatefulWidget {
 
 class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<Worker> _allWorkers = [];
-  List<Worker> _filteredWorkers = [];
+  List<JobPostListing> _filteredListings = [];
   bool _isLoading = true;
-
-  // Filter States
   String? _selectedCategory;
-  double _maxDistance = 20.0;
-  double _minRating = 0.0;
-  bool _verifiedOnly = true;
 
   @override
   void initState() {
     super.initState();
     _searchController.text = widget.initialQuery ?? '';
     _selectedCategory = widget.initialCategory;
-    _fetchWorkers();
+    
+    if (_selectedCategory != null) {
+      // Sync initial category with provider
+      Future.delayed(Duration.zero, () {
+        if (mounted) {
+          context.read<WorkerProvider>().setAdvancedFilters(categories: [_selectedCategory!]);
+          _fetchWorkers();
+        }
+      });
+    } else {
+      _fetchWorkers();
+    }
     
     if (widget.showFilterOnInit) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -53,30 +61,23 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
 
   Future<void> _fetchWorkers() async {
     setState(() => _isLoading = true);
-    _allWorkers = await context.read<WorkerProvider>().getTopRatedWorkers();
-    _applyFilters();
-    setState(() => _isLoading = false);
-  }
-
-  void _applyFilters() {
-    setState(() {
-      _filteredWorkers = _allWorkers.where((worker) {
-        final matchesQuery = _searchController.text.isEmpty ||
-            worker.name.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-            worker.specialty.toLowerCase().contains(_searchController.text.toLowerCase());
-        
-        final matchesCategory = _selectedCategory == null || 
-            worker.specialty.toLowerCase().contains(_selectedCategory!.toLowerCase());
-        
-        final distance = double.tryParse(worker.distance.split(' ')[0]) ?? 0.0;
-        final matchesDistance = distance <= _maxDistance;
-        
-        final matchesRating = worker.rating >= _minRating;
-        final matchesVerified = !_verifiedOnly || worker.isVerified;
-
-        return matchesQuery && matchesCategory && matchesDistance && matchesRating && matchesVerified;
+    final workerProvider = context.read<WorkerProvider>();
+    final authProvider = context.read<AuthProvider>();
+    
+    // Applying current search query and filters through provider
+    _filteredListings = await workerProvider.getFilteredWorkers(userBarangayName: authProvider.userBarangay);
+    
+    // Search query filter (local)
+    if (_searchController.text.isNotEmpty) {
+      final query = _searchController.text.toLowerCase();
+      _filteredListings = _filteredListings.where((listing) {
+        return listing.worker.name.toLowerCase().contains(query) ||
+               listing.post.title.toLowerCase().contains(query) ||
+               listing.post.category.toLowerCase().contains(query);
       }).toList();
-    });
+    }
+
+    setState(() => _isLoading = false);
   }
 
   void _showFilterSheet() {
@@ -84,36 +85,25 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _FilterBottomSheet(
-        initialCategory: _selectedCategory,
-        initialDistance: _maxDistance,
-        initialRating: _minRating,
-        initialVerified: _verifiedOnly,
-        onApply: (category, distance, rating, verified) {
-          setState(() {
-            _selectedCategory = category;
-            _maxDistance = distance;
-            _minRating = rating;
-            _verifiedOnly = verified;
-          });
-          _applyFilters();
-        },
-      ),
-    );
+      builder: (context) => const _AdvancedFilterBottomSheet(),
+    ).then((_) => _fetchWorkers());
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final workerProvider = context.watch<WorkerProvider>();
+    final filterCount = workerProvider.activeAdvancedFilterCount;
+
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: Column(
         children: [
-          _buildHeader(),
+          _buildHeader(filterCount),
           Expanded(
             child: _isLoading 
               ? Center(child: CircularProgressIndicator(color: theme.colorScheme.primary))
-              : _filteredWorkers.isEmpty 
+              : _filteredListings.isEmpty 
                   ? _buildEmptyState()
                   : _buildResultsList(),
           ),
@@ -123,7 +113,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(int filterCount) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return SafeArea(
@@ -147,7 +137,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                 ),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: (_) => _applyFilters(),
+                  onChanged: (_) => _fetchWorkers(),
                   style: TextStyle(color: colorScheme.onSurface),
                   decoration: InputDecoration(
                     hintText: 'Search for workers...',
@@ -160,17 +150,39 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            GestureDetector(
-              onTap: _showFilterSheet,
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                GestureDetector(
+                  onTap: _showFilterSheet,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.tune, color: colorScheme.onPrimary),
+                  ),
                 ),
-                child: Icon(Icons.tune, color: colorScheme.onPrimary),
-              ),
+                if (filterCount > 0)
+                  Positioned(
+                    right: -4,
+                    top: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.error,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: colorScheme.surface, width: 2),
+                      ),
+                      child: Text(
+                        filterCount.toString(),
+                        style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
         ),
@@ -183,7 +195,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
     return ListView.builder(
       padding: const EdgeInsets.all(24),
       physics: const BouncingScrollPhysics(),
-      itemCount: _filteredWorkers.length + 1,
+      itemCount: _filteredListings.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
           return Padding(
@@ -191,23 +203,26 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Available Workers', style: AppTypography.headlineMedium.copyWith(color: theme.colorScheme.onSurface)),
+                Text('Available Listings', style: AppTypography.headlineMedium.copyWith(color: theme.colorScheme.onSurface)),
                 Text(
-                  'Showing ${_filteredWorkers.length} results',
+                  'Showing ${_filteredListings.length} results',
                   style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
               ],
             ),
           );
         }
-        return _buildWorkerCard(_filteredWorkers[index - 1]);
+        return _buildWorkerCard(_filteredListings[index - 1]);
       },
     );
   }
 
-  Widget _buildWorkerCard(Worker worker) {
+  Widget _buildWorkerCard(JobPostListing listing) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final worker = listing.worker;
+    final post = listing.post;
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}');
@@ -245,14 +260,14 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                           Icon(worker.trustTier.info.icon, color: worker.trustTier.info.color, size: 18),
                         ],
                       ),
-                      Text(worker.specialty, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+                      Text(post.title, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           const Icon(Icons.star, color: Colors.amber, size: 14),
                           const SizedBox(width: 4),
                           Text(worker.rating.toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: colorScheme.onSurface)),
-                          Text(' • ${worker.reviewCount} jobs', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                          Text(' • ${worker.reviewCount} reviews', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                         ],
                       ),
                     ],
@@ -263,17 +278,30 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
-              children: worker.tags.map((tag) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    post.category, 
+                    style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w700)
+                  ),
                 ),
-                child: Text(
-                  tag, 
-                  style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w700)
-                ),
-              )).toList(),
+                ...worker.tags.take(2).map((tag) => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    tag, 
+                    style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.w700)
+                  ),
+                )).toList(),
+              ],
             ),
             const SizedBox(height: 16),
             Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
@@ -292,8 +320,8 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                   text: TextSpan(
                     style: AppTypography.headlineMedium.copyWith(color: colorScheme.primary, fontSize: 18, fontWeight: FontWeight.w800),
                     children: [
-                      TextSpan(text: '₱${worker.hourlyRate.toInt()}'),
-                      TextSpan(text: '/hr', style: AppTypography.bodySmall.copyWith(fontSize: 12, color: colorScheme.onSurfaceVariant)),
+                      TextSpan(text: 'From ₱${post.startingRate.toInt()}'),
+                      TextSpan(text: post.rateType.shortLabel, style: AppTypography.bodySmall.copyWith(fontSize: 12, color: colorScheme.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -307,6 +335,8 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
 
   Widget _buildEmptyState() {
     final theme = Theme.of(context);
+    final workerProvider = context.read<WorkerProvider>();
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -335,12 +365,9 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
               onPressed: () {
                 setState(() {
                   _searchController.clear();
-                  _selectedCategory = null;
-                  _maxDistance = 20.0;
-                  _minRating = 0.0;
-                  _verifiedOnly = false;
+                  workerProvider.resetFilters();
                 });
-                _applyFilters();
+                _fetchWorkers();
               },
               child: Text('Clear Filters', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
             ),
@@ -351,52 +378,39 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
   }
 }
 
-class _FilterBottomSheet extends StatefulWidget {
-  final String? initialCategory;
-  final double initialDistance;
-  final double initialRating;
-  final bool initialVerified;
-  final Function(String?, double, double, bool) onApply;
-
-  const _FilterBottomSheet({
-    required this.initialCategory,
-    required this.initialDistance,
-    required this.initialRating,
-    required this.initialVerified,
-    required this.onApply,
-  });
+class _AdvancedFilterBottomSheet extends StatefulWidget {
+  const _AdvancedFilterBottomSheet();
 
   @override
-  State<_FilterBottomSheet> createState() => _FilterBottomSheetState();
+  State<_AdvancedFilterBottomSheet> createState() => _AdvancedFilterBottomSheetState();
 }
 
-class _FilterBottomSheetState extends State<_FilterBottomSheet> {
-  String? _category;
-  double _distance = 5.0;
-  double _rating = 0.0;
-  bool _verified = true;
-
-  final List<String> _categories = ['Electrical', 'Plumbing', 'Tutoring', 'Cleaning', 'Carpentry', 'Laundry', 'Gardening'];
+class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> {
+  late List<String> _selectedCategories;
+  String? _selectedBarangay;
+  late List<RateType> _selectedRateTypes;
+  late bool _onlyAvailable;
 
   @override
   void initState() {
     super.initState();
-    _category = widget.initialCategory;
-    _distance = widget.initialDistance;
-    _rating = widget.initialRating;
-    _verified = widget.initialVerified;
+    final workerProvider = context.read<WorkerProvider>();
+    _selectedCategories = List.from(workerProvider.selectedCategories);
+    _selectedBarangay = workerProvider.selectedBarangay;
+    _selectedRateTypes = List.from(workerProvider.selectedRateTypes);
+    _onlyAvailable = workerProvider.onlyAvailableNow;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final workerProvider = context.read<WorkerProvider>();
 
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -408,133 +422,146 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Filters', style: AppTypography.headlineMedium.copyWith(color: colorScheme.onSurface)),
+              Text('Advanced Filters', style: AppTypography.headlineMedium.copyWith(fontSize: 22)),
               TextButton(
                 onPressed: () {
                   setState(() {
-                    _category = null;
-                    _distance = 5.0;
-                    _rating = 0.0;
-                    _verified = true;
+                    _selectedCategories = [];
+                    _selectedBarangay = null;
+                    _selectedRateTypes = [];
+                    _onlyAvailable = false;
                   });
                 },
-                child: Text('Reset', style: TextStyle(color: colorScheme.primary)),
+                child: Text('Reset', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
-          Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-          const SizedBox(height: 24),
-          
-          Align(alignment: Alignment.centerLeft, child: Text('Service Category', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface))),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _categories.map((cat) => ChoiceChip(
-              label: Text(cat),
-              selected: _category == cat,
-              onSelected: (selected) => setState(() => _category = selected ? cat : null),
-              selectedColor: colorScheme.primary,
-              labelStyle: TextStyle(color: _category == cat ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
-              showCheckmark: false,
-              backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
-            )).toList(),
-          ),
-          
-          const SizedBox(height: 32),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Distance', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface)),
-              Text('Up to ${_distance.toInt()} km', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
-            ],
-          ),
-          Slider(
-            value: _distance,
-            min: 1,
-            max: 20,
-            divisions: 19,
-            activeColor: colorScheme.primary,
-            inactiveColor: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            onChanged: (val) => setState(() => _distance = val),
-          ),
-
-          const SizedBox(height: 32),
-
-          Align(alignment: Alignment.centerLeft, child: Text('Minimum Rating', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface))),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _buildRatingOption('Any', 0.0),
-              const SizedBox(width: 8),
-              _buildRatingOption('3.5+', 3.5),
-              const SizedBox(width: 8),
-              _buildRatingOption('4.5+', 4.5),
-            ],
-          ),
-
-          const SizedBox(height: 32),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
+          const SizedBox(height: 8),
+          Flexible(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Verified Workers Only', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface)),
-                  Text('Show only identity-verified professionals', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                  const SizedBox(height: 24),
+                  Text('Service Category', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  FutureBuilder<List<ServiceCategory>>(
+                    future: workerProvider.getCategories(),
+                    builder: (context, snapshot) {
+                      final categories = (snapshot.data ?? []).map((c) => c.label).toList();
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: categories.map((cat) {
+                          final isSelected = _selectedCategories.contains(cat);
+                          return FilterChip(
+                            label: Text(cat),
+                            selected: isSelected,
+                            onSelected: (val) {
+                              setState(() {
+                                if (val) {
+                                  _selectedCategories.add(cat);
+                                } else {
+                                  _selectedCategories.remove(cat);
+                                }
+                              });
+                            },
+                            selectedColor: colorScheme.primary,
+                            labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
+                            backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                            showCheckmark: false,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  Text('Barangay', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: _selectedBarangay,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    hint: const Text('All Barangays'),
+                    items: Barangay.trinidadBarangays.map((b) => DropdownMenuItem(
+                      value: b.name,
+                      child: Text(b.name),
+                    )).toList(),
+                    onChanged: (val) => setState(() => _selectedBarangay = val),
+                    dropdownColor: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  const SizedBox(height: 32),
+                  Text('Rate Type', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: RateType.values.map((type) {
+                      final isSelected = _selectedRateTypes.contains(type);
+                      return FilterChip(
+                        label: Text(type.label),
+                        selected: isSelected,
+                        onSelected: (val) {
+                          setState(() {
+                            if (val) {
+                              _selectedRateTypes.add(type);
+                            } else {
+                              _selectedRateTypes.remove(type);
+                            }
+                          });
+                        },
+                        selectedColor: colorScheme.primary,
+                        labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
+                        backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                        showCheckmark: false,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Available Now', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                          Text('Show only workers ready to work', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                        ],
+                      ),
+                      Switch(
+                        value: _onlyAvailable,
+                        onChanged: (val) => setState(() => _onlyAvailable = val),
+                        activeColor: colorScheme.primary,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                  PrimaryButton(
+                    label: 'Apply Filters',
+                    onPressed: () {
+                      workerProvider.setAdvancedFilters(
+                        categories: _selectedCategories,
+                        barangay: _selectedBarangay,
+                        rateTypes: _selectedRateTypes,
+                        onlyAvailable: _onlyAvailable,
+                      );
+                      Navigator.pop(context);
+                    },
+                  ),
+                  const SizedBox(height: 32),
                 ],
               ),
-              Switch(
-                value: _verified,
-                activeTrackColor: colorScheme.primary.withValues(alpha: 0.5),
-                activeColor: colorScheme.primary,
-                onChanged: (val) => setState(() => _verified = val),
-              ),
-            ],
+            ),
           ),
-
-          const SizedBox(height: 40),
-          
-          PrimaryButton(
-            label: 'Show Results',
-            onPressed: () {
-              widget.onApply(_category, _distance, _rating, _verified);
-              Navigator.pop(context);
-            },
-          ),
-          const SizedBox(height: 32),
         ],
-      ),
-    );
-  }
-
-  Widget _buildRatingOption(String label, double value) {
-    final isSelected = _rating == value;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _rating = value),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surface,
-            border: Border.all(color: isSelected ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5)),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(label, style: TextStyle(color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold)),
-              if (value > 0) ...[
-                const SizedBox(width: 4),
-                Icon(Icons.star, color: isSelected ? colorScheme.primary : Colors.amber, size: 14),
-              ],
-            ],
-          ),
-        ),
       ),
     );
   }
