@@ -18,17 +18,17 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
   List<OnboardingSlideData> _getSlides(ColorScheme colorScheme) {
     return [
       OnboardingSlideData(
-        title: "What is HanapBuhay?",
+        title: "Welcome to HanapBuhay",
         description: "Find skilled workers in your community — verified and trusted through your local barangay.",
         color: colorScheme.primary.withValues(alpha: 0.1),
       ),
       OnboardingSlideData(
-        title: "For Clients",
+        title: "Find the Right Worker",
         description: "Book electricians, plumbers, tutors, cleaners, and more — right in your neighborhood.",
         color: colorScheme.secondary.withValues(alpha: 0.1),
       ),
       OnboardingSlideData(
-        title: "For Workers",
+        title: "Offer Your Skills",
         description: "Offer your skills, grow your reputation, and earn from what you do best.",
         color: colorScheme.tertiary.withValues(alpha: 0.1),
       ),
@@ -42,7 +42,7 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
 
   void _onFinish() {
     context.read<AuthProvider>().completeOnboarding();
-    Navigator.pushNamed(context, AppRouter.registerRole);
+    Navigator.pushReplacementNamed(context, AppRouter.login);
   }
 
   void _onSkip() {

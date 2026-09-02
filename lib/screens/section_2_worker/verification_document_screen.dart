@@ -56,7 +56,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
       final theme = Theme.of(context);
 
       if (result.success) {
-        Navigator.pushReplacementNamed(context, AppRouter.verificationUnderReview);
+        Navigator.pushReplacementNamed(context, AppRouter.verificationStatus);
       } else {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(

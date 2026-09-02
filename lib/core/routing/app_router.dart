@@ -21,14 +21,16 @@ import '../../screens/section_1_client/rate_review_screen.dart';
 import '../../screens/section_1_client/file_report_screen.dart';
 import '../../screens/section_1_client/report_status_screen.dart';
 import '../../screens/section_2_worker/worker_home_screen.dart';
+import '../../screens/section_2_worker/manage_posts_screen.dart';
+import '../../screens/section_2_worker/worker_map_screen.dart';
+import '../../screens/section_1_client/browse_category_screen.dart';
+import '../../screens/section_1_client/category_results_screen.dart';
 import '../../screens/section_2_worker/verification_document_screen.dart';
-import '../../screens/section_2_worker/verification_under_review_screen.dart';
 import '../../screens/section_2_worker/verification_status_screen.dart';
 import '../../screens/section_2_worker/portfolio_skills_screen.dart';
 import '../../screens/section_2_worker/booking_schedule_screen.dart';
 import '../../screens/section_2_worker/job_detail_screen.dart';
 import '../../screens/section_2_worker/rate_client_screen.dart';
-import '../../screens/section_2_worker/received_reviews_screen.dart';
 import '../../screens/section_2_worker/create_job_post_screen.dart';
 import '../../screens/section_2_worker/edit_job_post_screen.dart';
 import '../../screens/section_3_shared/chat_inbox_screen.dart';
@@ -38,6 +40,7 @@ import '../../screens/section_3_shared/help_faq_screen.dart';
 import '../../screens/section_3_shared/profile_tab_screen.dart';
 import '../../screens/section_3_shared/edit_profile_screen.dart';
 import '../../screens/section_3_shared/notification_preferences_screen.dart';
+import '../../screens/shell/tab_shell.dart';
 
 class AppRouter {
   AppRouter._();
@@ -63,7 +66,6 @@ class AppRouter {
   static const String fileReport = '/file-report';
   static const String reportStatus = '/report-status';
   static const String verificationDocuments = '/verification-documents';
-  static const String verificationUnderReview = '/verification-under-review';
   static const String verificationStatus = '/verification-status';
   static const String portfolioSkills = '/portfolio-skills';
   static const String bookingSchedule = '/booking-schedule';
@@ -80,7 +82,10 @@ class AppRouter {
   static const String workerHome = '/worker-home';
   static const String createJobPost = '/create-job-post';
   static const String editJobPost = '/edit-job-post';
-  static const String receivedReviews = '/received-reviews';
+  static const String manageJobPosts = '/manage-job-posts';
+  static const String workerMap = '/worker-map';
+  static const String browseCategory = '/browse-category';
+  static const String categoryResults = '/category-results';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final Uri uri = Uri.parse(settings.name ?? '');
@@ -113,31 +118,29 @@ class AppRouter {
       case loginActivity:
         return MaterialPageRoute(builder: (_) => const LoginActivityScreen());
       case bookingHistory:
-        return MaterialPageRoute(builder: (_) => const BookingHistoryScreen());
+        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 1));
       case reportStatus:
         return MaterialPageRoute(builder: (_) => const ReportStatusScreen());
       case portfolioSkills:
         return MaterialPageRoute(builder: (_) => const PortfolioSkillsScreen());
       case bookingSchedule:
-        return MaterialPageRoute(builder: (_) => const BookingScheduleScreen());
+        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 1));
       case chatInbox:
-        return MaterialPageRoute(builder: (_) => const ChatInboxScreen());
+        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 2));
       case notificationCenter:
-        return MaterialPageRoute(builder: (_) => const NotificationCenterScreen());
+        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 3));
       case help:
         return MaterialPageRoute(builder: (_) => const HelpFaqScreen());
       case profile:
-        return MaterialPageRoute(builder: (_) => const ProfileTabScreen());
+        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 4));
       case editProfile:
         return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       case notificationPreferences:
         return MaterialPageRoute(builder: (_) => const NotificationPreferencesScreen());
       case clientHome:
-        return MaterialPageRoute(builder: (_) => const ClientHomeScreen());
+        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 0));
       case workerHome:
-        return MaterialPageRoute(builder: (_) => const WorkerHomeScreen());
-      case receivedReviews:
-        return MaterialPageRoute(builder: (_) => const ReceivedReviewsScreen());
+        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 0));
       case createJobPost:
         return MaterialPageRoute(builder: (_) => const CreateJobPostScreen());
       case workerSearch:
@@ -153,14 +156,25 @@ class AppRouter {
         );
       case verificationDocuments:
         return MaterialPageRoute(builder: (_) => const VerificationDocumentScreen());
-      case verificationUnderReview:
-        return MaterialPageRoute(builder: (_) => const VerificationUnderReviewScreen());
+      case manageJobPosts:
+        return MaterialPageRoute(builder: (_) => const ManagePostsScreen());
+      case browseCategory:
+        return MaterialPageRoute(builder: (_) => const BrowseCategoryScreen());
       case verificationStatus:
         return MaterialPageRoute(builder: (_) => const VerificationStatusScreen());
       
       // Dynamic Routes
       default:
         // Handle routes with path parameters
+        if (path.startsWith(categoryResults)) {
+          final id = path.split('/').last;
+          final name = uri.queryParameters['name'] ?? id;
+          return MaterialPageRoute(builder: (_) => CategoryResultsScreen(categoryId: id, categoryName: name));
+        }
+        if (path.startsWith(workerMap)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => WorkerMapScreen(bookingId: id));
+        }
         if (path.startsWith(editJobPost)) {
           final id = path.split('/').last;
           return MaterialPageRoute(builder: (_) => EditJobPostScreen(postId: id));

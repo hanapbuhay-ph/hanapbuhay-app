@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text('Welcome Back', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
                     const SizedBox(height: 8),
                     Text(
-                      'Log in to continue finding opportunities.',
+                      'Log in to your HanapBuhay account',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
@@ -169,8 +169,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Identifier Field
                     _buildTextField(
                       controller: _identifierController,
-                      label: 'Email or Mobile Number',
-                      hint: 'Enter your email or mobile',
+                      label: 'Email Address',
+                      hint: 'Enter your email',
                       validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: 20),

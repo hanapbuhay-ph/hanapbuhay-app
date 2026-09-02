@@ -8,8 +8,6 @@ import '../../providers/worker_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/trust_tier.dart';
-import '../../widgets/navigation/client_bottom_nav.dart';
-import '../../widgets/navigation/worker_bottom_nav.dart';
 
 class ProfileTabScreen extends StatefulWidget {
   const ProfileTabScreen({super.key});
@@ -82,9 +80,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
       return Scaffold(body: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)));
     }
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      body: Column(
+    return Column(
         children: [
           _buildHeader(authProvider),
           Expanded(
@@ -101,7 +97,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   const SizedBox(height: 32),
                   _buildAccountOptions(isWorker),
                   const SizedBox(height: 24),
-                  _buildPreferencesCard(),
+                  _buildPreferencesCard(isWorker),
                   const SizedBox(height: 32),
                   _buildLogoutButton(),
                   const SizedBox(height: 40),
@@ -110,10 +106,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: isWorker 
-          ? const WorkerBottomNav(currentIndex: 4) 
-          : const ClientBottomNav(currentIndex: 4),
     );
   }
 
@@ -211,14 +203,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            bio,
-            textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          const SizedBox(height: 8),
+          if ((authProvider.userBarangay ?? _workerData?.barangay) != null)
+            Text(
+              '📍 ${authProvider.userBarangay ?? _workerData!.barangay}',
+              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
         ],
       ),
     );
@@ -340,10 +330,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           if (isWorker) ...[
             const Divider(height: 1),
             _buildOptionRow(
-              icon: Icons.star_outline_rounded,
-              title: 'My Reviews',
-              subtitle: 'View client feedback and ratings',
-              onTap: () => Navigator.pushNamed(context, AppRouter.receivedReviews),
+              icon: Icons.post_add_outlined,
+              title: 'Manage Posts',
+              subtitle: 'View and manage your job listings',
+              onTap: () => Navigator.pushNamed(context, AppRouter.manageJobPosts),
             ),
             const Divider(height: 1),
             _buildOptionRow(
@@ -366,7 +356,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     );
   }
 
-  Widget _buildPreferencesCard() {
+  Widget _buildPreferencesCard(bool isWorker) {
     final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
@@ -390,6 +380,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             title: 'Notification Preferences',
             onTap: () => Navigator.pushNamed(context, AppRouter.notificationPreferences),
           ),
+          if (!isWorker) ...[
+            const Divider(height: 1),
+            _buildOptionRow(
+              icon: Icons.flag_outlined,
+              title: 'My Reports',
+              onTap: () => Navigator.pushNamed(context, AppRouter.reportStatus),
+            ),
+          ],
           const Divider(height: 1),
           _buildOptionRow(
             icon: Icons.help_outline,

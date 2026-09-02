@@ -8,7 +8,7 @@ import '../../data/models/worker_model.dart';
 import '../../data/models/trust_tier.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/barangay_model.dart';
-import '../../widgets/navigation/client_bottom_nav.dart';
+import '../../widgets/navigation/app_bottom_nav.dart';
 import '../../widgets/navigation/app_back_button.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -109,7 +109,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const ClientBottomNav(currentIndex: -1),
+      bottomNavigationBar: const AppBottomNav(currentIndex: -1),
     );
   }
 

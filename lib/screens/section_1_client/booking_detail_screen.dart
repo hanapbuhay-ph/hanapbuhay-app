@@ -8,7 +8,7 @@ import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
-import '../../widgets/navigation/client_bottom_nav.dart';
+import '../../widgets/navigation/app_bottom_nav.dart';
 import '../../widgets/maps/live_tracking_map.dart';
 
 class BookingDetailScreen extends StatefulWidget {
@@ -113,7 +113,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const ClientBottomNav(currentIndex: 1),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
   }
 

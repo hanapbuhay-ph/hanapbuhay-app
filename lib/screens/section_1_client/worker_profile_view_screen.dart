@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
+import '../../data/models/job_post_model.dart';
 import '../../data/models/trust_tier.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -91,7 +91,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
                       unselectedLabelStyle: AppTypography.bodyMedium,
                       tabs: const [
                         Tab(text: 'About'),
-                        Tab(text: 'Portfolio'),
+                        Tab(text: 'Posts'),
                         Tab(text: 'Reviews'),
                       ],
                     ),
@@ -103,14 +103,14 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
                 controller: _tabController,
                 children: [
                   _buildAboutTab(worker),
-                  _buildPortfolioTab(worker),
+                  _buildPostsTab(worker),
                   _buildReviewsTab(worker),
                 ],
               ),
             ),
           ),
           
-          _buildBottomBar(worker),
+
         ],
       ),
     );
@@ -196,20 +196,14 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
           ),
           const SizedBox(height: 12),
           
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.star, color: Colors.amber, size: 20),
-              const SizedBox(width: 4),
-              Text(
-                worker.rating.toString(),
-                style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface),
-              ),
-              Text(
-                ' (${worker.reviewCount} reviews)',
-                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-            ],
+          Text(
+            '⭐ ${worker.rating} · ${worker.reviewCount} reviews · ${worker.completedJobsCount} jobs',
+            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '📍 ${worker.barangay} · ~${worker.distance}',
+            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -342,59 +336,91 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
     );
   }
 
-  Widget _buildPortfolioTab(Worker worker) {
-    final authProvider = context.watch<AuthProvider>();
+  Widget _buildPostsTab(Worker worker) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isOwner = authProvider.userId == worker.id;
 
-    if (worker.portfolioImages.isEmpty) {
-      return Column(
-        children: [
-          const SizedBox(height: 40),
-          _buildEmptyTab('No portfolio items yet', Icons.image_outlined),
-          if (isOwner) ...[
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48),
-              child: PrimaryButton(
-                label: 'Add First Project',
-                onPressed: () => Navigator.pushNamed(context, AppRouter.portfolioSkills),
-              ),
-            ),
-          ],
-        ],
-      );
+    if (worker.jobPosts.isEmpty) {
+      return _buildEmptyTab('No active posts yet', Icons.work_outline);
     }
 
-    return Column(
-      children: [
-        if (isOwner)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-            child: PrimaryButton(
-              label: 'Manage Portfolio',
-              onPressed: () => Navigator.pushNamed(context, AppRouter.portfolioSkills),
-            ),
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: worker.jobPosts.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final post = worker.jobPosts[index];
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(24),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 4/3,
-            ),
-            itemCount: worker.portfolioImages.length,
-            itemBuilder: (context, index) {
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(worker.portfolioImages[index], fit: BoxFit.cover),
-              );
-            },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  post.category,
+                  style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                post.title,
+                style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                post.description,
+                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    'From ₱${post.startingRate.toInt()}${post.rateType.shortLabel}',
+                    style: AppTypography.labelLarge.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700),
+                  ),
+                  const Spacer(),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: post.isAvailable ? colorScheme.primary : Colors.grey,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    post.isAvailable ? 'Available' : 'Unavailable',
+                    style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              PrimaryButton(
+                label: 'Book This Service',
+                onPressed: () => _handleBooking(worker),
+              ),
+            ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -546,67 +572,6 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
     }
   }
 
-  Widget _buildBottomBar(Worker worker) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Container(
-      padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
-        border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Starting from', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
-                RichText(
-                  text: TextSpan(
-                    style: AppTypography.headlineMedium.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w800),
-                    children: [
-                      TextSpan(text: '₱${worker.hourlyRate.toInt()}'),
-                      TextSpan(text: ' / hr', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 24),
-          IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); 
-            },
-            icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
-            style: IconButton.styleFrom(
-              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-              padding: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: PrimaryButton(
-              label: 'Book Now',
-              showArrow: true,
-              onPressed: () => _handleBooking(worker),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {

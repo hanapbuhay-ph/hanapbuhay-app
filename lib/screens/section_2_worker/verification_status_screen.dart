@@ -62,15 +62,105 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
 
   Widget _buildStatusContent(Worker worker) {
     switch (worker.verificationStatus) {
+      case VerificationStatus.notStarted:
+        return _buildNotStartedState();
       case VerificationStatus.pending:
         return _buildPendingState();
       case VerificationStatus.verified:
         return _buildApprovedState(worker);
       case VerificationStatus.rejected:
         return _buildRejectedState(worker);
-      default:
-        return const Center(child: Text('No verification in progress.'));
     }
+  }
+
+  Widget _buildDocumentStatusList(VerificationStatus status) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final docs = ['Government ID', 'Barangay Certificate', 'Selfie with ID', 'Skill Certificate'];
+
+    IconData iconFor(int i) {
+      if (status == VerificationStatus.notStarted) return Icons.remove;
+      if (status == VerificationStatus.pending) return Icons.schedule;
+      if (status == VerificationStatus.verified) return Icons.check_circle;
+      return i == 2 ? Icons.cancel : (i == 3 ? Icons.remove : Icons.check_circle);
+    }
+
+    Color colorFor(int i) {
+      if (status == VerificationStatus.notStarted) return colorScheme.onSurfaceVariant;
+      if (status == VerificationStatus.pending) return Colors.amber;
+      if (status == VerificationStatus.verified) return colorScheme.primary;
+      return i == 2 ? colorScheme.error : (i == 3 ? colorScheme.onSurfaceVariant : colorScheme.primary);
+    }
+
+    String labelFor(int i) {
+      if (status == VerificationStatus.notStarted) return 'Not submitted';
+      if (status == VerificationStatus.pending) return 'Under Review';
+      if (status == VerificationStatus.verified) return i == 3 ? 'N/A' : 'Approved';
+      return i == 2 ? 'Rejected' : (i == 3 ? 'N/A' : 'Approved');
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: List.generate(docs.length, (i) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Expanded(child: Text(docs[i], style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface))),
+                  Icon(iconFor(i), color: colorFor(i), size: 20),
+                  const SizedBox(width: 6),
+                  Text(labelFor(i), style: AppTypography.labelSmall.copyWith(color: colorFor(i), fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+            if (i < docs.length - 1)
+              Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+          ],
+        )),
+      ),
+    );
+  }
+
+  Widget _buildNotStartedState() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(Icons.description_outlined, size: 40, color: colorScheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Not Yet Verified',
+          style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Submit your documents to get barangay-verified and rank higher in client searches.',
+          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 32),
+        _buildDocumentStatusList(VerificationStatus.notStarted),
+        const SizedBox(height: 32),
+        PrimaryButton(
+          label: 'Submit Documents Now',
+          onPressed: () => Navigator.pushNamed(context, AppRouter.verificationDocuments),
+        ),
+      ],
+    );
   }
 
   Widget _buildPendingState() {
@@ -106,7 +196,9 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
           borderRadius: BorderRadius.circular(4),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
+        _buildDocumentStatusList(VerificationStatus.pending),
+        const SizedBox(height: 32),
         _buildSupportButton(),
       ],
     );
@@ -140,7 +232,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
-        
+        _buildDocumentStatusList(VerificationStatus.verified),
+        const SizedBox(height: 32),
         // Badge Preview Card
         Container(
           padding: const EdgeInsets.all(24),
@@ -202,7 +295,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
         PrimaryButton(
           label: 'Go to Dashboard',
           onPressed: () => Navigator.pushReplacementNamed(context, AppRouter.workerHome),
@@ -239,7 +332,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
-        
+        _buildDocumentStatusList(VerificationStatus.rejected),
+        const SizedBox(height: 32),
         // Rejection Reason Card
         Container(
           width: double.infinity,
@@ -270,7 +364,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
         PrimaryButton(
           label: 'Resubmit Documents',
           onPressed: () => Navigator.pushNamed(context, AppRouter.verificationDocuments),

@@ -5,8 +5,6 @@ import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../data/models/notification_model.dart';
-import '../../widgets/navigation/client_bottom_nav.dart';
-import '../../widgets/navigation/worker_bottom_nav.dart';
 
 class NotificationCenterScreen extends StatefulWidget {
   const NotificationCenterScreen({super.key});
@@ -34,11 +32,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     final isWorker = authProvider.userRole == 'worker';
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      body: Column(
+    return Column(
         children: [
-          _buildHeader(),
           Expanded(
             child: FutureBuilder<List<AppNotification>>(
               future: _notificationsFuture,
@@ -84,43 +79,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: isWorker 
-          ? const WorkerBottomNav(currentIndex: 3) 
-          : const ClientBottomNav(currentIndex: 3),
     );
   }
 
-  Widget _buildHeader() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final authProvider = context.read<AuthProvider>();
-
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
-              icon: Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(width: 8),
-            Text('Notifications', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
-            const Spacer(),
-            GestureDetector(
-              onTap: () => Navigator.pushNamed(context, AppRouter.profile),
-              child: CircleAvatar(
-                radius: 18, 
-                backgroundImage: NetworkImage(authProvider.userAvatar ?? 'https://i.pravatar.cc/150?u=current_user'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildHeader() => const SizedBox.shrink();
 
   Widget _buildSectionHeader(String title) {
     final theme = Theme.of(context);

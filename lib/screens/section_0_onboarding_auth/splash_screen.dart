@@ -11,23 +11,10 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _rotationController;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
-
-    _rotationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat();
-
     _initialize();
   }
 
@@ -53,127 +40,73 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   @override
-  void dispose() {
-    _pulseController.dispose();
-    _rotationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.background,
-      body: Stack(
-        children: [
-          // Radial Glow Effect
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  radius: 1.2,
-                  colors: [
-                    colorScheme.primaryContainer.withValues(alpha: 0.2),
-                    colorScheme.background.withValues(alpha: 0.0),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.7, 1.0],
-                ),
-              ),
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF4CAF50), Color(0xFF1D7A37)],
           ),
-          
-          // Main Content
-          Center(
-            child: FadeTransition(
-              opacity: Tween<double>(begin: 0.9, end: 1.0).animate(_pulseController),
+        ),
+        child: Stack(
+          children: [
+            // Center content
+            Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo Container
-                  Container(
-                    width: 128,
-                    height: 128,
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(24), 
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Image.asset(
-                      'assets/icon/app_icon.png',
-                      fit: BoxFit.cover,
-                    ),
+                  Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 120,
+                    height: 120,
                   ),
                   const SizedBox(height: 32),
-                  
-                  // App Name
                   Text(
                     'HanapBuhay',
-                    style: AppTypography.displayLarge.copyWith(color: colorScheme.onSurface),
+                    style: AppTypography.displayLarge.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
-                  
-                  // Tagline
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
-                      'Connecting talent with opportunity.',
+                      'Your Community Skilled Worker Marketplace',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyLarge.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                        color: Colors.white.withValues(alpha: 0.85),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          
-          // Loading Indicator at bottom
-          Positioned(
-            bottom: 64,
-            left: 0,
-            right: 0,
-            child: Column(
-              children: [
-                RotationTransition(
-                  turns: _rotationController,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border(
-                        top: BorderSide(
-                          color: colorScheme.primaryContainer,
-                          width: 3,
-                        ),
-                      ),
+
+            // Loading indicator at bottom
+            Positioned(
+              bottom: 48,
+              left: 0,
+              right: 0,
+              child: Column(
+                children: [
+                  const CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading...',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'INITIALIZING...',
-                  style: AppTypography.labelSmall.copyWith(
-                    letterSpacing: 2.0,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

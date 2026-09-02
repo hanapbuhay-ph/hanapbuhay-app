@@ -6,8 +6,6 @@ import '../../providers/booking_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
-import '../../widgets/navigation/client_bottom_nav.dart';
-import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
 class BookingHistoryScreen extends StatefulWidget {
@@ -58,16 +56,10 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      body: Column(
-        children: [
-          AppHeader(
-            title: 'My Bookings',
-            onBackPressed: () => Navigator.pushReplacementNamed(context, AppRouter.clientHome),
-          ),
-          _buildSegmentedControl(),
-          Expanded(
+    return Column(
+      children: [
+        _buildSegmentedControl(),
+        Expanded(
             child: FutureBuilder<List<Booking>>(
               future: _bookingsFuture,
               builder: (context, snapshot) {
@@ -102,8 +94,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: const ClientBottomNav(currentIndex: 1),
     );
   }
 

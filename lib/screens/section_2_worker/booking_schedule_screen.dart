@@ -5,7 +5,6 @@ import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/navigation/worker_bottom_nav.dart';
 
 class BookingScheduleScreen extends StatefulWidget {
   const BookingScheduleScreen({super.key});
@@ -57,11 +56,8 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
-    return Scaffold(
-      backgroundColor: colorScheme.background,
-      body: Column(
+    return Column(
         children: [
-          _buildHeader(authProvider),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,54 +116,10 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: const WorkerBottomNav(currentIndex: 1),
     );
   }
 
-  Widget _buildHeader(AuthProvider authProvider) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.9),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
-            const SizedBox(width: 16),
-            Text(
-              'HanapBuhay',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: colorScheme.primary,
-                letterSpacing: -1,
-              ),
-            ),
-            const Spacer(),
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, AppRouter.profile);
-              },
-              child: CircleAvatar(
-                radius: 16, 
-                backgroundImage: NetworkImage(authProvider.userAvatar ?? 'https://i.pravatar.cc/150?u=worker'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildHeader(AuthProvider authProvider) => const SizedBox.shrink();
 
   Widget _buildSegmentedControl() {
     final theme = Theme.of(context);

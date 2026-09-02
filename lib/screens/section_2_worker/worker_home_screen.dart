@@ -5,11 +5,9 @@ import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/booking_provider.dart';
-import '../../providers/notification_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/job_post_model.dart';
-import '../../widgets/navigation/worker_bottom_nav.dart';
 
 class WorkerHomeScreen extends StatefulWidget {
   const WorkerHomeScreen({super.key});
@@ -61,9 +59,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     final firstName = authProvider.userName?.split(' ').first ?? authProvider.userEmail?.split('@').first ?? 'Ricardo';
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      body: FutureBuilder<Worker?>(
+    return FutureBuilder<Worker?>(
         future: _workerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -74,7 +70,6 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
 
           return Column(
             children: [
-              _buildHeader(worker),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
@@ -109,87 +104,10 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             ],
           );
         }
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, AppRouter.createJobPost),
-        label: const Text('New Post', style: TextStyle(fontWeight: FontWeight.bold)),
-        icon: const Icon(Icons.add),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
-      ),
-      bottomNavigationBar: const WorkerBottomNav(currentIndex: 0),
-    );
+      );
   }
 
-  Widget _buildHeader(Worker worker) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final authProvider = context.read<AuthProvider>();
-    final avatar = authProvider.userAvatar ?? worker.avatarUrl;
-
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.9),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
-        ),
-        child: Row(
-          children: [
-            IconButton(
-              icon: Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
-              onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              'HanapBuhay',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: colorScheme.primary,
-                letterSpacing: -1,
-              ),
-            ),
-            const Spacer(),
-            GestureDetector(
-              onTap: () => Navigator.pushNamed(context, AppRouter.notificationCenter),
-              child: Stack(
-                children: [
-                  Icon(Icons.notifications_none, color: colorScheme.onSurfaceVariant),
-                  Positioned(
-                    right: 2,
-                    top: 2,
-                    child: StreamBuilder<int>(
-                      stream: context.read<NotificationProvider>().getUnreadCount(),
-                      builder: (context, snapshot) {
-                        final count = snapshot.data ?? 0;
-                        if (count == 0) return const SizedBox.shrink();
-                        return Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: colorScheme.error,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: colorScheme.surface, width: 1.5),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            CircleAvatar(radius: 16, backgroundImage: NetworkImage(avatar)),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildHeader(Worker worker) => const SizedBox.shrink();
 
   Widget _buildGreeting(String name) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -411,7 +329,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           children: [
             Text('Your Active Posts', style: AppTypography.headlineMedium.copyWith(fontSize: 20, fontWeight: FontWeight.w800)),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, AppRouter.profile), // Should go to Manage Posts eventually
+              onPressed: () => Navigator.pushNamed(context, AppRouter.manageJobPosts),
               child: Text('Manage', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
             ),
           ],
@@ -445,11 +363,71 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     );
   }
 
+  void _showPostOptions(JobPost post) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Edit Post'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '${AppRouter.editJobPost}/${post.id}');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.block_outlined, color: colorScheme.error),
+              title: Text('Deactivate Post', style: TextStyle(color: colorScheme.error)),
+              onTap: () {
+                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Deactivate Post'),
+                    content: Text('Deactivate "${post.title}"? It will no longer be visible to clients.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Post deactivated')),
+                          );
+                        },
+                        child: Text('Deactivate', style: TextStyle(color: colorScheme.error)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: const Text('Cancel'),
+              onTap: () => Navigator.pop(context),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildJobPostCard(JobPost post) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Container(
+    return GestureDetector(
+      onLongPress: () => _showPostOptions(post),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -510,7 +488,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildIncomingRequestsSection() {
