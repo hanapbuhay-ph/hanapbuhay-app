@@ -21,6 +21,7 @@ import '../../screens/section_1_client/rate_review_screen.dart';
 import '../../screens/section_1_client/file_report_screen.dart';
 import '../../screens/section_1_client/report_status_screen.dart';
 import '../../screens/section_2_worker/worker_home_screen.dart';
+import '../../screens/section_2_worker/incoming_requests_screen.dart';
 import '../../screens/section_2_worker/manage_posts_screen.dart';
 import '../../screens/section_2_worker/worker_map_screen.dart';
 import '../../screens/section_1_client/browse_category_screen.dart';
@@ -84,6 +85,7 @@ class AppRouter {
   static const String editJobPost = '/edit-job-post';
   static const String manageJobPosts = '/manage-job-posts';
   static const String workerMap = '/worker-map';
+  static const String incomingRequests = '/incoming-requests';
   static const String browseCategory = '/browse-category';
   static const String categoryResults = '/category-results';
 
@@ -158,6 +160,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const VerificationDocumentScreen());
       case manageJobPosts:
         return MaterialPageRoute(builder: (_) => const ManagePostsScreen());
+      case incomingRequests:
+        return MaterialPageRoute(builder: (_) => const IncomingRequestsScreen());
       case browseCategory:
         return MaterialPageRoute(builder: (_) => const BrowseCategoryScreen());
       case verificationStatus:

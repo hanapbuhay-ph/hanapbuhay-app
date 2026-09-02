@@ -82,13 +82,28 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
     return Column(
         children: [
-          _buildHeader(authProvider),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               physics: const BouncingScrollPhysics(),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Profile', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Manage your account and preferences.',
+                          style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   _buildUserSummary(authProvider),
                   const SizedBox(height: 24),
                   _buildTrustTierCard(isWorker),
@@ -106,30 +121,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             ),
           ),
         ],
-    );
-  }
-
-  Widget _buildHeader(AuthProvider authProvider) {
-    final avatar = authProvider.userAvatar ?? _workerData?.avatarUrl ?? 'https://i.pravatar.cc/150?u=client';
-
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Row(
-          children: [
-            const Spacer(),
-            Text('Profile', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
-            const Spacer(),
-            CircleAvatar(
-              radius: 18, 
-              backgroundImage: avatar.startsWith('http') 
-                  ? NetworkImage(avatar) 
-                  : FileImage(File(avatar)) as ImageProvider,
-            ),
-          ],
-        ),
-      ),
     );
   }
 

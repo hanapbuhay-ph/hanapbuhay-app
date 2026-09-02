@@ -53,6 +53,164 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     }
   }
 
+  void _showRequestDetail(Booking request) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: colorScheme.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Client Name', style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(request.category, style: TextStyle(color: colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                      const SizedBox(height: 20),
+                      Text('Request Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 16),
+                      _buildSheetDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${_formatDate(request.date)} • ${request.time}'),
+                      const SizedBox(height: 14),
+                      _buildSheetDetailRow(colorScheme, Icons.location_on_outlined, 'Location', 'Trinidad (${request.barangay})'),
+                      const SizedBox(height: 14),
+                      _buildSheetDetailRow(colorScheme, Icons.build_outlined, 'Service', request.category),
+                      if (request.notes.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                        const SizedBox(height: 16),
+                        Text('Client Notes', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            request.notes,
+                            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface, fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(24, 12, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _handleResponse(request.id, false);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: colorScheme.error),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('Decline', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _handleResponse(request.id, true);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Accept', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSheetDetailRow(ColorScheme colorScheme, IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: colorScheme.primary),
+        ),
+        const SizedBox(width: 14),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11)),
+            const SizedBox(height: 2),
+            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -499,9 +657,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           children: [
             Text('Incoming Requests', style: AppTypography.headlineMedium.copyWith(fontSize: 20, fontWeight: FontWeight.w800)),
             TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, AppRouter.bookingSchedule);
-              },
+              onPressed: () => Navigator.pushNamed(context, AppRouter.incomingRequests),
               child: Text('View All', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
             ),
           ],

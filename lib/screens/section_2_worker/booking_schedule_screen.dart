@@ -17,6 +17,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   late TabController _tabController;
   late Future<List<Booking>> _bookingsFuture;
   final List<BookingStatus> _tabs = [
+    BookingStatus.pending,
     BookingStatus.upcoming,
     BookingStatus.active,
     BookingStatus.completed,
@@ -30,8 +31,186 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
     _loadBookings();
   }
 
+  void jumpToTab(int index) {
+    _tabController.animateTo(index);
+  }
+
   void _loadBookings() {
     _bookingsFuture = context.read<BookingProvider>().getBookings();
+  }
+
+  Future<void> _handleResponse(String bookingId, bool accept) async {
+    final bookingProvider = context.read<BookingProvider>();
+    final result = await bookingProvider.respondToBooking(bookingId: bookingId, accept: accept);
+    if (mounted) {
+      final theme = Theme.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: accept ? theme.colorScheme.primary : theme.colorScheme.error,
+        ),
+      );
+      if (accept) Navigator.pushNamed(context, '${AppRouter.jobDetail}/$bookingId');
+      setState(() => _loadBookings());
+    }
+  }
+
+  void _showRequestDetail(Booking request) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: colorScheme.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Client Name', style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(request.category, style: TextStyle(color: colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                      const SizedBox(height: 20),
+                      Text('Request Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 16),
+                      _buildSheetDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${_formatDate(request.date)} • ${request.time}'),
+                      const SizedBox(height: 14),
+                      _buildSheetDetailRow(colorScheme, Icons.location_on_outlined, 'Location', 'Trinidad (${request.barangay})'),
+                      const SizedBox(height: 14),
+                      _buildSheetDetailRow(colorScheme, Icons.build_outlined, 'Service', request.category),
+                      if (request.notes.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                        const SizedBox(height: 16),
+                        Text('Client Notes', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            request.notes,
+                            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface, fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(24, 12, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _handleResponse(request.id, false);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: colorScheme.error),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('Decline', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _handleResponse(request.id, true);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Accept', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSheetDetailRow(ColorScheme colorScheme, IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: colorScheme.primary),
+        ),
+        const SizedBox(width: 14),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11)),
+            const SizedBox(height: 2),
+            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -42,6 +221,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
 
   String _getStatusLabel(BookingStatus status) {
     switch (status) {
+      case BookingStatus.pending: return 'Requests';
       case BookingStatus.upcoming: return 'Upcoming';
       case BookingStatus.active: return 'Ongoing';
       case BookingStatus.completed: return 'Completed';
@@ -159,9 +339,75 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildJobCard(Booking booking) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
+    // Pending requests use a distinct tappable card that opens the detail sheet
+    if (booking.status == BookingStatus.pending) {
+      return GestureDetector(
+        onTap: () => _showRequestDetail(booking),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border(left: BorderSide(color: colorScheme.primary, width: 4)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                            child: Text(booking.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _buildStatusPill(booking.status),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined, size: 14, color: colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 6),
+                    Text('${_formatDate(booking.date)} • ${booking.time}', style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    Icon(Icons.location_on_outlined, size: 14, color: colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text(booking.barangay, style: AppTypography.bodySmall),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Icon(Icons.touch_app_outlined, size: 13, color: colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text('Tap to view full details', style: AppTypography.bodySmall.copyWith(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // All other statuses use the standard job card
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -170,11 +416,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -194,10 +436,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                       child: Text(booking.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      'Ref: ${booking.bookingCode}',
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant),
-                    ),
+                    Text('Ref: ${booking.bookingCode}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ),
@@ -235,9 +474,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
               ],
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '${AppRouter.jobDetail}/${booking.id}');
-                  },
+                  onPressed: () => Navigator.pushNamed(context, '${AppRouter.jobDetail}/${booking.id}'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: booking.status == BookingStatus.upcoming ? colorScheme.primary : colorScheme.surfaceVariant,
                     foregroundColor: booking.status == BookingStatus.upcoming ? colorScheme.onPrimary : colorScheme.onSurface,
@@ -255,9 +492,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
-                  },
+                  onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'),
                   icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
                 ),
               ),
@@ -343,7 +578,9 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           Icon(Icons.inventory_2_outlined, size: 64, color: theme.colorScheme.outlineVariant),
           const SizedBox(height: 16),
           Text(
-            'No more ${_getStatusLabel(status).toLowerCase()} jobs.',
+            status == BookingStatus.pending
+                ? 'No pending requests.'
+                : 'No more ${_getStatusLabel(status).toLowerCase()} jobs.',
             style: AppTypography.headlineMedium.copyWith(fontSize: 20, color: theme.colorScheme.onSurface),
           ),
         ],
