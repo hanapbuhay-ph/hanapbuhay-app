@@ -5,6 +5,7 @@ import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/job_post_model.dart';
+import '../../widgets/navigation/app_back_button.dart';
 
 /// W4: Manage Posts Screen
 /// Route: /manage-job-posts
@@ -74,35 +75,34 @@ class _ManagePostsScreenState extends State<ManagePostsScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.pushNamed(context, AppRouter.createJobPost)
+            .then((_) => setState(() => _loadPosts())),
+        icon: const Icon(Icons.add),
+        label: const Text('New Post'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+      ),
       body: Column(
         children: [
           SafeArea(
             bottom: false,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(8, 8, 16, 12),
-              color: colorScheme.surface,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  const AppBackButton(),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Manage Posts',
-                      style: AppTypography.headlineSmall.copyWith(color: colorScheme.onSurface),
-                    ),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: () => Navigator.pushNamed(context, AppRouter.createJobPost)
-                        .then((_) => setState(() => _loadPosts())),
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text('New Post'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colorScheme.primary,
-                      side: BorderSide(color: colorScheme.primary),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      style: AppTypography.headlineMedium.copyWith(
+                        color: colorScheme.primary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

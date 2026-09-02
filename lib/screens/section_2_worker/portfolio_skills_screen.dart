@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
-import '../../widgets/navigation/worker_bottom_nav.dart';
+import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 
 class PortfolioSkillsScreen extends StatefulWidget {
@@ -156,27 +155,22 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
       backgroundColor: colorScheme.background,
       body: Column(
         children: [
-          _buildHeader(),
+          const AppHeader(title: 'Portfolio & Skills'),
           Expanded(
             child: Stack(
               children: [
                 SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Portfolio & Skills', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
-                      const SizedBox(height: 32),
-                      
                       _buildCategoriesCard(),
                       const SizedBox(height: 24),
-                      
                       _buildPortfolioCard(),
                       const SizedBox(height: 24),
-                      
                       _buildBioCard(),
-                      const SizedBox(height: 120), 
+                      const SizedBox(height: 120),
                     ],
                   ),
                 ),
@@ -185,40 +179,6 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: const WorkerBottomNav(currentIndex: 4), 
-    );
-  }
-
-  Widget _buildHeader() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.9),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.menu, color: colorScheme.onSurfaceVariant),
-            const SizedBox(width: 16),
-            Text(
-              'HanapBuhay',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: colorScheme.primary,
-                letterSpacing: -1,
-              ),
-            ),
-            const Spacer(),
-            CircleAvatar(radius: 16, backgroundImage: NetworkImage(_worker?.avatarUrl ?? '')),
-          ],
-        ),
       ),
     );
   }

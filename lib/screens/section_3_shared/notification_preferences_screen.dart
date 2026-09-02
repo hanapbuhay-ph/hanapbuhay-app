@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/notification_provider.dart';
 import '../../data/models/notification_model.dart';
+import '../../widgets/navigation/app_header.dart';
 
 class NotificationPreferencesScreen extends StatefulWidget {
   const NotificationPreferencesScreen({super.key});
@@ -51,10 +52,10 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
       backgroundColor: colorScheme.background,
       body: Column(
         children: [
-          _buildHeader(),
+          AppHeader(title: 'Notification Preferences'),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
@@ -66,27 +67,6 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        child: Row(
-          children: [
-            BackButton(color: colorScheme.onSurfaceVariant),
-            const SizedBox(width: 4),
-            Text(
-              'Notification Preferences',
-              style: AppTypography.headlineMedium.copyWith(fontSize: 20, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
-            ),
-          ],
-        ),
       ),
     );
   }
