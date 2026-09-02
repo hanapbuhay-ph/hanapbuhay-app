@@ -28,6 +28,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(() => setState(() {}));
     _loadBookings();
   }
 
@@ -232,9 +233,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     
     return Column(
         children: [
@@ -257,7 +256,6 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildSegmentedControl(),
                 Expanded(
                   child: FutureBuilder<List<Booking>>(
                     future: _bookingsFuture,
@@ -265,29 +263,33 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator(color: colorScheme.primary));
                       }
-                      
+
                       final allBookings = snapshot.data ?? [];
-                      
-                      return TabBarView(
-                        controller: _tabController,
-                        children: _tabs.map((status) {
-                          final filteredList = allBookings.where((b) => b.status == status).toList();
-                          if (filteredList.isEmpty) {
-                            return _buildEmptyState(status);
-                          }
-                          return RefreshIndicator(
-                            onRefresh: () async {
-                              setState(() => _loadBookings());
-                            },
-                            color: colorScheme.primary,
-                            child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: filteredList.length,
-                              itemBuilder: (context, index) => _buildJobCard(filteredList[index]),
+
+                      return Column(
+                        children: [
+                          _buildFilterChips(allBookings),
+                          const SizedBox(height: 12),
+                          Expanded(
+                            child: TabBarView(
+                              controller: _tabController,
+                              children: _tabs.map((status) {
+                                final filteredList = allBookings.where((b) => b.status == status).toList();
+                                if (filteredList.isEmpty) return _buildEmptyState(status);
+                                return RefreshIndicator(
+                                  onRefresh: () async => setState(() => _loadBookings()),
+                                  color: colorScheme.primary,
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount: filteredList.length,
+                                    itemBuilder: (context, index) => _buildJobCard(filteredList[index]),
+                                  ),
+                                );
+                              }).toList(),
                             ),
-                          );
-                        }).toList(),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -299,41 +301,89 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
     );
   }
 
-  Widget _buildHeader(AuthProvider authProvider) => const SizedBox.shrink();
+  Color _getStatusColor(BookingStatus status, ColorScheme colorScheme) {
+    switch (status) {
+      case BookingStatus.pending: return colorScheme.primary;
+      case BookingStatus.upcoming: return Colors.amber.shade700;
+      case BookingStatus.active: return Colors.blue;
+      case BookingStatus.completed: return Colors.grey.shade600;
+      case BookingStatus.cancelled: return colorScheme.error;
+      default: return Colors.grey;
+    }
+  }
 
-  Widget _buildSegmentedControl() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+  Widget _buildFilterChips(List<Booking> allBookings) {
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(32),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: true,
-        labelColor: colorScheme.primary,
-        unselectedLabelColor: colorScheme.onSurfaceVariant,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        itemCount: _tabs.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final status = _tabs[index];
+          final isSelected = _tabController.index == index;
+          final count = allBookings.where((b) => b.status == status).length;
+          final color = _getStatusColor(status, colorScheme);
+
+          return GestureDetector(
+            onTap: () => setState(() => _tabController.animateTo(index)),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? color : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? color : colorScheme.outlineVariant,
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _getStatusLabel(status),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                  if (count > 0) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white.withValues(alpha: 0.25) : color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : color,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ],
-        ),
-        dividerColor: Colors.transparent,
-        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-        labelStyle: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
-        unselectedLabelStyle: AppTypography.labelLarge,
-        tabs: _tabs.map((status) => Tab(text: _getStatusLabel(status))).toList(),
+          );
+        },
       ),
     );
   }
@@ -341,68 +391,63 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   Widget _buildJobCard(Booking booking) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Pending requests use a distinct tappable card that opens the detail sheet
+    // Pending requests use the same card style as upcoming but with a full-width Review Request button
     if (booking.status == BookingStatus.pending) {
-      return GestureDetector(
-        onTap: () => _showRequestDetail(booking),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border(left: BorderSide(color: colorScheme.primary, width: 4)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-                            child: Text(booking.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
-                          ),
-                        ],
+                const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                        child: Text(booking.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
                       ),
-                    ),
-                    _buildStatusPill(booking.status),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Icon(Icons.calendar_today_outlined, size: 14, color: colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 6),
-                    Text('${_formatDate(booking.date)} • ${booking.time}', style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
-                    const Spacer(),
-                    Icon(Icons.location_on_outlined, size: 14, color: colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 4),
-                    Text(booking.barangay, style: AppTypography.bodySmall),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Icon(Icons.touch_app_outlined, size: 13, color: colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 4),
-                    Text('Tap to view full details', style: AppTypography.bodySmall.copyWith(fontSize: 11, color: colorScheme.onSurfaceVariant)),
-                  ],
-                ),
+                _buildStatusPill(booking.status),
               ],
             ),
-          ),
+            const SizedBox(height: 16),
+            Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
+            const SizedBox(height: 16),
+            _buildInfoRow(Icons.calendar_today_outlined, _getRelativeDate(booking.date), '${_formatDate(booking.date)} • ${booking.time}'),
+            const SizedBox(height: 12),
+            _buildInfoRow(Icons.location_on_outlined, 'Trinidad (${booking.barangay})', '~1.5 km away'),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _showRequestDetail(booking),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Review Request', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
         ),
       );
     }

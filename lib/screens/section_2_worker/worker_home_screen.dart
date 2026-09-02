@@ -46,9 +46,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result.message), backgroundColor: accept ? theme.colorScheme.primary : theme.colorScheme.error),
       );
-      if (accept) {
-        Navigator.pushNamed(context, '${AppRouter.jobDetail}/$bookingId');
-      }
+      if (accept) Navigator.pushNamed(context, '${AppRouter.jobDetail}/$bookingId');
       setState(() => _loadData());
     }
   }
@@ -696,8 +694,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildRequestCard(Booking request) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -705,10 +702,10 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -720,7 +717,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
+                    Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
@@ -729,53 +726,72 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                   ],
                 ),
               ),
-              Text('Just now', style: AppTypography.bodySmall.copyWith(fontSize: 10)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('Pending', style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w800)),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Icon(Icons.calendar_today, size: 14, color: colorScheme.onSurfaceVariant),
-              const SizedBox(width: 6),
-              Text('${request.date.day}/${request.date.month}/${request.date.year} • ${request.time}', style: AppTypography.bodySmall),
-              const Spacer(),
-              Icon(Icons.location_on, size: 14, color: colorScheme.onSurfaceVariant),
-              const SizedBox(width: 6),
-              Text(request.barangay, style: AppTypography.bodySmall),
-            ],
-          ),
+          Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
+          const SizedBox(height: 16),
+          _buildHomeInfoRow(Icons.calendar_today_outlined, _getRelativeDate(request.date), '${_formatDate(request.date)} • ${request.time}'),
+          const SizedBox(height: 12),
+          _buildHomeInfoRow(Icons.location_on_outlined, 'Trinidad (${request.barangay})', '~1.5 km away'),
           const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _handleResponse(request.id, false),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: BorderSide(color: colorScheme.outline),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text('Decline', style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold)),
-                ),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _showRequestDetail(request),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _handleResponse(request.id, true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.primary,
-                    foregroundColor: colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Accept', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
+              child: const Text('Review Request', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildHomeInfoRow(IconData icon, String label, String sublabel) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+            Text(sublabel, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _getRelativeDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = date.difference(DateTime(now.year, now.month, now.day)).inDays;
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Tomorrow';
+    if (diff == -1) return 'Yesterday';
+    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return days[date.weekday - 1];
+  }
+
+  String _formatDate(DateTime date) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

@@ -346,91 +346,103 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
   Widget _buildRequestCard(Booking request) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: () => _showRequestDetail(request),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border(left: BorderSide(color: colorScheme.primary, width: 4)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(request.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text('Just now', style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today_outlined, size: 14, color: colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${_formatDate(request.date)} • ${request.time}',
-                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  const Spacer(),
-                  Icon(Icons.location_on_outlined, size: 14, color: colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 4),
-                  Text(request.barangay, style: AppTypography.bodySmall),
-                ],
-              ),
-              if (request.notes.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Row(
+              const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.notes_outlined, size: 14, color: colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        request.notes,
-                        style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontStyle: FontStyle.italic),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                      child: Text(request.category, style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
-              ],
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.touch_app_outlined, size: 13, color: colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 4),
-                  Text('Tap to view full details', style: AppTypography.bodySmall.copyWith(fontSize: 11, color: colorScheme.onSurfaceVariant)),
-                ],
               ),
+              _buildStatusPill(),
             ],
           ),
-        ),
+          const SizedBox(height: 16),
+          Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
+          const SizedBox(height: 16),
+          _buildInfoRow(Icons.calendar_today_outlined, _getRelativeDate(request.date), '${_formatDate(request.date)} • ${request.time}'),
+          const SizedBox(height: 12),
+          _buildInfoRow(Icons.location_on_outlined, 'Trinidad (${request.barangay})', '~1.5 km away'),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _showRequestDetail(request),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Review Request', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildStatusPill() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text('Pending', style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w800)),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String sublabel) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+            Text(sublabel, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _getRelativeDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = date.difference(DateTime(now.year, now.month, now.day)).inDays;
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Tomorrow';
+    if (diff == -1) return 'Yesterday';
+    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return days[date.weekday - 1];
   }
 
   String _formatDate(DateTime date) {
