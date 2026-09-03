@@ -65,7 +65,7 @@ class _TabShellState extends State<TabShell> {
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Column(
         children: [
-          const TabTopBar(),
+          if (_currentIndex != 4) const TabTopBar(),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 280),

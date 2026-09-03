@@ -81,29 +81,30 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     }
 
     return Column(
-        children: [
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Profile', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
+                const SizedBox(height: 4),
+                Text(
+                  'Manage your account and preferences.',
+                  style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Profile', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Manage your account and preferences.',
-                          style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   _buildUserSummary(authProvider),
                   if (isWorker) ...[
                     const SizedBox(height: 24),
