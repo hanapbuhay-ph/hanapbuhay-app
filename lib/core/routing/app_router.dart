@@ -10,6 +10,7 @@ import '../../screens/section_0_onboarding_auth/forgot_password_screen.dart';
 import '../../screens/section_0_onboarding_auth/security_settings_screen.dart';
 import '../../screens/section_0_onboarding_auth/change_password_screen.dart';
 import '../../screens/section_0_onboarding_auth/login_activity_screen.dart';
+import '../../screens/section_0_onboarding_auth/legal_document_screen.dart';
 import '../../screens/section_1_client/client_home_screen.dart';
 import '../../screens/section_1_client/worker_search_screen.dart';
 import '../../screens/section_1_client/worker_profile_view_screen.dart';
@@ -57,6 +58,8 @@ class AppRouter {
   static const String securitySettings = '/security-settings';
   static const String changePassword = '/change-password';
   static const String loginActivity = '/login-activity';
+  static const String termsOfService = '/terms-of-service';
+  static const String privacyPolicy = '/privacy-policy';
   static const String workerSearch = '/worker-search';
   static const String workerProfile = '/worker-profile';
   static const String sendBookingRequest = '/send-booking-request';
@@ -119,6 +122,10 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
       case loginActivity:
         return MaterialPageRoute(builder: (_) => const LoginActivityScreen());
+      case termsOfService:
+        return MaterialPageRoute(builder: (_) => const LegalDocumentScreen(type: LegalDocumentType.terms));
+      case privacyPolicy:
+        return MaterialPageRoute(builder: (_) => const LegalDocumentScreen(type: LegalDocumentType.privacy));
       case bookingHistory:
         return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 1));
       case reportStatus:

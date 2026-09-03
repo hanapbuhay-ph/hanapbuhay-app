@@ -283,13 +283,13 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                                 TextSpan(
                                   text: 'Terms of Service',
                                   style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
-                                  recognizer: TapGestureRecognizer()..onTap = () => debugPrint('ToS'),
+                                  recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, AppRouter.termsOfService),
                                 ),
                                 const TextSpan(text: ' and '),
                                 TextSpan(
                                   text: 'Privacy Policy',
                                   style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
-                                  recognizer: TapGestureRecognizer()..onTap = () => debugPrint('Privacy'),
+                                  recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, AppRouter.privacyPolicy),
                                 ),
                                 const TextSpan(text: '.'),
                               ],
