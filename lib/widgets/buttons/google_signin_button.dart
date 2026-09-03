@@ -24,7 +24,7 @@ class GoogleSignInButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: SvgPicture.asset('assets/icons/google.svg', height: 24),
+        icon: SvgPicture.asset('assets/icon/google.svg', height: 24),
         label: Text(
           label,
           style: AppTypography.labelLarge.copyWith(
