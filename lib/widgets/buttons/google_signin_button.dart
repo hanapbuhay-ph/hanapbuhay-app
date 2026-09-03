@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
 /// Reusable Google Sign-In Button.
@@ -19,43 +18,31 @@ class GoogleSignInButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isEnabled = onPressed != null;
+    final colorScheme = Theme.of(context).colorScheme;
     
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(maxWidth: 400),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isEnabled ? AppColors.outlineVariant : AppColors.disabled,
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: SvgPicture.asset('assets/icons/google.svg', height: 24),
+        label: Text(
+          label,
+          style: AppTypography.labelLarge.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w700,
           ),
-          boxShadow: isEnabled ? [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ] : null,
         ),
-        child: Opacity(
-          opacity: isEnabled ? 1.0 : 0.5,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset('assets/icons/google.svg', height: 24), // The new SVG logo
-              const SizedBox(width: 12),
-              Text(
-                label,
-                style: AppTypography.labelLarge.copyWith(
-                  color: AppColors.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colorScheme.onSurface,
+          backgroundColor: colorScheme.surfaceContainerLowest,
+          disabledForegroundColor: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          side: BorderSide(
+            color: isEnabled ? colorScheme.outlineVariant : colorScheme.outlineVariant.withValues(alpha: 0.45),
           ),
+          elevation: isEnabled ? 1 : 0,
+          shadowColor: colorScheme.shadow.withValues(alpha: 0.2),
         ),
       ),
     );

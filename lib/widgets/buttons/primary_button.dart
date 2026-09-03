@@ -29,33 +29,26 @@ class PrimaryButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final bool isEnabled = onPressed != null && !isLoading;
     
-    final effectiveBackgroundColor = backgroundColor ?? (isEnabled ? colorScheme.primary : colorScheme.surfaceVariant);
-    final contentColor = foregroundColor ?? (isEnabled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant);
+    final effectiveBackgroundColor = backgroundColor ?? colorScheme.primary;
+    final contentColor = foregroundColor ?? colorScheme.onPrimary;
 
-    return GestureDetector(
-      onTap: isEnabled ? onPressed : null,
-      child: Container(
-        width: width ?? double.infinity,
-        constraints: width == null ? const BoxConstraints(maxWidth: 400) : null,
+    final button = ElevatedButton(
+      onPressed: isEnabled ? onPressed : null,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: effectiveBackgroundColor,
+        foregroundColor: contentColor,
+        disabledBackgroundColor: colorScheme.surfaceVariant,
+        disabledForegroundColor: colorScheme.onSurfaceVariant,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: effectiveBackgroundColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isEnabled ? [
-            BoxShadow(
-              color: effectiveBackgroundColor.withValues(alpha: 0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ] : null,
-        ),
-        child: isLoading 
-          ? Center(
-              child: SizedBox(
-                height: 20, 
-                width: 20, 
-                child: CircularProgressIndicator(color: contentColor, strokeWidth: 2)
-              ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: isEnabled ? 2 : 0,
+        shadowColor: colorScheme.shadow.withValues(alpha: 0.2),
+      ),
+      child: isLoading
+          ? SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(color: contentColor, strokeWidth: 2),
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -69,15 +62,22 @@ class PrimaryButton extends StatelessWidget {
                 ),
                 if (showArrow) ...[
                   const SizedBox(width: 8),
-                  Icon(
-                    Icons.arrow_forward,
-                    color: contentColor,
-                    size: 20,
-                  ),
+                  Icon(Icons.arrow_forward, color: contentColor, size: 20),
                 ],
               ],
             ),
-      ),
     );
+
+    final sizedButton = SizedBox(
+      width: width ?? double.infinity,
+      child: button,
+    );
+
+    return width == null
+        ? ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: sizedButton,
+          )
+        : sizedButton;
   }
 }

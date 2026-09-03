@@ -44,7 +44,11 @@ class AppColors {
   // Dark Palette
   static const Color darkBackground = Color(0xFF101410);
   static const Color darkSurface = Color(0xFF101410);
+  static const Color darkSurfaceContainerLowest = Color(0xFF0C100D);
+  static const Color darkSurfaceContainerLow = Color(0xFF141A15);
   static const Color darkSurfaceContainer = Color(0xFF1A211A);
+  static const Color darkSurfaceContainerHigh = Color(0xFF202920);
+  static const Color darkSurfaceContainerHighest = Color(0xFF273127);
   static const Color darkOnBackground = Color(0xFFE1E3E2);
   static const Color darkOnSurface = Color(0xFFE1E3E2);
   static const Color darkSurfaceVariant = Color(0xFF3F4A3B);
@@ -58,6 +62,9 @@ class AppColors {
   static const Color darkSecondaryContainer = Color(0xFF307231);
   static const Color darkOnSecondaryContainer = Color(0xFFACF4A4);
   static const Color darkOutline = Color(0xFF899383);
+  static const Color darkOutlineVariant = Color(0xFF3D493D);
+  static const Color darkDivider = Color(0xFF303A30);
+  static const Color darkDisabled = Color(0xFF3B443B);
   static const Color darkError = Color(0xFFFFB4AB);
   static const Color darkOnError = Color(0xFF690005);
   static const Color darkErrorContainer = Color(0xFF93000A);

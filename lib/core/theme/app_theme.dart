@@ -62,11 +62,17 @@ class AppTheme {
         onSecondaryContainer: AppColors.darkOnSecondaryContainer,
         background: AppColors.darkBackground,
         onBackground: AppColors.darkOnBackground,
-        surface: AppColors.darkSurface,
+        surface: AppColors.darkSurfaceContainer,
+        surfaceContainerLowest: AppColors.darkSurfaceContainerLowest,
+        surfaceContainerLow: AppColors.darkSurfaceContainerLow,
+        surfaceContainer: AppColors.darkSurfaceContainer,
+        surfaceContainerHigh: AppColors.darkSurfaceContainerHigh,
+        surfaceContainerHighest: AppColors.darkSurfaceContainerHighest,
         onSurface: AppColors.darkOnSurface,
         surfaceVariant: AppColors.darkSurfaceVariant,
         onSurfaceVariant: AppColors.darkOnSurfaceVariant,
         outline: AppColors.darkOutline,
+        outlineVariant: AppColors.darkOutlineVariant,
         error: AppColors.darkError,
         onError: AppColors.darkOnError,
         errorContainer: AppColors.darkErrorContainer,
@@ -83,11 +89,11 @@ class AppTheme {
           fillColor: AppColors.darkSurfaceContainer,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
-            borderSide: BorderSide(color: AppColors.darkOutline),
+            borderSide: BorderSide(color: AppColors.darkOutlineVariant),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
-            borderSide: BorderSide(color: AppColors.darkOutline),
+            borderSide: BorderSide(color: AppColors.darkOutlineVariant),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -115,6 +121,32 @@ class AppTheme {
             foregroundColor: AppColors.darkPrimary,
             side: const BorderSide(color: AppColors.darkOutline),
           ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: ButtonStyle(
+            foregroundColor: WidgetStateProperty.all(AppColors.darkPrimary),
+            overlayColor: WidgetStateProperty.all(AppColors.darkPrimary.withValues(alpha: 0.12)),
+          ),
+        ),
+        iconButtonTheme: IconButtonThemeData(
+          style: ButtonStyle(
+            foregroundColor: WidgetStateProperty.all(AppColors.darkOnSurfaceVariant),
+            overlayColor: WidgetStateProperty.all(AppColors.darkPrimary.withValues(alpha: 0.12)),
+          ),
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: AppColors.darkPrimary,
+          foregroundColor: AppColors.darkOnPrimary,
+          splashColor: AppColors.darkOnPrimary.withValues(alpha: 0.12),
+        ),
+        chipTheme: ChipThemeData(
+          backgroundColor: AppColors.darkSurfaceContainerLow,
+          selectedColor: AppColors.darkPrimaryContainer,
+          disabledColor: AppColors.darkDisabled,
+          side: BorderSide.none,
+          labelStyle: const TextStyle(color: AppColors.darkOnSurface),
+          secondaryLabelStyle: const TextStyle(color: AppColors.darkOnSurfaceVariant),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         ),
       fontFamily: AppTypography.fontFamily,
       textTheme: TextTheme(

@@ -22,7 +22,7 @@ class TabTopBar extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.surface.withValues(alpha: 0.9),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.18), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Row(
