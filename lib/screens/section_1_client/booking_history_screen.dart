@@ -29,6 +29,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(() => setState(() {}));
     _loadBookings();
   }
 
@@ -58,77 +59,165 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     
     return Column(
       children: [
-        _buildSegmentedControl(),
         Expanded(
-            child: FutureBuilder<List<Booking>>(
-              future: _bookingsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
-                }
-                
-                final allBookings = snapshot.data ?? [];
-                
-                return TabBarView(
-                  controller: _tabController,
-                  children: _tabs.map((status) {
-                    final filteredList = allBookings.where((b) => b.status == status).toList();
-                    if (filteredList.isEmpty) {
-                      return _buildEmptyState(status);
-                    }
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        setState(() => _loadBookings());
-                      },
-                      color: theme.colorScheme.primary,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: filteredList.length,
-                        itemBuilder: (context, index) => _buildBookingCard(filteredList[index]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bookings',
+                      style: AppTypography.headlineMedium.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: theme.colorScheme.onSurface,
                       ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage your upcoming and past bookings.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: FutureBuilder<List<Booking>>(
+                  future: _bookingsFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
+                    }
+                    
+                    final allBookings = snapshot.data ?? [];
+                    
+                    return Column(
+                      children: [
+                        _buildFilterChips(allBookings),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: _tabs.map((status) {
+                              final filteredList = allBookings.where((b) => b.status == status).toList();
+                              if (filteredList.isEmpty) {
+                                return _buildEmptyState(status);
+                              }
+                              return RefreshIndicator(
+                                onRefresh: () async {
+                                  setState(() => _loadBookings());
+                                },
+                                color: theme.colorScheme.primary,
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                  physics: const BouncingScrollPhysics(),
+                                  itemCount: filteredList.length,
+                                  itemBuilder: (context, index) => _buildBookingCard(filteredList[index]),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
                     );
-                  }).toList(),
-                );
-              },
-            ),
+                  },
+                ),
+              ),
+            ],
           ),
+        ),
         ],
     );
   }
 
-  Widget _buildSegmentedControl() {
+  Color _getStatusColor(BookingStatus status, ColorScheme colorScheme) {
+    switch (status) {
+      case BookingStatus.pending: return colorScheme.primary;
+      case BookingStatus.upcoming: return Colors.amber.shade700;
+      case BookingStatus.active: return Colors.blue;
+      case BookingStatus.completed: return Colors.grey.shade600;
+      case BookingStatus.cancelled: return colorScheme.error;
+      default: return Colors.grey;
+    }
+  }
+
+  Widget _buildFilterChips(List<Booking> allBookings) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(32),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: true,
-        labelColor: colorScheme.primary,
-        unselectedLabelColor: colorScheme.onSurfaceVariant,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        itemCount: _tabs.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final status = _tabs[index];
+          final isSelected = _tabController.index == index;
+          final count = allBookings.where((booking) => booking.status == status).length;
+          final color = _getStatusColor(status, colorScheme);
+
+          return GestureDetector(
+            onTap: () => setState(() => _tabController.animateTo(index)),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? color : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? color : colorScheme.outlineVariant,
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _getStatusLabel(status),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                  if (count > 0) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white.withValues(alpha: 0.25) : color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : color,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ],
-        ),
-        dividerColor: Colors.transparent,
-        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-        labelStyle: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
-        unselectedLabelStyle: AppTypography.labelLarge,
-        tabs: _tabs.map((status) => Tab(text: _getStatusLabel(status))).toList(),
+          );
+        },
       ),
     );
   }
