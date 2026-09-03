@@ -134,8 +134,9 @@ class _FileReportScreenState extends State<FileReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (_isLoadingData) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary)));
+      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
     if (_booking == null || _worker == null) {
@@ -143,7 +144,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'File a Report'),
@@ -195,7 +196,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Upload up to 3 photos to support your report.',
-                      style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                     const SizedBox(height: 16),
                     _buildPhotoGrid(),
@@ -210,7 +211,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
@@ -218,7 +219,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
                   offset: const Offset(0, -4),
                 ),
               ],
-              border: const Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
             ),
             child: PrimaryButton(
               label: 'Submit Report',
@@ -233,20 +234,21 @@ class _FileReportScreenState extends State<FileReportScreen> {
   }
 
   Widget _buildContextCard(Booking booking, Worker worker) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Report Details Regarding:',
-            style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w700),
+            style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 16),
           Row(
@@ -258,7 +260,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(worker.name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
-                    Text(worker.specialty, style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant)),
+                    Text(worker.specialty, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ),
@@ -278,15 +280,16 @@ class _FileReportScreenState extends State<FileReportScreen> {
   }
 
   Widget _buildTagChip(String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,
-        style: AppTypography.labelSmall.copyWith(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.onSurfaceVariant),
+        style: AppTypography.labelSmall.copyWith(fontSize: 10, fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant),
       ),
     );
   }
@@ -311,20 +314,21 @@ class _FileReportScreenState extends State<FileReportScreen> {
   }
 
   Widget _buildUploadTile() {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow,
+          color: colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.outlineVariant, style: BorderStyle.solid), // In reality Flutter doesn't support dashed borders easily out of box, usually custom painter needed. Using solid for now.
+          border: Border.all(color: colorScheme.outlineVariant, style: BorderStyle.solid), // In reality Flutter doesn't support dashed borders easily out of box, usually custom painter needed. Using solid for now.
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
+            Icon(Icons.add_a_photo_outlined, color: colorScheme.primary),
             SizedBox(height: 4),
-            Text('Add Photo', style: TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold)),
+            Text('Add Photo', style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -357,10 +361,11 @@ class _FileReportScreenState extends State<FileReportScreen> {
   }
 
   InputDecoration _getInputDecoration(String hint) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       hintText: hint,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: colorScheme.surfaceContainerLowest,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),

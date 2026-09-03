@@ -72,6 +72,50 @@ class AppTheme {
         errorContainer: AppColors.darkErrorContainer,
         onErrorContainer: AppColors.darkOnErrorContainer,
       ),
+        cardTheme: CardThemeData(
+          color: AppColors.darkSurfaceContainer,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppColors.darkSurfaceContainer,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderSide: BorderSide(color: AppColors.darkOutline),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderSide: BorderSide(color: AppColors.darkOutline),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderSide: BorderSide(color: AppColors.darkPrimary, width: 2),
+          ),
+          hintStyle: TextStyle(color: AppColors.darkOnSurfaceVariant),
+        ),
+        dialogTheme: const DialogThemeData(
+          backgroundColor: AppColors.darkSurfaceContainer,
+          surfaceTintColor: Colors.transparent,
+        ),
+        bottomSheetTheme: const BottomSheetThemeData(
+          backgroundColor: AppColors.darkSurfaceContainer,
+          surfaceTintColor: Colors.transparent,
+        ),
+        dividerTheme: const DividerThemeData(color: AppColors.darkOutline),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.darkPrimary,
+            foregroundColor: AppColors.darkOnPrimary,
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.darkPrimary,
+            side: const BorderSide(color: AppColors.darkOutline),
+          ),
+        ),
       fontFamily: AppTypography.fontFamily,
       textTheme: TextTheme(
         displayLarge: AppTypography.displayLarge.copyWith(color: AppColors.darkPrimary),

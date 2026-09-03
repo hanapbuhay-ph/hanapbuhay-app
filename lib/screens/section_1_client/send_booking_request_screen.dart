@@ -83,11 +83,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              onSurface: AppColors.onSurface,
-            ),
+            colorScheme: Theme.of(context).colorScheme,
           ),
           child: child!,
         );
@@ -103,10 +99,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
-              onSurface: AppColors.onSurface,
-            ),
+            colorScheme: Theme.of(context).colorScheme,
           ),
           child: child!,
         );
@@ -169,6 +162,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (_isLoadingWorker) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -178,7 +172,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB),
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Send Request'),
@@ -230,11 +224,11 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                                           ? 'Select Date' 
                                           : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
                                         style: AppTypography.bodyMedium.copyWith(
-                                          color: _selectedDate == null ? AppColors.onSurfaceVariant : AppColors.onSurface,
+                                          color: _selectedDate == null ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
                                         ),
                                       ),
                                       const Spacer(),
-                                      const Icon(Icons.calendar_today, size: 18, color: AppColors.onSurfaceVariant),
+                                      Icon(Icons.calendar_today, size: 18, color: colorScheme.onSurfaceVariant),
                                     ],
                                   ),
                                 ),
@@ -259,11 +253,11 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                                       Text(
                                         _selectedTime == null ? 'Select Time' : _selectedTime!.format(context),
                                         style: AppTypography.bodyMedium.copyWith(
-                                          color: _selectedTime == null ? AppColors.onSurfaceVariant : AppColors.onSurface,
+                                          color: _selectedTime == null ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
                                         ),
                                       ),
                                       const Spacer(),
-                                      const Icon(Icons.access_time, size: 18, color: AppColors.onSurfaceVariant),
+                                      Icon(Icons.access_time, size: 18, color: colorScheme.onSurfaceVariant),
                                     ],
                                   ),
                                 ),
@@ -282,7 +276,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerLow,
+                        color: colorScheme.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
                       ),
@@ -291,7 +285,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.location_on, size: 18, color: AppColors.primary),
+                              Icon(Icons.location_on, size: 18, color: colorScheme.primary),
                               const SizedBox(width: 8),
                               Text('Poblacion, Trinidad', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                             ],
@@ -299,7 +293,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                           const SizedBox(height: 8),
                           Text(
                             'Workers will meet you at your registered barangay. Exact address can be shared via chat after booking is confirmed.',
-                            style: AppTypography.bodySmall.copyWith(fontSize: 11, color: AppColors.onSurfaceVariant),
+                            style: AppTypography.bodySmall.copyWith(fontSize: 11, color: colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),
@@ -329,7 +323,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
           Container(
             padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
@@ -337,7 +331,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                   offset: const Offset(0, -4),
                 ),
               ],
-              border: const Border(top: BorderSide(color: AppColors.surfaceContainerHigh)),
+              border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
             ),
             child: PrimaryButton(
               label: 'Send Request',
@@ -352,10 +346,11 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
   }
 
   Widget _buildWorkerSummary(Worker worker) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
         boxShadow: [
@@ -391,21 +386,23 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
   }
 
   InputDecoration _getInputDecoration(String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       filled: true,
-      fillColor: AppColors.surfaceContainerLowest,
+      fillColor: colorScheme.surfaceContainerLowest,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
     );
   }
 
   BoxDecoration _getBoxDecoration() {
+    final colorScheme = Theme.of(context).colorScheme;
     return BoxDecoration(
-      color: AppColors.surfaceContainerLowest,
+      color: colorScheme.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.outlineVariant),
+      border: Border.all(color: colorScheme.outlineVariant),
     );
   }
 }

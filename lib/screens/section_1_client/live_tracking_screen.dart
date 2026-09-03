@@ -62,6 +62,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
 
     final booking = _booking!;
     final worker = _worker!;
+    final colorScheme = Theme.of(context).colorScheme;
     const clientLoc = LatLng(9.9575, 124.3517);
     final workerLoc = worker.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
 
@@ -109,8 +110,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   onPressed: () {
                     _mapKey.currentState?.centerMap();
                   },
-                  backgroundColor: Colors.white,
-                  child: const Icon(Icons.my_location, color: AppColors.primary),
+                  backgroundColor: colorScheme.surface,
+                  child: Icon(Icons.my_location, color: colorScheme.primary),
                 ),
               ],
             ),
@@ -131,10 +132,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   Widget _buildBottomCard(Worker worker) {
     return Container(
       padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).padding.bottom + 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5))],
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5))],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -152,14 +153,14 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                         Text(worker.name, style: AppTypography.headlineMedium.copyWith(fontSize: 20)),
                         const SizedBox(width: 6),
                         if (worker.isVerified)
-                          const Icon(Icons.verified, color: AppColors.primary, size: 18),
+                          Icon(Icons.verified, color: Theme.of(context).colorScheme.primary, size: 18),
                       ],
                     ),
                     Row(
                       children: [
-                        Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
+                        Container(width: 8, height: 8, decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle)),
                         const SizedBox(width: 8),
-                        Text('En Route', style: AppTypography.labelLarge.copyWith(color: AppColors.primary)),
+                        Text('En Route', style: AppTypography.labelLarge.copyWith(color: Theme.of(context).colorScheme.primary)),
                       ],
                     ),
                   ],
@@ -191,9 +192,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                side: const BorderSide(color: AppColors.outlineVariant),
+                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
               ),
-              child: const Text('View Booking Details', style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.bold)),
+              child: Text('View Booking Details', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -202,9 +203,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   }
 
   Widget _buildMetric(String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        Text(label, style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant)),
+        Text(label, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
         const SizedBox(height: 4),
         Text(value, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
       ],
@@ -212,13 +214,14 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   }
 
   Widget _buildIconButton(IconData icon, VoidCallback onTap) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
       ),
       child: IconButton(
-        icon: Icon(icon, color: AppColors.primary),
+        icon: Icon(icon, color: colorScheme.primary),
         onPressed: onTap,
       ),
     );

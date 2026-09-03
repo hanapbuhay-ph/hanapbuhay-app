@@ -39,8 +39,9 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       body: Column(
         children: [
           const AppHeader(title: 'Report Status'),
@@ -49,7 +50,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
               future: _reportsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return Center(child: CircularProgressIndicator(color: colorScheme.primary));
                 }
 
                 final reports = snapshot.data ?? [];
@@ -67,7 +68,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Track the status of your recent issue reports and dispute resolutions.',
-                        style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+                        style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 32),
                       ...reports.map((report) => _buildReportCard(report)).toList(),
@@ -83,14 +84,15 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
   }
 
   Widget _buildReportCard(Report report) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isExpanded = _expandedReportIds.contains(report.id);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
+        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -115,7 +117,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                     children: [
                       Text(
                         'Filed: ${_formatDate(report.createdAt)}',
-                        style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant),
+                        style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       _buildStatusBadge(report.status),
                     ],
@@ -136,7 +138,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                       Text(
                         'TAP TO VIEW DETAILS',
                         style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.primary,
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
                         ),
@@ -144,7 +146,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                       AnimatedRotation(
                         duration: const Duration(milliseconds: 300),
                         turns: isExpanded ? 0.5 : 0,
-                        child: const Icon(Icons.expand_more, color: AppColors.onSurfaceVariant),
+                        child: Icon(Icons.expand_more, color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -156,7 +158,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
           // Expanded Content
           if (isExpanded)
             Container(
-              color: AppColors.surfaceContainerLow.withOpacity(0.5),
+              color: colorScheme.surfaceContainerLow.withOpacity(0.5),
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +167,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                   const SizedBox(height: 8),
                   Text(
                     report.description,
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant, height: 1.6),
+                    style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.6),
                   ),
                   const SizedBox(height: 24),
                   
@@ -190,10 +192,10 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                       child: OutlinedButton(
                         onPressed: () => _showAddNoteDialog(report.id),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.primary),
+                          side: BorderSide(color: colorScheme.primary),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        child: const Text('Add Note', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                        child: Text('Add Note', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
                       ),
                     ),
                 ],
@@ -205,6 +207,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
   }
 
   Widget _buildStatusBadge(ReportStatus status) {
+    final colorScheme = Theme.of(context).colorScheme;
     Color color;
     String label;
     IconData icon;
@@ -217,12 +220,12 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
         icon = Icons.pending_actions;
         break;
       case ReportStatus.resolved:
-        color = AppColors.primary;
+        color = colorScheme.primary;
         label = 'Resolved';
         icon = Icons.check_circle;
         break;
       case ReportStatus.dismissed:
-        color = AppColors.onSurfaceVariant;
+        color = colorScheme.onSurfaceVariant;
         label = 'Dismissed';
         icon = Icons.cancel;
         break;
@@ -250,8 +253,9 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
   }
 
   Widget _buildAdminRemarks(Report report) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isResolved = report.status == ReportStatus.resolved;
-    final color = isResolved ? AppColors.onSurfaceVariant : AppColors.primary;
+    final color = isResolved ? colorScheme.onSurfaceVariant : colorScheme.primary;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -276,7 +280,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
           const SizedBox(height: 8),
           Text(
             report.adminRemarks!,
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant, height: 1.5),
+            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.5),
           ),
           if (report.updatedAt != null) ...[
             const SizedBox(height: 12),
@@ -284,7 +288,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
               alignment: Alignment.centerRight,
               child: Text(
                 'Updated: ${_formatDate(report.updatedAt!)}',
-                style: AppTypography.labelSmall.copyWith(fontSize: 9, color: AppColors.onSurfaceVariant.withOpacity(0.6)),
+                style: AppTypography.labelSmall.copyWith(fontSize: 9, color: colorScheme.onSurfaceVariant.withOpacity(0.6)),
               ),
             ),
           ],

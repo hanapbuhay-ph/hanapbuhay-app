@@ -44,6 +44,7 @@ class AppColors {
   // Dark Palette
   static const Color darkBackground = Color(0xFF101410);
   static const Color darkSurface = Color(0xFF101410);
+  static const Color darkSurfaceContainer = Color(0xFF1A211A);
   static const Color darkOnBackground = Color(0xFFE1E3E2);
   static const Color darkOnSurface = Color(0xFFE1E3E2);
   static const Color darkSurfaceVariant = Color(0xFF3F4A3B);
