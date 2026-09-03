@@ -36,6 +36,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
     final theme = Theme.of(context);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSearchBar(),
           _buildFilterChips(),
