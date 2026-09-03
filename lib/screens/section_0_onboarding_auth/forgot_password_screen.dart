@@ -241,15 +241,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
         Text('Forgot Password?', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
         const SizedBox(height: 8),
         Text(
-          'Enter your email address or mobile number and we\'ll send you a code to reset your password.',
+          'Enter your email address and we\'ll send you a code to reset your password.',
           textAlign: TextAlign.center,
           style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 40),
         _buildTextField(
           controller: _identifierController,
-          label: 'Email or Mobile Number',
-          hint: 'e.g., name@email.com or 09xx xxx xxxx',
+          label: 'Email',
+          hint: 'e.g., name@email.com',
           errorText: _errorMessage,
         ),
         const SizedBox(height: 32),
