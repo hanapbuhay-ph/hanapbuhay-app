@@ -276,8 +276,8 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
           style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 16),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 280),
+        SizedBox(
+          width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: () {
               Navigator.pushNamed(context, '${AppRouter.chatThread}/c2'); 
