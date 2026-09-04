@@ -149,7 +149,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                         ),
                         child: Text(
                           filterCount.toString(),
-                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: colorScheme.onError, fontSize: 8, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),

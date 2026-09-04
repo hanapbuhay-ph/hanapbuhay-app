@@ -349,6 +349,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   void _showFullScreenImage(String path) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -359,7 +361,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
             Positioned(
               top: 10, right: 10,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                icon: Icon(Icons.close, color: colorScheme.onPrimary, size: 30),
                 onPressed: () => Navigator.pop(context),
               ),
             ),

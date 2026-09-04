@@ -240,12 +240,12 @@ class _PostCard extends StatelessWidget {
           children: [
             Icon(
               isActive ? Icons.visibility_off : Icons.visibility,
-              color: Colors.white,
+              color: colorScheme.onPrimary,
             ),
             const SizedBox(height: 4),
             Text(
               isActive ? 'Deactivate' : 'Reactivate',
-              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+              style: TextStyle(color: colorScheme.onPrimary, fontSize: 11, fontWeight: FontWeight.bold),
             ),
           ],
         ),

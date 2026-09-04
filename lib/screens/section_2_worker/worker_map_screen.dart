@@ -119,12 +119,12 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary),
                         onPressed: () => Navigator.pop(context),
                       ),
                       Text(
                         'Track Location',
-                        style: AppTypography.headlineSmall.copyWith(color: Colors.white),
+                        style: AppTypography.headlineSmall.copyWith(color: Theme.of(context).colorScheme.onPrimary),
                       ),
                     ],
                   ),
@@ -141,7 +141,7 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
               heroTag: 'worker_center_map',
               mini: true,
               onPressed: () => _mapKey.currentState?.centerMap(),
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
               child: Icon(Icons.my_location, color: Theme.of(context).colorScheme.primary),
             ),
           ),

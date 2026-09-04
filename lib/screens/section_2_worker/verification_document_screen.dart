@@ -349,7 +349,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
                         top: 0,
                         right: 0,
                         child: IconButton(
-                          icon: const Icon(Icons.cancel, color: Colors.white, size: 28),
+                          icon: Icon(Icons.cancel, color: colorScheme.onPrimary, size: 28),
                           onPressed: _isSubmitting ? null : onRemove,
                         ),
                       ),
@@ -357,8 +357,8 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
                         bottom: 8,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
-                          child: const Text('Tap thumbnail to replace', style: TextStyle(color: Colors.white, fontSize: 10)),
+                          decoration: BoxDecoration(color: colorScheme.scrim.withValues(alpha: 0.45), borderRadius: BorderRadius.circular(20)),
+                          child: Text('Tap thumbnail to replace', style: TextStyle(color: colorScheme.onPrimary, fontSize: 10)),
                         ),
                       ),
                     ],

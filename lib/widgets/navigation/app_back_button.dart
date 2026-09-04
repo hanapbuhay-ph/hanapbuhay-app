@@ -20,6 +20,9 @@ class AppBackButton extends StatelessWidget {
     final theme = Theme.of(context);
     final baseColor = color ?? theme.colorScheme.primary;
 
+    final surfaceColor = theme.colorScheme.surfaceContainerHigh;
+    final borderColor = theme.colorScheme.outlineVariant;
+
     return ClipOval(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
@@ -30,12 +33,12 @@ class AppBackButton extends StatelessWidget {
             shape: BoxShape.circle,
             color: baseColor.withValues(alpha: 0.12),
             border: Border.all(
-              color: baseColor.withValues(alpha: 0.2),
+              color: borderColor,
               width: 1,
             ),
           ),
           child: Material(
-            color: Colors.transparent,
+            color: surfaceColor.withValues(alpha: 0.35),
             child: InkWell(
               onTap: onPressed ?? () {
                 if (Navigator.canPop(context)) {

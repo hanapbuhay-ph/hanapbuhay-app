@@ -182,7 +182,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                     width: 7,
                     height: 7,
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.white : color,
+                      color: isSelected ? colorScheme.onPrimary : color,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -190,7 +190,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                   Text(
                     _getStatusLabel(status),
                     style: TextStyle(
-                      color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
+                      color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),
@@ -200,13 +200,13 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white.withValues(alpha: 0.25) : color.withValues(alpha: 0.12),
+                        color: isSelected ? colorScheme.onPrimary.withValues(alpha: 0.25) : color.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '$count',
                         style: TextStyle(
-                          color: isSelected ? Colors.white : color,
+                          color: isSelected ? colorScheme.onPrimary : color,
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                         ),
