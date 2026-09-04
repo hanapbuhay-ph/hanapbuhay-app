@@ -4,6 +4,7 @@ import '../../core/routing/app_router.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
+import '../../widgets/info/detail_info_row.dart';
 
 class IncomingRequestsScreen extends StatefulWidget {
   const IncomingRequestsScreen({super.key});
@@ -319,27 +320,12 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
   }
 
   Widget _buildDetailRow(ColorScheme colorScheme, IconData icon, String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: colorScheme.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 16, color: colorScheme.primary),
-        ),
-        const SizedBox(width: 14),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11)),
-            const SizedBox(height: 2),
-            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
-          ],
-        ),
-      ],
+    return DetailInfoRow(
+      icon: icon,
+      label: label,
+      value: value,
+      iconColor: colorScheme.primary,
+      labelColor: colorScheme.onSurfaceVariant,
     );
   }
 
@@ -354,7 +340,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(

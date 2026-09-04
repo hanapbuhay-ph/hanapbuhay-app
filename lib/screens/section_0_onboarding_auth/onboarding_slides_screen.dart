@@ -130,7 +130,7 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: colorScheme.shadow.withValues(alpha: 0.08),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),

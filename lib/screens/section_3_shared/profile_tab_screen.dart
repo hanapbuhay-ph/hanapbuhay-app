@@ -140,7 +140,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4))],
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Column(

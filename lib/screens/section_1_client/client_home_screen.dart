@@ -178,7 +178,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: colorScheme.shadow.withValues(alpha: 0.06),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -300,7 +300,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+              color: colorScheme.shadow.withValues(alpha: 0.06),
         children: [
           Icon(icon, size: 11, color: color),
           const SizedBox(width: 3),

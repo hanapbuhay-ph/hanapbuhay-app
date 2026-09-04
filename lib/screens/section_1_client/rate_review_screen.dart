@@ -209,7 +209,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+              color: colorScheme.shadow.withValues(alpha: 0.08),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -288,11 +288,11 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
         ),
       );
     } else if (_isSuccess) {
-      bgColor = const Color(0xFF4CAF50);
+      bgColor = colorScheme.primary;
       label = 'Review Submitted';
       icon = const Padding(
         padding: EdgeInsets.only(right: 8),
-        child: Icon(Icons.check_circle, color: Colors.white, size: 20),
+        child: Icon(Icons.check_circle, color: AppColors.onPrimary, size: 20),
       );
     }
 
@@ -320,7 +320,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
             Text(
               label,
               style: AppTypography.labelLarge.copyWith(
-                color: _isSuccess ? Colors.white : colorScheme.onPrimary,
+                color: _isSuccess ? colorScheme.onPrimary : colorScheme.onPrimary,
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
               ),

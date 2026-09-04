@@ -354,7 +354,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: theme.colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4)),
         ],
         border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2)),
       ),
@@ -393,7 +393,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           decoration: BoxDecoration(
             color: isSelected ? theme.colorScheme.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(28),
-            boxShadow: isSelected ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))] : null,
+            boxShadow: isSelected ? [BoxShadow(color: theme.colorScheme.shadow.withValues(alpha: 0.08), blurRadius: 4, offset: const Offset(0, 2))] : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -704,7 +704,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(

@@ -92,10 +92,10 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: colorScheme.shadow.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -158,7 +158,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
           // Expanded Content
           if (isExpanded)
             Container(
-              color: colorScheme.surfaceContainerLow.withOpacity(0.5),
+              color: colorScheme.surfaceContainerLow.withValues(alpha: 0.5),
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,9 +234,9 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -260,7 +260,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border(left: BorderSide(color: color, width: 4)),
       ),
@@ -288,7 +288,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
               alignment: Alignment.centerRight,
               child: Text(
                 'Updated: ${_formatDate(report.updatedAt!)}',
-                style: AppTypography.labelSmall.copyWith(fontSize: 9, color: colorScheme.onSurfaceVariant.withOpacity(0.6)),
+                style: AppTypography.labelSmall.copyWith(fontSize: 9, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
               ),
             ),
           ],

@@ -214,7 +214,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
               color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: colorScheme.shadow.withValues(alpha: 0.06),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
@@ -351,8 +351,8 @@ class _FileReportScreenState extends State<FileReportScreen> {
             onTap: () => _removeImage(index),
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-              child: const Icon(Icons.close, size: 14, color: Colors.white),
+              decoration: BoxDecoration(color: colorScheme.shadow.withValues(alpha: 0.7), shape: BoxShape.circle),
+              child: Icon(Icons.close, size: 14, color: colorScheme.onPrimary),
             ),
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/routing/app_router.dart';
@@ -41,13 +42,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF4CAF50), Color(0xFF1D7A37)],
+            colors: [AppColors.primary, AppColors.secondary],
           ),
         ),
         child: Stack(
@@ -66,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Text(
                     'HanapBuhay',
                     style: AppTypography.displayLarge.copyWith(
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -76,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       'Your Community Skilled Worker Marketplace',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyLarge.copyWith(
-                        color: Colors.white.withValues(alpha: 0.85),
+                        color: colorScheme.onPrimary.withValues(alpha: 0.85),
                       ),
                     ),
                   ),
@@ -92,14 +95,14 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 children: [
                   const CircularProgressIndicator(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     strokeWidth: 2,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Loading...',
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: colorScheme.onPrimary.withValues(alpha: 0.7),
                     ),
                   ),
                 ],

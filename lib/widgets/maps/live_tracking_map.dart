@@ -111,7 +111,7 @@ class LiveTrackingMapState extends State<LiveTrackingMap> {
         Polyline(
           polylineId: const PolylineId('route'),
           points: [widget.workerLocation, widget.clientLocation],
-          color: AppColors.primary.withOpacity(0.3),
+          color: AppColors.primary.withValues(alpha: 0.3),
           width: 4,
           patterns: [PatternItem.dash(10), PatternItem.gap(10)],
         ),

@@ -278,7 +278,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                       decoration: BoxDecoration(
                         color: colorScheme.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
+                        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,7 +326,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
               color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: colorScheme.shadow.withValues(alpha: 0.06),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
@@ -352,10 +352,10 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
+        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

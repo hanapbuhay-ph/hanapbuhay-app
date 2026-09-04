@@ -407,7 +407,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, -2))],
+        boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.08), blurRadius: 4, offset: const Offset(0, -2))],
       ),
       child: Row(
         children: [

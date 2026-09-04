@@ -108,7 +108,7 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
               color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: colorScheme.shadow.withValues(alpha: 0.06),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
@@ -194,7 +194,7 @@ class _RoleCard extends StatelessWidget {
               )
             else
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: colorScheme.shadow.withValues(alpha: 0.06),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),

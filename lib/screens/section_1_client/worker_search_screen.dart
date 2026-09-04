@@ -178,7 +178,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                       ),
                       child: Text(
                         filterCount.toString(),
-                        style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: colorScheme.onPrimary, fontSize: 8, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -236,7 +236,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
           border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: colorScheme.shadow.withValues(alpha: 0.06),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

@@ -268,7 +268,7 @@ class _PostCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
             boxShadow: isActive
-                ? [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))]
+                ? [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))]
                 : null,
           ),
           child: Row(

@@ -256,7 +256,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
               width: 14,
               height: 14,
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50),
+                color: colorScheme.primary,
                 shape: BoxShape.circle,
                 border: Border.all(color: colorScheme.surface, width: 2),
               ),

@@ -89,7 +89,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.black.withOpacity(0.2), Colors.transparent],
+                  colors: [colorScheme.shadow.withValues(alpha: 0.2), Colors.transparent],
                 ),
               ),
               child: const AppHeader(

@@ -103,7 +103,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         color: isUnread ? colorScheme.surfaceVariant.withValues(alpha: 0.2) : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         boxShadow: isUnread ? [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
         ] : null,
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.15)),
       ),

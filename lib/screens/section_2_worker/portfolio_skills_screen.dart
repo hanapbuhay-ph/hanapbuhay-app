@@ -192,7 +192,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,7 +253,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,8 +333,8 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
             onTap: () => _removePhoto(index),
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5), shape: BoxShape.circle),
-              child: const Icon(Icons.close, size: 12, color: Colors.white),
+              decoration: BoxDecoration(color: colorScheme.shadow.withValues(alpha: 0.7), shape: BoxShape.circle),
+              child: Icon(Icons.close, size: 12, color: colorScheme.onPrimary),
             ),
           ),
         ),
@@ -351,7 +351,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -170,7 +170,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1), width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: colorScheme.shadow.withValues(alpha: 0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
