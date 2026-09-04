@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../providers/auth_provider.dart';
+import '../../core/utils/formatters.dart';
 import '../../providers/chat_provider.dart';
 import '../../data/models/chat_model.dart';
 import '../../data/models/booking_model.dart';
@@ -31,8 +31,6 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final isWorker = authProvider.userRole == 'worker';
     final theme = Theme.of(context);
 
     return Column(
@@ -80,8 +78,6 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
     );
   }
 
-  Widget _buildHeader() => const SizedBox.shrink();
-
   Widget _buildSearchBar() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -96,7 +92,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
           hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
           prefixIcon: Icon(Icons.search, color: colorScheme.outline),
           filled: true,
-          fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+          fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.symmetric(vertical: 0),
         ),
@@ -120,7 +116,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
               label: Text(label),
               selected: isSelected,
               onSelected: (val) => setState(() => _filter = label),
-              backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
               selectedColor: colorScheme.primary.withValues(alpha: 0.15),
               labelStyle: TextStyle(
                 color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
@@ -185,7 +181,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
                         ),
                       ),
                       Text(
-                        _formatTime(conversation.lastMessageTime),
+                        AppFormatters.timeAgo(conversation.lastMessageTime),
                         style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
                       ),
                     ],
@@ -216,7 +212,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: colorScheme.surfaceVariant.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(6)),
+                      decoration: BoxDecoration(color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(6)),
                       child: Text(
                         'Re: Booking #${Booking.formatBookingCode(conversation.bookingId!, conversation.lastMessageTime)}',
                         style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
@@ -264,14 +260,6 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
           ),
       ],
     );
-  }
-
-  String _formatTime(DateTime time) {
-    final now = DateTime.now();
-    final diff = now.difference(time);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return 'Yesterday';
   }
 
   Widget _buildEmptyState() {

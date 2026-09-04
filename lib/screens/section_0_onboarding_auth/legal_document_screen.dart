@@ -18,7 +18,7 @@ class LegalDocumentScreen extends StatelessWidget {
     final sections = _isTerms ? _termsSections : _privacySections;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           AppHeader(title: _isTerms ? 'Terms of Service' : 'Privacy Policy'),

@@ -70,7 +70,7 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
     final slides = _getSlides(colorScheme);
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Stack(
         children: [
           Column(

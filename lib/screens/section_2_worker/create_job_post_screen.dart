@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/constants/app_constants.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/job_post_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/forms/app_text_form_field.dart';
 
 class CreateJobPostScreen extends StatefulWidget {
   const CreateJobPostScreen({super.key});
@@ -58,7 +60,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
       final authProvider = context.read<AuthProvider>();
       
       // In a real app, we'd get the worker ID from the auth state
-      final workerId = authProvider.userId ?? 'w1';
+      final workerId = authProvider.userId ?? AppConstants.mockWorkerId;
 
       final newPost = JobPost(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -102,7 +104,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'New Job Post'),
@@ -115,7 +117,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Post Details', style: AppTypography.headlineSmall),
+                    const Text('Post Details', style: AppTypography.headlineSmall),
                     const SizedBox(height: 8),
                     Text(
                       'Describe the service you want to offer to clients in Trinidad.',
@@ -129,8 +131,8 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                       builder: (context, snapshot) {
                         final categories = snapshot.data ?? [];
                         return DropdownButtonFormField<String>(
-                          value: _selectedCategory,
-                          decoration: _getInputDecoration('Service Category'),
+                          initialValue: _selectedCategory,
+                          decoration: AppTextFormField.buildDecoration(context, label: 'Service Category'),
                           items: categories.map((c) => DropdownMenuItem(
                             value: c.label,
                             child: Text(c.label),
@@ -163,7 +165,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    Text('Pricing', style: AppTypography.headlineSmall),
+                    const Text('Pricing', style: AppTypography.headlineSmall),
                     const SizedBox(height: 20),
 
                     Row(
@@ -184,8 +186,8 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                         Expanded(
                           flex: 3,
                           child: DropdownButtonFormField<RateType>(
-                            value: _selectedRateType,
-                            decoration: _getInputDecoration('Rate Type'),
+                            initialValue: _selectedRateType,
+                            decoration: AppTextFormField.buildDecoration(context, label: 'Rate Type'),
                             items: RateType.values.map((type) => DropdownMenuItem(
                               value: type,
                               child: Text(type.label),
@@ -213,7 +215,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Available for Booking', style: AppTypography.labelLarge),
+                                const Text('Available for Booking', style: AppTypography.labelLarge),
                                 Text(
                                   'Clients can see this post and send requests.',
                                   style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
@@ -224,7 +226,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                           Switch(
                             value: _isAvailable,
                             onChanged: (val) => setState(() => _isAvailable = val),
-                            activeColor: colorScheme.primary,
+                            activeThumbColor: colorScheme.primary,
                           ),
                         ],
                       ),
@@ -263,35 +265,14 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
     String? prefixText,
     String? Function(String?)? validator,
   }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return TextFormField(
+    return AppTextFormField(
       controller: controller,
+      label: label,
+      hint: hint,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      style: AppTypography.bodyMedium,
-      decoration: _getInputDecoration(label).copyWith(
-        hintText: hint,
-        prefixText: prefixText,
-        prefixStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
-      ),
+      prefixText: prefixText,
       validator: validator,
-    );
-  }
-
-  InputDecoration _getInputDecoration(String label) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return InputDecoration(
-      labelText: label,
-      labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-      floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
-      filled: true,
-      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
     );
   }
 }

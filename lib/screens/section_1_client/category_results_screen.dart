@@ -63,7 +63,7 @@ class _CategoryResultsScreenState extends State<CategoryResultsScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           SafeArea(
@@ -86,90 +86,33 @@ class _CategoryResultsScreenState extends State<CategoryResultsScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Filter row
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _selectedBarangay,
-                            decoration: InputDecoration(
-                              hintText: 'All Barangays',
-                              hintStyle: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
-                              filled: true,
-                              fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: colorScheme.outlineVariant),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
-                              ),
-                            ),
-                            items: [
-                              const DropdownMenuItem(value: null, child: Text('All Barangays')),
-                              ...Barangay.trinidadBarangays.map((b) => DropdownMenuItem(
-                                value: b.name,
-                                child: Text(b.name, style: const TextStyle(fontSize: 13)),
-                              )),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isNarrow = constraints.maxWidth < 600;
+                        final barangayDropdown = _buildBarangayDropdown(colorScheme);
+                        final toggleFilters = _buildToggleFilters(colorScheme);
+
+                        if (isNarrow) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              barangayDropdown,
+                              const SizedBox(height: 12),
+                              toggleFilters,
                             ],
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedBarangay = val;
-                                _loadListings();
-                              });
-                            },
-                            dropdownColor: colorScheme.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            isDense: true,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Row(
+                          );
+                        }
+
+                        return Row(
                           children: [
-                            Text(
-                              'Verified only',
-                              style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant),
-                            ),
-                            const SizedBox(width: 4),
-                            Switch(
-                              value: _verifiedOnly,
-                              onChanged: (val) {
-                                setState(() {
-                                  _verifiedOnly = val;
-                                  _loadListings();
-                                });
-                              },
-                              activeColor: colorScheme.primary,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
+                            Expanded(child: barangayDropdown),
+                            const SizedBox(width: 16),
+                            toggleFilters,
                           ],
-                        ),
-                        const SizedBox(width: 4),
-                        Row(
-                          children: [
-                            Text(
-                              'Available',
-                              style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant),
-                            ),
-                            const SizedBox(width: 4),
-                            Switch(
-                              value: _availableOnly,
-                              onChanged: (val) {
-                                setState(() {
-                                  _availableOnly = val;
-                                  _loadListings();
-                                });
-                              },
-                              activeColor: colorScheme.primary,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                          ],
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -203,6 +146,7 @@ class _CategoryResultsScreenState extends State<CategoryResultsScreen> {
                     }
                     return _WorkerResultCard(listing: listings[index - 1]);
                   },
+
                 );
               },
             ),
@@ -210,6 +154,91 @@ class _CategoryResultsScreenState extends State<CategoryResultsScreen> {
         ],
       ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 0),
+    );
+  }
+
+  Widget _buildBarangayDropdown(ColorScheme colorScheme) {
+    return DropdownButtonFormField<String>(
+      initialValue: _selectedBarangay,
+      decoration: InputDecoration(
+        hintText: 'All Barangays',
+        hintStyle: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+        filled: true,
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+        ),
+      ),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('All Barangays')),
+        ...Barangay.trinidadBarangays.map((b) => DropdownMenuItem(
+          value: b.name,
+          child: Text(b.name, style: const TextStyle(fontSize: 13)),
+        )),
+      ],
+      onChanged: (val) {
+        setState(() {
+          _selectedBarangay = val;
+          _loadListings();
+        });
+      },
+      dropdownColor: colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      isDense: true,
+    );
+  }
+
+  Widget _buildToggleFilters(ColorScheme colorScheme) {
+    return Wrap(
+      alignment: WrapAlignment.end,
+      spacing: 12,
+      children: [
+        _buildToggle(
+          label: 'Verified only',
+          value: _verifiedOnly,
+          colorScheme: colorScheme,
+          onChanged: (value) => setState(() {
+            _verifiedOnly = value;
+            _loadListings();
+          }),
+        ),
+        _buildToggle(
+          label: 'Available',
+          value: _availableOnly,
+          colorScheme: colorScheme,
+          onChanged: (value) => setState(() {
+            _availableOnly = value;
+            _loadListings();
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggle({
+    required String label,
+    required bool value,
+    required ColorScheme colorScheme,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant)),
+        const SizedBox(width: 4),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeThumbColor: colorScheme.primary,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ],
     );
   }
 

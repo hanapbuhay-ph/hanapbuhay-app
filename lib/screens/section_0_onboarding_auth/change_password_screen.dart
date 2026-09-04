@@ -77,7 +77,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           AppHeader(title: isGoogle ? 'Set a Password' : 'Change Password'),
@@ -174,7 +174,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/constants/app_constants.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/job_post_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/forms/app_text_form_field.dart';
 
 class EditJobPostScreen extends StatefulWidget {
   final String postId;
@@ -44,7 +46,7 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
     // In a real app, we might fetch the specific post or get it from the worker's list in provider
     // For now, let's assume we can find it in the current worker's profile
     final workerProvider = context.read<WorkerProvider>();
-    final worker = await workerProvider.getWorkerById('w1'); // Mock ID
+    final worker = await workerProvider.getWorkerById(AppConstants.mockWorkerId);
     
     if (worker != null) {
       try {
@@ -128,7 +130,7 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Deactivate this post?', style: AppTypography.headlineSmall),
+            const Text('Deactivate this post?', style: AppTypography.headlineSmall),
             const SizedBox(height: 12),
             Text(
               'Your post will be hidden from the client feed. You can reactivate it anytime.',
@@ -187,7 +189,7 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Edit Post'),
@@ -204,7 +206,7 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+                        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
                       ),
@@ -246,7 +248,7 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    Text('Pricing', style: AppTypography.headlineSmall),
+                    const Text('Pricing', style: AppTypography.headlineSmall),
                     const SizedBox(height: 20),
 
                     Row(
@@ -267,8 +269,8 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
                         Expanded(
                           flex: 3,
                           child: DropdownButtonFormField<RateType>(
-                            value: _selectedRateType,
-                            decoration: _getInputDecoration('Rate Type'),
+                            initialValue: _selectedRateType,
+                            decoration: AppTextFormField.buildDecoration(context, label: 'Rate Type'),
                             items: RateType.values.map((type) => DropdownMenuItem(
                               value: type,
                               child: Text(type.label),
@@ -296,7 +298,7 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Available for Booking', style: AppTypography.labelLarge),
+                                const Text('Available for Booking', style: AppTypography.labelLarge),
                                 Text(
                                   'Clients can see this post and send requests.',
                                   style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
@@ -307,7 +309,7 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
                           Switch(
                             value: _isAvailable,
                             onChanged: (val) => setState(() => _isAvailable = val),
-                            activeColor: colorScheme.primary,
+                            activeThumbColor: colorScheme.primary,
                           ),
                         ],
                       ),
@@ -358,35 +360,14 @@ class _EditJobPostScreenState extends State<EditJobPostScreen> {
     String? prefixText,
     String? Function(String?)? validator,
   }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return TextFormField(
+    return AppTextFormField(
       controller: controller,
+      label: label,
+      hint: hint,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      style: AppTypography.bodyMedium,
-      decoration: _getInputDecoration(label).copyWith(
-        hintText: hint,
-        prefixText: prefixText,
-        prefixStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
-      ),
+      prefixText: prefixText,
       validator: validator,
-    );
-  }
-
-  InputDecoration _getInputDecoration(String label) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return InputDecoration(
-      labelText: label,
-      labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-      floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
-      filled: true,
-      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
     );
   }
 }

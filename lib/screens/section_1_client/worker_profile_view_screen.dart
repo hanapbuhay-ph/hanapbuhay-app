@@ -67,7 +67,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
     final worker = _worker!;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'HanapBuhay'),
@@ -127,8 +127,8 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            colorScheme.surfaceVariant.withValues(alpha: 0.2),
-            colorScheme.background,
+            colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+            colorScheme.surface,
           ],
         ),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
@@ -310,7 +310,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: isAction ? colorScheme.surfaceVariant.withValues(alpha: 0.3) : colorScheme.primary.withValues(alpha: 0.08),
+        color: isAction ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3) : colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(color: isAction ? colorScheme.outlineVariant.withValues(alpha: 0.5) : colorScheme.primary.withValues(alpha: 0.1)),
       ),
@@ -452,7 +452,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
                         children: List.generate(5, (i) => Icon(
                           Icons.star, 
                           size: 14, 
-                          color: i < review.rating ? Colors.amber : colorScheme.surfaceVariant,
+                          color: i < review.rating ? Colors.amber : colorScheme.surfaceContainerHighest,
                         )),
                       ),
                     ],
@@ -473,7 +473,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -517,11 +517,11 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
         context: context,
         builder: (context) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Row(
+          title: const Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 28),
-              const SizedBox(width: 12),
-              const Expanded(child: Text('Not Yet Verified')),
+              Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 28),
+              SizedBox(width: 12),
+              Expanded(child: Text('Not Yet Verified')),
             ],
           ),
           content: const Text(

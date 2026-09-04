@@ -4,8 +4,8 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
-import '../../data/models/job_post_model.dart';
 import '../../widgets/navigation/app_bottom_nav.dart';
+import '../../widgets/layout/responsive_grid.dart';
 
 /// C2: Browse by Category Screen
 /// Route: /browse-category
@@ -17,7 +17,7 @@ class BrowseCategoryScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           SafeArea(
@@ -64,15 +64,9 @@ class BrowseCategoryScreen extends StatelessWidget {
                         );
                       }
                       final categories = snapshot.data ?? [];
-                      return GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1.1,
-                        ),
+                      return ResponsiveGrid(
+                        minimumItemWidth: 150,
+                        childAspectRatio: 1.1,
                         itemCount: categories.length,
                         itemBuilder: (context, index) {
                           final category = categories[index];

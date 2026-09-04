@@ -37,9 +37,11 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
+    final bookingProvider = context.read<BookingProvider>();
+    final workerProvider = context.read<WorkerProvider>();
+    final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await context.read<WorkerProvider>().getWorkerById(booking.workerId);
+      final worker = await workerProvider.getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -120,7 +122,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'HanapBuhay'),
@@ -170,7 +172,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
                       hintText: 'Tell us about your experience...',
                       hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
                       filled: true,
-                      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+                      fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide(color: colorScheme.outlineVariant),
@@ -219,7 +221,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
         children: [
           CircleAvatar(
             radius: 48,
-            backgroundColor: colorScheme.surfaceVariant,
+            backgroundColor: colorScheme.surfaceContainerHighest,
             backgroundImage: NetworkImage(worker.avatarUrl),
           ),
           const SizedBox(height: 16),
@@ -292,7 +294,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
       label = 'Review Submitted';
       icon = const Padding(
         padding: EdgeInsets.only(right: 8),
-        child: Icon(Icons.check_circle, color: AppColors.onPrimary, size: 20),
+        child: Icon(Icons.check_circle, color: Colors.white, size: 20),
       );
     }
 

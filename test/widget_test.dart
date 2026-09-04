@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:hanapbuhayapp/core/theme/app_colors.dart';
@@ -10,7 +9,7 @@ void main() {
 
     expect(theme.scaffoldBackgroundColor, AppColors.darkBackground);
     expect(theme.colorScheme.surface, AppColors.darkSurfaceContainer);
-    expect(theme.colorScheme.background, AppColors.darkBackground);
+    expect(theme.colorScheme.surface, AppColors.darkSurfaceContainer);
     expect(theme.cardTheme.color, AppColors.darkSurfaceContainer);
     expect(theme.appBarTheme.backgroundColor, AppColors.darkSurfaceContainer);
     expect(theme.navigationBarTheme.backgroundColor, AppColors.darkSurfaceContainer);

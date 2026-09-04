@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
@@ -24,7 +25,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
   }
 
   void _loadWorker() {
-    _workerFuture = context.read<WorkerProvider>().getWorkerById('w1');
+    _workerFuture = context.read<WorkerProvider>().getWorkerById(AppConstants.mockWorkerId);
   }
 
   @override
@@ -33,7 +34,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: FutureBuilder<Worker?>(
         future: _workerFuture,
         builder: (context, snapshot) {
@@ -192,7 +193,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         ),
         const SizedBox(height: 32),
         LinearProgressIndicator(
-          backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+          backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
           borderRadius: BorderRadius.circular(4),
         ),
@@ -262,7 +263,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                   CircleAvatar(
                     radius: 48,
                     backgroundImage: NetworkImage(worker.avatarUrl),
-                    backgroundColor: colorScheme.surfaceVariant,
+                    backgroundColor: colorScheme.surfaceContainerHighest,
                   ),
                   Container(
                     padding: const EdgeInsets.all(4),

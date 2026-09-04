@@ -9,6 +9,7 @@ import '../../data/models/job_post_model.dart';
 import '../../data/models/barangay_model.dart';
 import '../../data/models/trust_tier.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/layout/responsive_content.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   const ClientHomeScreen({super.key});
@@ -38,8 +39,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
 
+  @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -52,16 +53,15 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               },
               color: colorScheme.primary,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: EdgeInsets.zero,
                 physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: ResponsiveContent(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     // Search Bar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: _buildSearchBar(),
-                    ),
+                    _buildSearchBar(),
                     const SizedBox(height: 16),
 
                     // Quick Filters
@@ -69,21 +69,24 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                     const SizedBox(height: 16),
 
                     // Feed header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Discover Workers', style: AppTypography.headlineMedium.copyWith(fontSize: 20)),
-                        ],
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Discover Workers',
+                          style: AppTypography.headlineMedium.copyWith(
+                            fontSize: 20,
+                            height: 1,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
 
                     // Vertical feed
                     _buildFeedSection(),
                     const SizedBox(height: 32),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -104,7 +107,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       onTap: () => Navigator.pushNamed(context, AppRouter.browseCategory),
       child: Container(
         decoration: BoxDecoration(
-          color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
         ),
@@ -300,7 +303,6 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-              color: colorScheme.shadow.withValues(alpha: 0.06),
         children: [
           Icon(icon, size: 11, color: color),
           const SizedBox(width: 3),
@@ -317,10 +319,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     final workerProvider = context.watch<WorkerProvider>();
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        children: ['All', 'Verified ✓', 'Unverified'].map((label) {
+    return Row(
+      children: ['All', 'Verified ✓', 'Unverified'].map((label) {
           final filterKey = label.replaceAll(' ✓', '');
           final isSelected = workerProvider.quickFilter == filterKey;
           return Padding(
@@ -340,7 +340,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 fontSize: 13,
               ),
-              backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
               showCheckmark: false,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(999),
@@ -349,8 +349,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
           );
-        }).toList(),
-      ),
+      }).toList(),
     );
   }
 
@@ -360,16 +359,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       future: _filteredWorkersFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
-          );
+          return Center(child: CircularProgressIndicator(color: colorScheme.primary));
         }
         final listings = snapshot.data ?? [];
         if (listings.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
+          return Column(
               children: [
                 const SizedBox(height: 32),
                 Icon(Icons.search_off, size: 56, color: colorScheme.outlineVariant),
@@ -382,13 +376,13 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                   style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                 ),
               ],
-            ),
           );
         }
         return ListView.builder(
           shrinkWrap: true,
+          primary: false,
           physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.only(top: 8),
           itemCount: listings.length,
           itemBuilder: (context, index) => _buildWorkerCard(listings[index]),
         );
@@ -498,7 +492,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                             },
                             selectedColor: colorScheme.primary,
                             labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
-                            backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                             showCheckmark: false,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
                           );
@@ -510,10 +504,10 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                   Text('Barangay', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _selectedBarangay,
+                    initialValue: _selectedBarangay,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+                      fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     ),
@@ -548,7 +542,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                         },
                         selectedColor: colorScheme.primary,
                         labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
-                        backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                        backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                         showCheckmark: false,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
                       );
@@ -568,7 +562,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                       Switch(
                         value: _onlyAvailable,
                         onChanged: (val) => setState(() => _onlyAvailable = val),
-                        activeColor: colorScheme.primary,
+                        activeThumbColor: colorScheme.primary,
                       ),
                     ],
                   ),

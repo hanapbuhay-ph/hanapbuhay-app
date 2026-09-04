@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -77,7 +78,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
 
     try {
       final result = await context.read<WorkerProvider>().submitVerificationDocuments(
-        workerId: 'w1', 
+        workerId: AppConstants.mockWorkerId, 
         govIdPath: _govId!.path,
         brgyCertPath: _brgyCert!.path,
         selfiePath: _selfie!.path,
@@ -128,7 +129,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Verification'),
@@ -238,7 +239,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
           height: 8,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
           child: FractionallySizedBox(
@@ -305,7 +306,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
             width: double.infinity,
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: file == null ? colorScheme.surfaceVariant.withValues(alpha: 0.1) : colorScheme.surface,
+              color: file == null ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.1) : colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: file == null ? colorScheme.outlineVariant.withValues(alpha: 0.5) : colorScheme.primary,
@@ -318,7 +319,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.photo_camera, color: colorScheme.onSurfaceVariant, size: 32),

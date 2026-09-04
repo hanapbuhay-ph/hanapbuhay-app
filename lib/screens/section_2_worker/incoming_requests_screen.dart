@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/routing/app_router.dart';
+import '../../core/utils/formatters.dart';
+import '../../widgets/status/status_badge.dart';
+import '../../widgets/info/compact_info_row.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
@@ -132,9 +136,9 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: colorScheme.background,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         title: Text('Incoming Requests', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
         centerTitle: false,
@@ -194,7 +198,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
         maxChildSize: 0.95,
         builder: (_, scrollController) => Container(
           decoration: BoxDecoration(
-            color: colorScheme.background,
+            color: colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -215,7 +219,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                       // Header
                       Row(
                         children: [
-                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
@@ -243,9 +247,9 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                       // Details
                       Text('Request Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                       const SizedBox(height: 16),
-                      _buildDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${_formatDate(request.date)} • ${request.time}'),
+                      _buildDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${AppFormatters.date(request.date)} • ${request.time}'),
                       const SizedBox(height: 14),
-                      _buildDetailRow(colorScheme, Icons.location_on_outlined, 'Location', 'Trinidad (${request.barangay})'),
+                          _buildDetailRow(colorScheme, Icons.location_on_outlined, 'Location', '${AppConstants.municipalityName} (${request.barangay})'),
                       const SizedBox(height: 14),
                       _buildDetailRow(colorScheme, Icons.build_outlined, 'Service', request.category),
                       if (request.notes.isNotEmpty) ...[
@@ -258,7 +262,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceVariant.withValues(alpha: 0.4),
+                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -347,7 +351,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
         children: [
           Row(
             children: [
-              const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+              const CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -368,9 +372,9 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
           const SizedBox(height: 16),
           Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
           const SizedBox(height: 16),
-          _buildInfoRow(Icons.calendar_today_outlined, _getRelativeDate(request.date), '${_formatDate(request.date)} • ${request.time}'),
+          _buildInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(request.date), '${AppFormatters.date(request.date)} • ${request.time}'),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.location_on_outlined, 'Trinidad (${request.barangay})', '~1.5 km away'),
+          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${request.barangay})', '~1.5 km away'),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
@@ -393,46 +397,19 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
 
   Widget _buildStatusPill() {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text('Pending', style: TextStyle(color: colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w800)),
+    return StatusBadge(
+      label: 'Pending',
+      color: colorScheme.primary,
     );
   }
 
   Widget _buildInfoRow(IconData icon, String label, String sublabel) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
-            Text(sublabel, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant)),
-          ],
-        ),
-      ],
+    return CompactInfoRow(
+      icon: icon,
+      label: label,
+      value: sublabel,
     );
   }
 
-  String _getRelativeDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = date.difference(DateTime(now.year, now.month, now.day)).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Tomorrow';
-    if (diff == -1) return 'Yesterday';
-    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return days[date.weekday - 1];
-  }
-
-  String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
 }
+

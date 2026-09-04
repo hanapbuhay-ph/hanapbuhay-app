@@ -47,7 +47,6 @@ extension TrustTierExtension on TrustTier? {
           label: 'Revoked',
         );
       case null:
-      default:
         return const TrustTierInfo(
           icon: Icons.warning_amber_rounded,
           color: Colors.amber,
@@ -66,7 +65,6 @@ extension TrustTierExtension on TrustTier? {
         return 1;
       case TrustTier.flagged:
       case TrustTier.revoked:
-      default:
         return 0;
     }
   }

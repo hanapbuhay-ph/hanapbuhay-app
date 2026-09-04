@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../core/utils/formatters.dart';
+import '../../widgets/info/compact_info_row.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
@@ -39,9 +41,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
+    final bookingProvider = context.read<BookingProvider>();
+    final workerProvider = context.read<WorkerProvider>();
+    final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await context.read<WorkerProvider>().getWorkerById(booking.workerId);
+      final worker = await workerProvider.getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -70,7 +74,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     final showMap = booking.status == BookingStatus.accepted || booking.status == BookingStatus.active;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           AppHeader(title: 'Booking ${booking.bookingCode}'),
@@ -274,7 +278,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           const SizedBox(height: 20),
           _buildDetailRow(Icons.category_outlined, 'Service', booking.category),
           const SizedBox(height: 16),
-          _buildDetailRow(Icons.calendar_today_outlined, 'Date & Time', '${_formatDate(booking.date)} at ${booking.time}'),
+          _buildDetailRow(Icons.calendar_today_outlined, 'Date & Time', '${AppFormatters.date(booking.date)} at ${booking.time}'),
           const SizedBox(height: 16),
           _buildDetailRow(Icons.location_on_outlined, 'Service Barangay', booking.barangay),
           const SizedBox(height: 20),
@@ -289,21 +293,19 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Widget _buildDetailRow(IconData icon, String label, String value) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: colorScheme.primary),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10)),
-            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
-          ],
-        ),
-      ],
+    return CompactInfoRow(
+      icon: icon,
+      label: label,
+      value: value,
+      iconColor: Theme.of(context).colorScheme.primary,
+      labelStyle: AppTypography.bodySmall.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        fontSize: 10,
+      ),
+      valueStyle: AppTypography.bodyMedium.copyWith(
+        fontWeight: FontWeight.w600,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
     );
   }
 
@@ -330,7 +332,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: step.isCompleted ? colorScheme.primary : colorScheme.surfaceVariant,
+                        color: step.isCompleted ? colorScheme.primary : colorScheme.surfaceContainerHighest,
                         shape: BoxShape.circle,
                         border: step.isCompleted ? null : Border.all(color: colorScheme.outlineVariant),
                       ),
@@ -342,7 +344,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       Expanded(
                         child: Container(
                           width: 2,
-                          color: step.isCompleted ? colorScheme.primary : colorScheme.surfaceVariant,
+                          color: step.isCompleted ? colorScheme.primary : colorScheme.surfaceContainerHighest,
                         ),
                       ),
                   ],
@@ -373,13 +375,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
 
-  String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
 }

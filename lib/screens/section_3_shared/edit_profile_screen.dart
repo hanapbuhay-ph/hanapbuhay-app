@@ -94,7 +94,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Edit Profile'),
@@ -158,7 +158,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         children: [
           CircleAvatar(
             radius: 64,
-            backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             backgroundImage: _getAvatarImage(),
           ),
           Positioned(
@@ -210,7 +210,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           decoration: InputDecoration(
             prefixIcon: Icon(icon, color: colorScheme.onSurfaceVariant, size: 20),
             filled: true,
-            fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 1)),
@@ -233,7 +233,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceVariant.withValues(alpha: 0.05),
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
           ),

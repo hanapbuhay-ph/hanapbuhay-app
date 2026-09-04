@@ -1,4 +1,4 @@
-import 'dart:math' show cos, sqrt, asin, sin, pi;
+import 'dart:math' show cos, sqrt, asin;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class DistanceUtils {

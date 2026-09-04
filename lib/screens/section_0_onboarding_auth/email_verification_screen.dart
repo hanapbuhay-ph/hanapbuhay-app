@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -138,7 +137,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(),
@@ -268,7 +267,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
       width: 48,
       height: 56,
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: _focusNodes[index].hasFocus ? colorScheme.primary : colorScheme.outlineVariant,

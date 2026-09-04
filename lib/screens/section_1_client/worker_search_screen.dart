@@ -11,6 +11,7 @@ import '../../data/models/barangay_model.dart';
 import '../../widgets/navigation/app_bottom_nav.dart';
 import '../../widgets/navigation/app_back_button.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/layout/responsive_content.dart';
 
 class WorkerSearchScreen extends StatefulWidget {
   final String? initialQuery;
@@ -96,7 +97,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
     final filterCount = workerProvider.activeAdvancedFilterCount;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       body: Column(
         children: [
           _buildHeader(filterCount),
@@ -132,7 +133,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextField(
@@ -192,11 +193,13 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
 
   Widget _buildResultsList() {
     final theme = Theme.of(context);
-    return ListView.builder(
-      padding: const EdgeInsets.all(24),
-      physics: const BouncingScrollPhysics(),
-      itemCount: _filteredListings.length + 1,
-      itemBuilder: (context, index) {
+    return ResponsiveContent(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        physics: const BouncingScrollPhysics(),
+        itemCount: _filteredListings.length + 1,
+        itemBuilder: (context, index) {
         if (index == 0) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 24),
@@ -212,8 +215,9 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
             ),
           );
         }
-        return _buildWorkerCard(_filteredListings[index - 1]);
-      },
+          return _buildWorkerCard(_filteredListings[index - 1]);
+        },
+      ),
     );
   }
 
@@ -293,14 +297,14 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                 ...worker.tags.take(2).map((tag) => Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     tag, 
                     style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.w700)
                   ),
-                )).toList(),
+                )),
               ],
             ),
             const SizedBox(height: 16),
@@ -347,7 +351,7 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.search_off, size: 60, color: theme.colorScheme.outlineVariant),
@@ -469,7 +473,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                             },
                             selectedColor: colorScheme.primary,
                             labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
-                            backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                             showCheckmark: false,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
                           );
@@ -481,10 +485,10 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                   Text('Barangay', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _selectedBarangay,
+                    initialValue: _selectedBarangay,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+                      fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     ),
@@ -519,7 +523,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                         },
                         selectedColor: colorScheme.primary,
                         labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
-                        backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+                        backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                         showCheckmark: false,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
                       );
@@ -539,7 +543,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                       Switch(
                         value: _onlyAvailable,
                         onChanged: (val) => setState(() => _onlyAvailable = val),
-                        activeColor: colorScheme.primary,
+                        activeThumbColor: colorScheme.primary,
                       ),
                     ],
                   ),

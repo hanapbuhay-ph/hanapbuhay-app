@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
@@ -37,9 +36,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
+    final bookingProvider = context.read<BookingProvider>();
+    final workerProvider = context.read<WorkerProvider>();
+    final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await context.read<WorkerProvider>().getWorkerById(booking.workerId);
+      final worker = await workerProvider.getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -60,7 +61,6 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
       return const Scaffold(body: Center(child: Text('Booking not found')));
     }
 
-    final booking = _booking!;
     final worker = _worker!;
     final colorScheme = Theme.of(context).colorScheme;
     const clientLoc = LatLng(9.9575, 124.3517);

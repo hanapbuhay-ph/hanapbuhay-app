@@ -18,11 +18,9 @@ class AppTheme {
         onSecondary: AppColors.onSecondary,
         secondaryContainer: AppColors.secondaryContainer,
         onSecondaryContainer: AppColors.onSecondaryContainer,
-        background: AppColors.background,
-        onBackground: AppColors.onSurface,
         surface: AppColors.surface,
         onSurface: AppColors.onSurface,
-        surfaceVariant: AppColors.surfaceVariant,
+        surfaceContainerHighest: AppColors.surfaceVariant,
         onSurfaceVariant: AppColors.onSurfaceVariant,
         outline: AppColors.outline,
         outlineVariant: AppColors.outlineVariant,
@@ -83,8 +81,6 @@ class AppTheme {
         onSecondary: AppColors.darkOnSecondary,
         secondaryContainer: AppColors.darkSecondaryContainer,
         onSecondaryContainer: AppColors.darkOnSecondaryContainer,
-        background: AppColors.darkBackground,
-        onBackground: AppColors.darkOnBackground,
         surface: AppColors.darkSurfaceContainer,
         surfaceContainerLowest: AppColors.darkSurfaceContainerLowest,
         surfaceContainerLow: AppColors.darkSurfaceContainerLow,
@@ -92,7 +88,6 @@ class AppTheme {
         surfaceContainerHigh: AppColors.darkSurfaceContainerHigh,
         surfaceContainerHighest: AppColors.darkSurfaceContainerHighest,
         onSurface: AppColors.darkOnSurface,
-        surfaceVariant: AppColors.darkSurfaceVariant,
         onSurfaceVariant: AppColors.darkOnSurfaceVariant,
         outline: AppColors.darkOutline,
         outlineVariant: AppColors.darkOutlineVariant,
@@ -130,22 +125,22 @@ class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
       ),
-      inputDecorationTheme: InputDecorationTheme(
+      inputDecorationTheme: const InputDecorationTheme(
         filled: true,
         fillColor: AppColors.darkSurfaceContainer,
-        border: const OutlineInputBorder(
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
           borderSide: BorderSide(color: AppColors.darkOutlineVariant),
         ),
-        enabledBorder: const OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
           borderSide: BorderSide(color: AppColors.darkOutlineVariant),
         ),
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
           borderSide: BorderSide(color: AppColors.darkPrimary, width: 2),
         ),
-        hintStyle: const TextStyle(color: AppColors.darkOnSurfaceVariant),
+        hintStyle: TextStyle(color: AppColors.darkOnSurfaceVariant),
       ),
       dialogTheme: const DialogThemeData(
         backgroundColor: AppColors.darkSurfaceContainer,

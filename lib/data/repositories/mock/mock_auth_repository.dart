@@ -1,23 +1,24 @@
 import '../../models/auth_result_model.dart';
 import '../auth_repository.dart';
+import '../../../core/constants/app_constants.dart';
 
 class MockAuthRepository implements AuthRepository {
   // In-memory store to persist user data across registration steps for the session
   static final Map<String, Map<String, dynamic>> _mockUsers = {
     'worker@test.com': {
-      'id': 'w1',
+      'id': AppConstants.mockWorkerId,
       'role': 'worker',
       'name': 'Ricardo Dalisay',
       'mobile': '09171234567',
-      'avatar': 'https://i.pravatar.cc/150?u=w1',
+      'avatar': AppConstants.mockWorkerAvatar,
       'signInMethod': 'email',
     },
     'client@test.com': {
-      'id': 'c1',
+      'id': AppConstants.mockClientId,
       'role': 'client',
       'name': 'Maria Santos',
       'mobile': '09171112222',
-      'avatar': 'https://i.pravatar.cc/150?u=client',
+      'avatar': AppConstants.mockClientAvatar,
       'signInMethod': 'email',
     },
   };
@@ -35,11 +36,11 @@ class MockAuthRepository implements AuthRepository {
     
     // Persist the data for this email
     _mockUsers[email.toLowerCase()] = {
-      'id': role == 'worker' ? 'w1' : 'c1',
+      'id': role == 'worker' ? AppConstants.mockWorkerId : AppConstants.mockClientId,
       'role': role,
       'name': name,
       'mobile': mobileNumber,
-      'avatar': role == 'worker' ? 'https://i.pravatar.cc/150?u=w1' : 'https://i.pravatar.cc/150?u=client',
+      'avatar': role == 'worker' ? AppConstants.mockWorkerAvatar : AppConstants.mockClientAvatar,
       'signInMethod': 'email',
     };
     
@@ -54,11 +55,11 @@ class MockAuthRepository implements AuthRepository {
     await Future.delayed(const Duration(milliseconds: 800));
     if (otp == '123456' || otp == '111111') { // Allowing a few common test OTPs
       final userData = _mockUsers[email.toLowerCase()] ?? {
-        'id': 'c1',
+        'id': AppConstants.mockClientId,
         'role': 'client',
         'name': 'Mock User',
         'mobile': '09123456789',
-        'avatar': 'https://i.pravatar.cc/150?u=mock',
+        'avatar': AppConstants.defaultAvatar,
         'signInMethod': 'email',
       };
       
@@ -87,11 +88,11 @@ class MockAuthRepository implements AuthRepository {
     await Future.delayed(const Duration(milliseconds: 800));
     
     final userData = _mockUsers[email.toLowerCase()] ?? {
-      'id': 'c1',
+      'id': AppConstants.mockClientId,
       'role': 'client',
       'name': 'Maria Santos',
       'mobile': '09171234567',
-      'avatar': 'https://i.pravatar.cc/150?u=client',
+      'avatar': AppConstants.mockClientAvatar,
       'signInMethod': 'email',
     };
 

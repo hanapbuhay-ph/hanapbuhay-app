@@ -1,12 +1,14 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/media/photo_tiles.dart';
+import '../../widgets/layout/responsive_grid.dart';
 
 class PortfolioSkillsScreen extends StatefulWidget {
   const PortfolioSkillsScreen({super.key});
@@ -31,10 +33,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   List<String> _initialPortfolioPaths = [];
   String _initialBio = '';
 
-  final List<String> _allCategories = [
-    'Plumbing', 'Electrical', 'Tutoring', 'Cleaning', 
-    'Laundry', 'Gardening', 'Carpentry', 'General Repairs'
-  ];
+  final List<String> _allCategories = AppConstants.workerCategories;
 
   @override
   void initState() {
@@ -43,7 +42,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Future<void> _loadWorkerData() async {
-    final worker = await context.read<WorkerProvider>().getWorkerById('w1');
+    final worker = await context.read<WorkerProvider>().getWorkerById(AppConstants.mockWorkerId);
     if (mounted && worker != null) {
       setState(() {
         _worker = worker;
@@ -152,7 +151,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Portfolio & Skills'),
@@ -269,14 +268,8 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
+          ResponsiveGrid(
+            minimumItemWidth: 104,
             itemCount: _portfolioPaths.length < 6 ? _portfolioPaths.length + 1 : 6,
             itemBuilder: (context, index) {
               if (index == _portfolioPaths.length && _portfolioPaths.length < 6) {
@@ -291,54 +284,20 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Widget _buildAddPhotoTile() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
+    return PhotoUploadTile(
       onTap: _addPhoto,
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3), style: BorderStyle.solid),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_circle_outline, color: colorScheme.primary),
-            const SizedBox(height: 4),
-            Text('Add', style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
+      label: 'Add',
+      icon: Icons.add_circle_outline,
+      borderRadius: 12,
     );
   }
 
   Widget _buildPhotoTile(int index) {
-    final path = _portfolioPaths[index];
-    final isUrl = path.startsWith('http');
-
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: isUrl 
-              ? Image.network(path, fit: BoxFit.cover)
-              : Image.file(File(path), fit: BoxFit.cover),
-          ),
-        ),
-        Positioned(
-          top: 2,
-          right: 2,
-          child: GestureDetector(
-            onTap: () => _removePhoto(index),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: colorScheme.shadow.withValues(alpha: 0.7), shape: BoxShape.circle),
-              child: Icon(Icons.close, size: 12, color: colorScheme.onPrimary),
-            ),
-          ),
-        ),
-      ],
+    return PhotoPreviewTile(
+      path: _portfolioPaths[index],
+      onRemove: () => _removePhoto(index),
+      borderRadius: 12,
+      removeIconSize: 12,
     );
   }
 
@@ -370,7 +329,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
                   hintText: 'Tell clients about your experience, specialties, and work ethic...',
                   hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
                   filled: true,
-                  fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+                  fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   counterText: '', 
                 ),

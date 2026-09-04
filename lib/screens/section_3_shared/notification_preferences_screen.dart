@@ -49,10 +49,10 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
     final prefs = _prefs!;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
-          AppHeader(title: 'Notification Preferences'),
+          const AppHeader(title: 'Notification Preferences'),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -150,7 +150,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
       child: Text(
         title,
         style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
@@ -170,7 +170,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
     return SwitchListTile(
       value: value,
       onChanged: onChanged,
-      activeColor: colorScheme.surface,
+      activeThumbColor: colorScheme.surface,
       activeTrackColor: colorScheme.primary,
       secondary: icon != null ? Icon(icon, color: colorScheme.onSurfaceVariant, size: 22) : null,
       title: Text(title, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),

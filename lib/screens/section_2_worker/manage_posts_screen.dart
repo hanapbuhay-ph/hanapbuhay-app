@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
-import '../../data/models/worker_model.dart';
 import '../../data/models/job_post_model.dart';
 import '../../widgets/navigation/app_back_button.dart';
 
@@ -26,7 +26,7 @@ class _ManagePostsScreenState extends State<ManagePostsScreen> {
   }
 
   void _loadPosts() {
-    _postsFuture = context.read<WorkerProvider>().getWorkerById('w1').then(
+    _postsFuture = context.read<WorkerProvider>().getWorkerById(AppConstants.mockWorkerId).then(
       (worker) => worker?.jobPosts ?? [],
     );
   }
@@ -74,7 +74,7 @@ class _ManagePostsScreenState extends State<ManagePostsScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, AppRouter.createJobPost)
             .then((_) => setState(() => _loadPosts())),
@@ -264,7 +264,7 @@ class _PostCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isActive ? colorScheme.surface : colorScheme.surfaceVariant.withValues(alpha: 0.3),
+            color: isActive ? colorScheme.surface : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
             boxShadow: isActive

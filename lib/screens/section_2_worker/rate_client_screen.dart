@@ -101,20 +101,20 @@ class _RateClientScreenState extends State<RateClientScreen> {
 
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: colorScheme.background,
+        backgroundColor: colorScheme.surface,
         body: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
       );
     }
 
     if (_booking == null) {
       return Scaffold(
-        backgroundColor: colorScheme.background,
+        backgroundColor: colorScheme.surface,
         body: const Center(child: Text('Booking details not found')),
       );
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Rate Client'),

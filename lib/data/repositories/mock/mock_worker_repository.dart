@@ -5,12 +5,13 @@ import '../worker_repository.dart';
 import '../../models/auth_result_model.dart';
 import '../../models/job_post_model.dart';
 import '../../models/trust_tier.dart';
+import '../../../core/constants/app_constants.dart';
 
 class MockWorkerRepository implements WorkerRepository {
   final List<JobPost> _mockJobPosts = [
     JobPost(
       id: 'jp1',
-      workerId: 'w1',
+      workerId: AppConstants.mockWorkerId,
       category: 'Plumbing',
       title: 'Expert Pipe & Leak Repair',
       description: 'Quick fixing for all household plumbing issues.',
@@ -19,7 +20,7 @@ class MockWorkerRepository implements WorkerRepository {
     ),
     JobPost(
       id: 'jp2',
-      workerId: 'w1',
+      workerId: AppConstants.mockWorkerId,
       category: 'Cleaning',
       title: 'Deep House Cleaning',
       description: 'Professional cleaning for your home.',
@@ -30,13 +31,13 @@ class MockWorkerRepository implements WorkerRepository {
 
   late final List<Worker> _workers = [
     Worker(
-      id: 'w1',
+      id: AppConstants.mockWorkerId,
       name: 'Ricardo Dalisay',
-      avatarUrl: 'https://i.pravatar.cc/150?u=w1',
+      avatarUrl: AppConstants.mockWorkerAvatar,
       specialty: 'Master Plumber',
       rating: 4.9,
       reviewCount: 120,
-      barangay: 'Poblacion',
+      barangay: AppConstants.defaultBarangay,
       barangayCoordinates: const LatLng(9.9575, 124.3517),
       hourlyRate: 500,
       isVerified: false,
@@ -129,7 +130,7 @@ class MockWorkerRepository implements WorkerRepository {
       specialty: 'Handyman',
       rating: 4.0,
       reviewCount: 5,
-      barangay: 'Poblacion',
+      barangay: AppConstants.defaultBarangay,
       barangayCoordinates: const LatLng(9.9575, 124.3517),
       hourlyRate: 200,
       isVerified: false,
@@ -147,7 +148,7 @@ class MockWorkerRepository implements WorkerRepository {
       specialty: 'Painter',
       rating: 3.5,
       reviewCount: 10,
-      barangay: 'Poblacion',
+      barangay: AppConstants.defaultBarangay,
       hourlyRate: 300,
       isVerified: true,
       verificationStatus: VerificationStatus.verified,
@@ -162,7 +163,7 @@ class MockWorkerRepository implements WorkerRepository {
       specialty: 'Mason',
       rating: 2.0,
       reviewCount: 2,
-      barangay: 'Poblacion',
+      barangay: AppConstants.defaultBarangay,
       hourlyRate: 450,
       isVerified: true,
       verificationStatus: VerificationStatus.verified,

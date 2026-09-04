@@ -94,7 +94,7 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Login Activity'),
@@ -115,7 +115,7 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
                       decoration: BoxDecoration(
                         color: session.isCurrent 
                             ? colorScheme.primary.withValues(alpha: 0.1) 
-                            : colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

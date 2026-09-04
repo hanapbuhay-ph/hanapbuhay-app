@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,6 +11,8 @@ import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/media/photo_tiles.dart';
+import '../../widgets/layout/responsive_grid.dart';
 
 class FileReportScreen extends StatefulWidget {
   final String bookingId;
@@ -52,9 +53,11 @@ class _FileReportScreenState extends State<FileReportScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
+    final bookingProvider = context.read<BookingProvider>();
+    final workerProvider = context.read<WorkerProvider>();
+    final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await context.read<WorkerProvider>().getWorkerById(booking.workerId);
+      final worker = await workerProvider.getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -144,7 +147,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'File a Report'),
@@ -166,7 +169,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
                     Text('Reason for Report', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: _selectedReason,
+                      initialValue: _selectedReason,
                       decoration: _getInputDecoration('Select a reason'),
                       items: _reasons.map((r) => DropdownMenuItem(
                         value: r,
@@ -295,14 +298,8 @@ class _FileReportScreenState extends State<FileReportScreen> {
   }
 
   Widget _buildPhotoGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
+    return ResponsiveGrid(
+      minimumItemWidth: 104,
       itemCount: _selectedPhotos.length < 3 ? _selectedPhotos.length + 1 : 3,
       itemBuilder: (context, index) {
         if (index == _selectedPhotos.length && _selectedPhotos.length < 3) {
@@ -314,49 +311,16 @@ class _FileReportScreenState extends State<FileReportScreen> {
   }
 
   Widget _buildUploadTile() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
+    return PhotoUploadTile(
       onTap: _pickImage,
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colorScheme.outlineVariant, style: BorderStyle.solid), // In reality Flutter doesn't support dashed borders easily out of box, usually custom painter needed. Using solid for now.
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_a_photo_outlined, color: colorScheme.primary),
-            SizedBox(height: 4),
-            Text('Add Photo', style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
+      label: 'Add Photo',
     );
   }
 
   Widget _buildPhotoTile(int index) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.file(File(_selectedPhotos[index].path), fit: BoxFit.cover),
-          ),
-        ),
-        Positioned(
-          top: 4,
-          right: 4,
-          child: GestureDetector(
-            onTap: () => _removeImage(index),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: colorScheme.shadow.withValues(alpha: 0.7), shape: BoxShape.circle),
-              child: Icon(Icons.close, size: 14, color: colorScheme.onPrimary),
-            ),
-          ),
-        ),
-      ],
+    return PhotoPreviewTile(
+      path: _selectedPhotos[index].path,
+      onRemove: () => _removeImage(index),
     );
   }
 

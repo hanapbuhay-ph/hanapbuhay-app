@@ -48,7 +48,7 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(),

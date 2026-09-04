@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/routing/app_router.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/worker_model.dart';
@@ -120,9 +119,8 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
 
     setState(() => _isSubmitting = true);
 
-    final authProvider = context.read<AuthProvider>();
     // In a real app, we'd get the actual barangay ID from the user object
-    final clientBarangay = 'Poblacion'; 
+    const clientBarangay = AppConstants.defaultBarangay;
 
     try {
       final result = await context.read<BookingProvider>().createBooking(
@@ -172,7 +170,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Send Request'),
@@ -193,7 +191,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                     Text('Service Required', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      initialValue: _selectedCategory,
                       decoration: _getInputDecoration('Category'),
                       items: _categories.map((c) => DropdownMenuItem(
                         value: c,
@@ -287,7 +285,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                             children: [
                               Icon(Icons.location_on, size: 18, color: colorScheme.primary),
                               const SizedBox(width: 8),
-                              Text('Poblacion, Trinidad', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                              Text('${AppConstants.defaultBarangay}, ${AppConstants.municipalityName}', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                             ],
                           ),
                           const SizedBox(height: 8),

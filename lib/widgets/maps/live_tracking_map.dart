@@ -10,12 +10,12 @@ class LiveTrackingMap extends StatefulWidget {
   final VoidCallback? onArrival;
 
   const LiveTrackingMap({
-    Key? key,
+    super.key,
     required this.clientLocation,
     required this.workerLocation,
     this.isTracking = false,
     this.onArrival,
-  }) : super(key: key);
+  });
 
   @override
   State<LiveTrackingMap> createState() => LiveTrackingMapState();

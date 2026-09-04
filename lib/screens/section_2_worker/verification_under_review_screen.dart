@@ -13,7 +13,7 @@ class VerificationUnderReviewScreen extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Verification', showBackButton: true),
@@ -135,7 +135,7 @@ class VerificationUnderReviewScreen extends StatelessWidget {
             color: amberColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.pending_actions, size: 48, color: amberColor),
+          child: const Icon(Icons.pending_actions, size: 48, color: amberColor),
         ),
       ],
     );

@@ -14,8 +14,6 @@ class SecuritySettingsScreen extends StatefulWidget {
 }
 
 class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
-  final bool _twoFactorEnabled = true; // Email OTP is mandatory in this app
-
   Future<void> _handleSignOut() async {
     final theme = Theme.of(context);
     final confirmed = await showDialog<bool>(
@@ -73,7 +71,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     final linkedEmail = authProvider.userEmail ?? '';
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           AppHeader(
@@ -146,7 +144,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                               Switch(
                                 value: authProvider.twoFactorEnabled,
                                 activeTrackColor: colorScheme.primary.withValues(alpha: 0.5),
-                                activeColor: colorScheme.primary,
+                                activeThumbColor: colorScheme.primary,
                                 onChanged: (val) => authProvider.toggleTwoFactor(val),
                               ),
                             ],

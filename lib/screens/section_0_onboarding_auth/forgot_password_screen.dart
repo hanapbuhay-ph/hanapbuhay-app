@@ -185,7 +185,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(),
@@ -425,7 +425,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
         labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
@@ -440,7 +440,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     return Container(
       width: 44, height: 56,
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _otpFocusNodes[index].hasFocus ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5), width: _otpFocusNodes[index].hasFocus ? 2 : 1),
       ),

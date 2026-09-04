@@ -62,7 +62,7 @@ class _TabShellState extends State<TabShell> {
     final bool slidingRight = _currentIndex > _previousIndex;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
           if (_currentIndex != 4) const TabTopBar(),

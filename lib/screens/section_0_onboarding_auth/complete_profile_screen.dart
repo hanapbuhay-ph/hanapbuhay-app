@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../data/models/barangay_model.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -26,13 +27,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   String? _selectedBarangay;
   bool _isLoading = false;
 
-  final List<String> _barangays = [
-    'Abachanan', 'Banlasan', 'Bongbong', 'Catoogan', 'Guinobatan',
-    'Hinlayagan Centro', 'Hinlayagan Ilaud', 'Kinan-oan', 'La Victoria',
-    'Mabuhay Cabigohan', 'Mahagbu', 'Manuel M. Roxas', 'Poblacion',
-    'Puerto San Pedro', 'Quinicotogan', 'San Isidro', 'San Vicente',
-    'Soledad', 'Tagum Norte', 'Tagum Sur',
-  ];
+  final List<String> _barangays = Barangay.trinidadBarangays.map((barangay) => barangay.name).toList();
 
   @override
   void initState() {
@@ -87,7 +82,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(),
@@ -165,7 +160,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withValues(alpha: 0.2),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1), width: 4),
               boxShadow: [
@@ -234,7 +229,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
           ),
@@ -270,7 +265,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   Widget _buildBarangayDropdown() {
     final colorScheme = Theme.of(context).colorScheme;
     return DropdownButtonFormField<String>(
-      value: _selectedBarangay,
+      initialValue: _selectedBarangay,
       decoration: _getInputDecoration('Barangay'),
       items: _barangays.map((b) => DropdownMenuItem(
         value: b,
@@ -290,7 +285,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
       floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
       filled: true,
-      fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+      fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),

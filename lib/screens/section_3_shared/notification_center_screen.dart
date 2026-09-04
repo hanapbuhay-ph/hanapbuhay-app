@@ -28,8 +28,6 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final isWorker = authProvider.userRole == 'worker';
     final theme = Theme.of(context);
 
     return Column(
@@ -82,8 +80,6 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     );
   }
 
-  Widget _buildHeader() => const SizedBox.shrink();
-
   Widget _buildSectionHeader(String title) {
     final theme = Theme.of(context);
     return Text(
@@ -100,7 +96,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: isUnread ? colorScheme.surfaceVariant.withValues(alpha: 0.2) : Colors.transparent,
+        color: isUnread ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.2) : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         boxShadow: isUnread ? [
           BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
@@ -170,7 +166,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       case NotificationType.bookingCompleted:
         icon = Icons.history;
         color = colorScheme.onSurfaceVariant;
-        bgColor = colorScheme.surfaceVariant.withValues(alpha: 0.3);
+        bgColor = colorScheme.surfaceContainerHighest.withValues(alpha: 0.3);
         break;
       case NotificationType.newRatingReceived:
         icon = Icons.star;
@@ -185,7 +181,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
     if (notification.isRead) {
        color = colorScheme.onSurfaceVariant;
-       bgColor = colorScheme.surfaceVariant.withValues(alpha: 0.3);
+       bgColor = colorScheme.surfaceContainerHighest.withValues(alpha: 0.3);
     }
 
     return Container(

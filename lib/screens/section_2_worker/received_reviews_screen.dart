@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
@@ -26,7 +27,7 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
   Future<void> _loadData() async {
     final workerProvider = context.read<WorkerProvider>();
     // For demo/mock, assuming current worker is 'w1'
-    final worker = await workerProvider.getWorkerById('w1');
+    final worker = await workerProvider.getWorkerById(AppConstants.mockWorkerId);
     if (mounted) {
       setState(() {
         _worker = worker;
@@ -42,18 +43,18 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
 
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: colorScheme.background,
+        backgroundColor: colorScheme.surface,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_worker == null) {
       return Scaffold(
-        backgroundColor: colorScheme.background,
-        body: Column(
+        backgroundColor: colorScheme.surface,
+        body: const Column(
           children: [
-            const AppHeader(title: 'My Reviews'),
-            const Expanded(child: Center(child: Text('Profile not found'))),
+            AppHeader(title: 'My Reviews'),
+            Expanded(child: Center(child: Text('Profile not found'))),
           ],
         ),
       );
@@ -62,7 +63,7 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
     final reviews = _worker!.reviews;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'My Reviews'),
@@ -199,7 +200,7 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(

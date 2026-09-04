@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -30,7 +31,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     final authProvider = context.read<AuthProvider>();
     if (authProvider.userRole == 'worker') {
       final workerProvider = context.read<WorkerProvider>();
-      final worker = await workerProvider.getWorkerById('w1');
+      final worker = await workerProvider.getWorkerById(AppConstants.mockWorkerId);
       if (mounted) {
         setState(() {
           _workerData = worker;
@@ -131,8 +132,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final name = authProvider.userName ?? _workerData?.name ?? 'User';
-    final bio = _workerData?.bio ?? 'Passionate about finding quality services in our community.';
-    final avatar = authProvider.userAvatar ?? _workerData?.avatarUrl ?? 'https://i.pravatar.cc/150?u=client';
+    final avatar = authProvider.userAvatar ?? _workerData?.avatarUrl ?? AppConstants.defaultAvatar;
 
     return Container(
       width: double.infinity,
@@ -149,7 +149,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             children: [
               CircleAvatar(
                 radius: 48,
-                backgroundColor: colorScheme.surfaceVariant,
+                backgroundColor: colorScheme.surfaceContainerHighest,
                 backgroundImage: avatar.startsWith('http') 
                     ? NetworkImage(avatar) 
                     : FileImage(File(avatar)) as ImageProvider,
@@ -412,7 +412,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       child: Text(
         title,
         style: AppTypography.labelSmall.copyWith(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
@@ -431,7 +431,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3), shape: BoxShape.circle),
+        decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3), shape: BoxShape.circle),
         child: Icon(icon, size: 20, color: theme.colorScheme.onSurfaceVariant),
       ),
       title: Row(

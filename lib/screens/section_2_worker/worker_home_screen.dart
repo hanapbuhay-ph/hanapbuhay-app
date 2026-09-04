@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/routing/app_router.dart';
+import '../../core/constants/app_constants.dart';
+import '../../core/utils/formatters.dart';
+import '../../widgets/info/compact_info_row.dart';
+import '../../widgets/layout/responsive_content.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
@@ -32,7 +36,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     final bookingProvider = context.read<BookingProvider>();
     
     // For demo/mock, we assume worker ID 'w1'
-    _workerFuture = workerProvider.getWorkerById('w1');
+    _workerFuture = workerProvider.getWorkerById(AppConstants.mockWorkerId);
     _requestsFuture = bookingProvider.getBookings().then(
       (list) => list.where((b) => b.status == BookingStatus.pending).toList()
     );
@@ -64,7 +68,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
         maxChildSize: 0.95,
         builder: (_, scrollController) => Container(
           decoration: BoxDecoration(
-            color: colorScheme.background,
+            color: colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -110,9 +114,9 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                       const SizedBox(height: 20),
                       Text('Request Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
                       const SizedBox(height: 16),
-                      _buildSheetDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${_formatDate(request.date)} • ${request.time}'),
+                      _buildSheetDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${AppFormatters.date(request.date)} • ${request.time}'),
                       const SizedBox(height: 14),
-                      _buildSheetDetailRow(colorScheme, Icons.location_on_outlined, 'Location', 'Trinidad (${request.barangay})'),
+                          _buildSheetDetailRow(colorScheme, Icons.location_on_outlined, 'Location', '${AppConstants.municipalityName} (${request.barangay})'),
                       const SizedBox(height: 14),
                       _buildSheetDetailRow(colorScheme, Icons.build_outlined, 'Service', request.category),
                       if (request.notes.isNotEmpty) ...[
@@ -125,7 +129,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceVariant.withValues(alpha: 0.4),
+                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -233,11 +237,13 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                   },
                   color: theme.colorScheme.primary,
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                    padding: EdgeInsets.zero,
                     physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                    child: ResponsiveContent(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                         _buildGreeting(firstName),
                         const SizedBox(height: 24),
                         if (worker.verificationStatus != VerificationStatus.verified) ...[
@@ -252,7 +258,8 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                         const SizedBox(height: 32),
                         _buildIncomingRequestsSection(),
                         const SizedBox(height: 32),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -262,8 +269,6 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
         }
       );
   }
-
-  Widget _buildHeader(Worker worker) => const SizedBox.shrink();
 
   Widget _buildGreeting(String name) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -366,7 +371,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(30),
             ),
             child: Row(
@@ -739,9 +744,9 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           const SizedBox(height: 16),
           Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
           const SizedBox(height: 16),
-          _buildHomeInfoRow(Icons.calendar_today_outlined, _getRelativeDate(request.date), '${_formatDate(request.date)} • ${request.time}'),
+          _buildHomeInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(request.date), '${AppFormatters.date(request.date)} • ${request.time}'),
           const SizedBox(height: 12),
-          _buildHomeInfoRow(Icons.location_on_outlined, 'Trinidad (${request.barangay})', '~1.5 km away'),
+          _buildHomeInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${request.barangay})', '~1.5 km away'),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
@@ -763,35 +768,12 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   Widget _buildHomeInfoRow(IconData icon, String label, String sublabel) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
-            Text(sublabel, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant)),
-          ],
-        ),
-      ],
+    return CompactInfoRow(
+      icon: icon,
+      label: label,
+      value: sublabel,
     );
   }
 
-  String _getRelativeDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = date.difference(DateTime(now.year, now.month, now.day)).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Tomorrow';
-    if (diff == -1) return 'Yesterday';
-    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return days[date.weekday - 1];
-  }
-
-  String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
 }
+

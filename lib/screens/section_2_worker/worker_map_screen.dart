@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
@@ -35,9 +36,11 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
   }
 
   Future<void> _loadData() async {
-    final booking = await context.read<BookingProvider>().getBookingById(widget.bookingId);
+    final bookingProvider = context.read<BookingProvider>();
+    final workerProvider = context.read<WorkerProvider>();
+    final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await context.read<WorkerProvider>().getWorkerById('w1');
+      final worker = await workerProvider.getWorkerById(AppConstants.mockWorkerId);
       if (mounted) {
         setState(() {
           _booking = booking;
@@ -190,7 +193,7 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
             children: [
               const CircleAvatar(
                 radius: 22,
-                backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client'),
+                backgroundImage: NetworkImage(AppConstants.mockClientAvatar),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -226,7 +229,7 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
             decoration: BoxDecoration(
               color: _isTracking
                   ? colorScheme.primary.withValues(alpha: 0.08)
-                  : colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../core/utils/formatters.dart';
+import '../../widgets/status/status_badge.dart';
+import '../../widgets/info/compact_info_row.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
-import '../../providers/auth_provider.dart';
 import '../../widgets/filters/status_filter_chips.dart';
 import '../../widgets/info/detail_info_row.dart';
 
@@ -71,7 +74,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
         maxChildSize: 0.95,
         builder: (_, scrollController) => Container(
           decoration: BoxDecoration(
-            color: colorScheme.background,
+            color: colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -91,7 +94,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                     children: [
                       Row(
                         children: [
-                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
@@ -117,9 +120,9 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                       const SizedBox(height: 20),
                       Text('Request Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800)),
                       const SizedBox(height: 16),
-                      _buildSheetDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${_formatDate(request.date)} • ${request.time}'),
+                      _buildSheetDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${AppFormatters.date(request.date)} • ${request.time}'),
                       const SizedBox(height: 14),
-                      _buildSheetDetailRow(colorScheme, Icons.location_on_outlined, 'Location', 'Trinidad (${request.barangay})'),
+                      _buildSheetDetailRow(colorScheme, Icons.location_on_outlined, 'Location', '${AppConstants.municipalityName} (${request.barangay})'),
                       const SizedBox(height: 14),
                       _buildSheetDetailRow(colorScheme, Icons.build_outlined, 'Service', request.category),
                       if (request.notes.isNotEmpty) ...[
@@ -132,7 +135,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceVariant.withValues(alpha: 0.4),
+                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -330,7 +333,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           children: [
             Row(
               children: [
-                const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+                const CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -351,9 +354,9 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
             const SizedBox(height: 16),
             Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
             const SizedBox(height: 16),
-            _buildInfoRow(Icons.calendar_today_outlined, _getRelativeDate(booking.date), '${_formatDate(booking.date)} • ${booking.time}'),
+            _buildInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(booking.date), '${AppFormatters.date(booking.date)} • ${booking.time}'),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.location_on_outlined, 'Trinidad (${booking.barangay})', '~1.5 km away'),
+            _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.barangay})', '~1.5 km away'),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -390,7 +393,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
         children: [
           Row(
             children: [
-              const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+              const CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -413,9 +416,9 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           const SizedBox(height: 16),
           Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
           const SizedBox(height: 16),
-          _buildInfoRow(Icons.calendar_today_outlined, _getRelativeDate(booking.date), '${_formatDate(booking.date)} • ${booking.time}'),
+          _buildInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(booking.date), '${AppFormatters.date(booking.date)} • ${booking.time}'),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.location_on_outlined, 'Trinidad (${booking.barangay})', '~1.5 km away'),
+          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.barangay})', '~1.5 km away'),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -443,7 +446,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                 child: ElevatedButton(
                   onPressed: () => Navigator.pushNamed(context, '${AppRouter.jobDetail}/${booking.id}'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: booking.status == BookingStatus.upcoming ? colorScheme.primary : colorScheme.surfaceVariant,
+                    backgroundColor: booking.status == BookingStatus.upcoming ? colorScheme.primary : colorScheme.surfaceContainerHighest,
                     foregroundColor: booking.status == BookingStatus.upcoming ? colorScheme.onPrimary : colorScheme.onSurface,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -490,50 +493,18 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
       default: color = Colors.grey;
     }
     
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800),
-      ),
+    return StatusBadge(
+      label: label,
+      color: color,
     );
   }
 
   Widget _buildInfoRow(IconData icon, String label, String sublabel) {
-    final theme = Theme.of(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
-            Text(sublabel, style: AppTypography.bodySmall.copyWith(fontSize: 10, color: theme.colorScheme.onSurfaceVariant)),
-          ],
-        ),
-      ],
+    return CompactInfoRow(
+      icon: icon,
+      label: label,
+      value: sublabel,
     );
-  }
-
-  String _getRelativeDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = date.difference(DateTime(now.year, now.month, now.day)).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Tomorrow';
-    if (diff == -1) return 'Yesterday';
-    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return days[date.weekday - 1];
-  }
-
-  String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   Widget _buildEmptyState(BookingStatus status) {

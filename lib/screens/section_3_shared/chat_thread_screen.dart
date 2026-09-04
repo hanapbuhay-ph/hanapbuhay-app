@@ -173,8 +173,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               backgroundImage: _conversation!.isSupport 
                 ? null 
                 : NetworkImage(_conversation!.otherUserAvatar),
+              backgroundColor: _conversation!.isSupport ? colorScheme.primary : colorScheme.surfaceContainerHighest,
               child: _conversation!.isSupport ? Icon(Icons.support_agent, size: 20, color: colorScheme.onPrimary) : null,
-              backgroundColor: _conversation!.isSupport ? colorScheme.primary : colorScheme.surfaceVariant,
             ),
           ),
           const SizedBox(width: 12),
@@ -296,7 +296,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isMe ? colorScheme.primary : colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                    color: isMe ? colorScheme.primary : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(20),
                       topRight: const Radius.circular(20),
@@ -379,7 +379,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         width: 60,
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.5),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -428,7 +428,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               decoration: InputDecoration(
                 hintText: 'Type a message...',
                 filled: true,
-                fillColor: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),

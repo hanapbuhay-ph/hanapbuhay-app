@@ -4,6 +4,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/report_provider.dart';
 import '../../data/models/report_model.dart';
+import '../../core/utils/formatters.dart';
+import '../../widgets/status/status_badge.dart';
 import '../../widgets/navigation/app_header.dart';
 
 class ReportStatusScreen extends StatefulWidget {
@@ -41,7 +43,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Report Status'),
@@ -71,7 +73,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                         style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 32),
-                      ...reports.map((report) => _buildReportCard(report)).toList(),
+                      ...reports.map((report) => _buildReportCard(report)),
                     ],
                   ),
                 );
@@ -116,7 +118,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Filed: ${_formatDate(report.createdAt)}',
+                        'Filed: ${AppFormatters.date(report.createdAt)}',
                         style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       _buildStatusBadge(report.status),
@@ -182,7 +184,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                     ...report.followUpNotes.map((n) => Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text('• ${n.text}', style: AppTypography.bodySmall),
-                    )).toList(),
+                    )),
                     const SizedBox(height: 16),
                   ],
 
@@ -231,24 +233,10 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800),
-          ),
-        ],
-      ),
+    return StatusBadge(
+      label: label,
+      color: color,
+      icon: icon,
     );
   }
 
@@ -287,7 +275,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                'Updated: ${_formatDate(report.updatedAt!)}',
+                'Updated: ${AppFormatters.date(report.updatedAt!)}',
                 style: AppTypography.labelSmall.copyWith(fontSize: 9, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
               ),
             ),
@@ -338,8 +326,9 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
           TextButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
-              await context.read<ReportProvider>().addReportNote(reportId: reportId, note: controller.text.trim());
-              if (mounted) {
+              final reportProvider = context.read<ReportProvider>();
+              await reportProvider.addReportNote(reportId: reportId, note: controller.text.trim());
+              if (context.mounted) {
                 Navigator.pop(context);
                 setState(() => _loadReports());
               }
@@ -351,8 +340,5 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
 }
+

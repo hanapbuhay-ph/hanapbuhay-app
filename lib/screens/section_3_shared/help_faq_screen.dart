@@ -109,7 +109,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           const AppHeader(title: 'Help Center'),
