@@ -5,6 +5,7 @@ import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/filters/status_filter_chips.dart';
 
 class BookingScheduleScreen extends StatefulWidget {
   const BookingScheduleScreen({super.key});
@@ -313,78 +314,13 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildFilterChips(List<Booking> allBookings) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        itemCount: _tabs.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final status = _tabs[index];
-          final isSelected = _tabController.index == index;
-          final count = allBookings.where((b) => b.status == status).length;
-          final color = _getStatusColor(status, colorScheme);
-
-          return GestureDetector(
-            onTap: () => setState(() => _tabController.animateTo(index)),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? color : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected ? color : colorScheme.outlineVariant,
-                  width: 1.5,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: isSelected ? colorScheme.onPrimary : color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _getStatusLabel(status),
-                    style: TextStyle(
-                      color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                  if (count > 0) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: isSelected ? colorScheme.onPrimary.withValues(alpha: 0.25) : color.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '$count',
-                        style: TextStyle(
-                          color: isSelected ? colorScheme.onPrimary : color,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+    return StatusFilterChips<BookingStatus>(
+      items: _tabs,
+      selectedIndex: _tabController.index,
+      onSelected: (index) => setState(() => _tabController.animateTo(index)),
+      labelBuilder: _getStatusLabel,
+      countBuilder: (status) => allBookings.where((booking) => booking.status == status).length,
+      colorBuilder: (status, colorScheme) => _getStatusColor(status, colorScheme),
     );
   }
 
