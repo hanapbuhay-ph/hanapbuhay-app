@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/constants/app_constants.dart';
@@ -27,6 +28,8 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
   RateType _selectedRateType = RateType.perHour;
   bool _isAvailable = true;
   bool _isLoading = false;
+  final List<XFile> _selectedImages = [];
+  final ImagePicker _imagePicker = ImagePicker();
 
   late Future<List<ServiceCategory>> _categoriesFuture;
 
@@ -71,6 +74,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
         startingRate: double.tryParse(_rateController.text) ?? 0.0,
         rateType: _selectedRateType,
         isAvailable: _isAvailable,
+        imageUrls: _selectedImages.map((image) => image.path).toList(),
       );
 
       final result = await workerProvider.createJobPost(newPost);
@@ -163,6 +167,8 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                       maxLines: 4,
                       validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                     ),
+                    const SizedBox(height: 20),
+                    _buildImagePicker(),
                     const SizedBox(height: 32),
 
                     const Text('Pricing', style: AppTypography.headlineSmall),
@@ -274,5 +280,68 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
       prefixText: prefixText,
       validator: validator,
     );
+  }
+
+  Widget _buildImagePicker() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Service Photos (optional)', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 6),
+        Text('Add up to 10 photos to show clients your work.', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 92,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _selectedImages.length + (_selectedImages.length < 10 ? 1 : 0),
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              if (index == _selectedImages.length) {
+                return OutlinedButton.icon(
+                  onPressed: _pickImages,
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  label: const Text('Add photos'),
+                );
+              }
+              final image = _selectedImages[index];
+              return Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: FutureBuilder(
+                      future: image.readAsBytes(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Container(width: 92, height: 92, color: colorScheme.surfaceContainerHighest, child: const Center(child: CircularProgressIndicator(strokeWidth: 2)));
+                        }
+                        return Image.memory(snapshot.data!, width: 92, height: 92, fit: BoxFit.cover);
+                      },
+                    ),
+                  ),
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedImages.removeAt(index)),
+                      child: const CircleAvatar(radius: 12, child: Icon(Icons.close, size: 14)),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickImages() async {
+    final images = await _imagePicker.pickMultiImage(imageQuality: 80, maxWidth: 1600);
+    if (!mounted || images.isEmpty) return;
+    setState(() {
+      _selectedImages.addAll(images.take(10 - _selectedImages.length));
+    });
   }
 }

@@ -171,7 +171,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     final post = listing.post;
 
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}'),
+      onTap: () => Navigator.pushNamed(context, '${AppRouter.clientPostDetail}/${post.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -193,23 +193,43 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             // Top row: avatar + name + trust badge
             Row(
               children: [
-                CircleAvatar(radius: 26, backgroundImage: NetworkImage(worker.avatarUrl)),
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}'),
+                  child: CircleAvatar(radius: 26, backgroundImage: NetworkImage(worker.avatarUrl)),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        worker.name,
-                        style: AppTypography.labelLarge.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.onSurface,
-                          fontSize: 15,
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}'),
+                        child: Text(
+                          worker.name,
+                          style: AppTypography.labelLarge.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSurface,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
                       Text(
                         post.category,
                         style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_outlined, size: 12, color: colorScheme.onSurfaceVariant),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              worker.barangay,
+                              style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -218,6 +238,43 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               ],
             ),
             const SizedBox(height: 10),
+            if (post.imageUrls.isNotEmpty) ...[
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      post.imageUrls.first,
+                      width: double.infinity,
+                      height: 180,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        height: 180,
+                        color: colorScheme.surfaceContainerHighest,
+                        child: const Center(child: Icon(Icons.image_outlined)),
+                      ),
+                    ),
+                  ),
+                  if (post.imageUrls.length > 1)
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${post.imageUrls.length} photos',
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
             // Post title
             Text(
               post.title,
@@ -238,14 +295,18 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 10),
-            // Bottom row: location + rate + availability dot
+            // Bottom row: distance + rate + availability dot
             Row(
               children: [
-                Icon(Icons.location_on_outlined, size: 13, color: colorScheme.onSurfaceVariant),
+                Icon(Icons.near_me_outlined, size: 13, color: colorScheme.onSurfaceVariant),
                 const SizedBox(width: 3),
-                Text(
-                  worker.distance,
-                  style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 12),
+                Expanded(
+                  child: Text(
+                    worker.distance,
+                    style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 const Spacer(),
                 Text(

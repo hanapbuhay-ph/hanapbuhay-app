@@ -42,6 +42,7 @@ class JobPost {
   final double startingRate;
   final RateType rateType;
   final bool isAvailable;
+  final List<String> imageUrls;
 
   JobPost({
     required this.id,
@@ -52,6 +53,7 @@ class JobPost {
     required this.startingRate,
     required this.rateType,
     this.isAvailable = true,
+    this.imageUrls = const [],
   });
 
   JobPost copyWith({
@@ -60,6 +62,7 @@ class JobPost {
     double? startingRate,
     RateType? rateType,
     bool? isAvailable,
+    List<String>? imageUrls,
   }) {
     return JobPost(
       id: id,
@@ -70,6 +73,7 @@ class JobPost {
       startingRate: startingRate ?? this.startingRate,
       rateType: rateType ?? this.rateType,
       isAvailable: isAvailable ?? this.isAvailable,
+      imageUrls: imageUrls ?? this.imageUrls,
     );
   }
 }

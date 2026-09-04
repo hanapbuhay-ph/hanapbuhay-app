@@ -17,6 +17,11 @@ class MockWorkerRepository implements WorkerRepository {
       description: 'Quick fixing for all household plumbing issues.',
       startingRate: 350,
       rateType: RateType.perSession,
+      imageUrls: [
+        'https://picsum.photos/seed/plumbing-service-1/800/600',
+        'https://picsum.photos/seed/plumbing-service-2/800/600',
+        'https://picsum.photos/seed/plumbing-service-3/800/600',
+      ],
     ),
     JobPost(
       id: 'jp2',

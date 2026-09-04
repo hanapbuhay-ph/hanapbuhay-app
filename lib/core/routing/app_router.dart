@@ -24,6 +24,7 @@ import '../../screens/section_2_worker/manage_posts_screen.dart';
 import '../../screens/section_2_worker/worker_map_screen.dart';
 import '../../screens/section_1_client/browse_category_screen.dart';
 import '../../screens/section_1_client/category_results_screen.dart';
+import '../../screens/section_1_client/job_post_detail_screen.dart';
 import '../../screens/section_2_worker/verification_document_screen.dart';
 import '../../screens/section_2_worker/verification_status_screen.dart';
 import '../../screens/section_2_worker/portfolio_skills_screen.dart';
@@ -84,6 +85,7 @@ class AppRouter {
   static const String incomingRequests = '/incoming-requests';
   static const String browseCategory = '/browse-category';
   static const String categoryResults = '/category-results';
+  static const String clientPostDetail = '/client/posts';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final Uri uri = Uri.parse(settings.name ?? '');
@@ -175,6 +177,10 @@ class AppRouter {
           final name = uri.queryParameters['name'] ?? id;
           return MaterialPageRoute(builder: (_) => CategoryResultsScreen(categoryId: id, categoryName: name));
         }
+        if (path.startsWith(clientPostDetail)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => JobPostDetailScreen(postId: id));
+        }
         if (path.startsWith(workerMap)) {
           final id = path.split('/').last;
           return MaterialPageRoute(builder: (_) => WorkerMapScreen(bookingId: id));
@@ -189,7 +195,8 @@ class AppRouter {
         }
         if (path.startsWith(sendBookingRequest)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => SendBookingRequestScreen(workerId: id));
+          final postId = uri.queryParameters['postId'];
+          return MaterialPageRoute(builder: (_) => SendBookingRequestScreen(workerId: id, postId: postId));
         }
         if (path.startsWith(bookingDetail)) {
           final parts = path.split('/');

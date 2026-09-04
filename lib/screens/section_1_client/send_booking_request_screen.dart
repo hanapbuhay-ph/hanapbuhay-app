@@ -11,10 +11,12 @@ import '../../widgets/buttons/primary_button.dart';
 
 class SendBookingRequestScreen extends StatefulWidget {
   final String workerId;
+  final String? postId;
 
   const SendBookingRequestScreen({
     super.key,
     required this.workerId,
+    this.postId,
   });
 
   @override
@@ -56,8 +58,11 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
         _isLoadingWorker = false;
         // Pre-select category if worker specialty matches
         if (worker != null) {
+          final post = widget.postId == null
+              ? null
+              : worker.jobPosts.where((item) => item.id == widget.postId).firstOrNull;
           final match = _categories.firstWhere(
-            (c) => worker.specialty.contains(c),
+            (c) => post?.category.contains(c) == true || worker.specialty.contains(c),
             orElse: () => _categories.first,
           );
           _selectedCategory = match;
