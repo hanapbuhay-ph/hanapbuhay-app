@@ -18,6 +18,7 @@ class BookingProvider extends ChangeNotifier {
     required String time,
     required String notes,
     required String barangay,
+    String? jobPostId,
   }) async {
     final result = await _repository.createBooking(
       workerId: workerId,
@@ -26,6 +27,7 @@ class BookingProvider extends ChangeNotifier {
       time: time,
       notes: notes,
       barangay: barangay,
+      jobPostId: jobPostId,
     );
     notifyListeners();
     return result;

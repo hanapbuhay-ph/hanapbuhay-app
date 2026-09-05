@@ -7,6 +7,7 @@ abstract class WorkerRepository {
   Future<List<Worker>> getRecentlyViewedWorkers();
   Future<List<ServiceCategory>> getCategories();
   Future<Worker?> getWorkerById(String id);
+  Future<JobPostListing?> getJobPostDetail(String postId);
   Future<AuthResult> submitVerificationDocuments({
     required String workerId,
     required String govIdPath,
@@ -22,4 +23,7 @@ abstract class WorkerRepository {
   Future<AuthResult> createJobPost(JobPost post);
   Future<AuthResult> updateJobPost(JobPost post);
   Future<AuthResult> deleteJobPost(String postId);
+  Future<List<JobPostImage>> uploadPostImages(String postId, List<String> filePaths);
+  Future<AuthResult> deletePostImage(String postId, String imageId);
+  Future<AuthResult> reorderPostImages(String postId, List<String> imageIds);
 }

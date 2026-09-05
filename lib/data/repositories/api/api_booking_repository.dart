@@ -1,17 +1,24 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../../../core/constants/app_constants.dart';
+import '../../../services/secure_storage_service.dart';
 import '../../models/booking_model.dart';
 import '../booking_repository.dart';
 import '../../models/auth_result_model.dart';
 
 class ApiBookingRepository implements BookingRepository {
+  final String baseUrl = AppConstants.apiBaseUrl;
+  final SecureStorageService _storage = SecureStorageService();
+
   @override
   Future<List<Booking>> getBookings() async {
-    // TODO: Implement real API call: GET /api/bookings
+    // GET /api/bookings
     throw UnimplementedError('Real API getBookings not implemented yet.');
   }
 
   @override
   Future<Booking?> getBookingById(String id) async {
-    // TODO: Implement real API call: GET /api/bookings/{id}
+    // GET /api/bookings/{id}
     throw UnimplementedError();
   }
 
@@ -23,10 +30,40 @@ class ApiBookingRepository implements BookingRepository {
     required String time,
     required String notes,
     required String barangay,
+    String? jobPostId,
   }) async {
-    // TODO: This endpoint is not yet live on the backend.
-    // POST /api/bookings
-    throw UnimplementedError('Real API booking creation not implemented yet.');
+    try {
+      final token = await _storage.getToken();
+      final response = await http.post(
+        Uri.parse('$baseUrl/bookings'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'worker_profile_id': int.tryParse(workerId) ?? workerId,
+          'service_category_id': int.tryParse(category) ?? category,
+          if (jobPostId != null) 'job_post_id': int.tryParse(jobPostId) ?? jobPostId,
+          'scheduled_at': '${date.toIso8601String().split('T').first} $time',
+          'notes': notes,
+        }),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return AuthResult.success(
+          message: data['message'] ?? 'Booking request sent.',
+          data: data['data'],
+        );
+      } else {
+        return AuthResult.failure(
+          message: data['message'] ?? 'Failed to send booking request.',
+          errors: data['errors'],
+        );
+      }
+    } catch (e) {
+      return AuthResult.failure(message: 'Network error: $e');
+    }
   }
 
   @override
@@ -36,7 +73,7 @@ class ApiBookingRepository implements BookingRepository {
     required int rating,
     required String comment,
   }) async {
-    // TODO: POST /api/ratings
+    // POST /api/ratings
     throw UnimplementedError();
   }
 
@@ -47,7 +84,7 @@ class ApiBookingRepository implements BookingRepository {
     required int rating,
     String? comment,
   }) async {
-    // TODO: POST /api/client-ratings
+    // POST /api/client-ratings
     throw UnimplementedError();
   }
 
@@ -56,7 +93,7 @@ class ApiBookingRepository implements BookingRepository {
     required String bookingId,
     required bool accept,
   }) async {
-    // TODO: POST /api/bookings/{id}/respond
+    // POST /api/bookings/{id}/respond
     throw UnimplementedError();
   }
 
@@ -65,7 +102,7 @@ class ApiBookingRepository implements BookingRepository {
     required String bookingId,
     required BookingStatus status,
   }) async {
-    // TODO: POST /api/bookings/{id}/status
+    // POST /api/bookings/{id}/status
     throw UnimplementedError();
   }
 }

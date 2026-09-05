@@ -17,10 +17,25 @@ class MockWorkerRepository implements WorkerRepository {
       description: 'Quick fixing for all household plumbing issues.',
       startingRate: 350,
       rateType: RateType.perSession,
-      imageUrls: [
-        'https://picsum.photos/seed/plumbing-service-1/800/600',
-        'https://picsum.photos/seed/plumbing-service-2/800/600',
-        'https://picsum.photos/seed/plumbing-service-3/800/600',
+      images: const [
+        JobPostImage(
+          id: 'img_jp1_1',
+          imageUrl: 'https://picsum.photos/seed/plumbing-service-1/800/600',
+          thumbnailUrl: 'https://picsum.photos/seed/plumbing-service-1/300/200',
+          displayOrder: 0,
+        ),
+        JobPostImage(
+          id: 'img_jp1_2',
+          imageUrl: 'https://picsum.photos/seed/plumbing-service-2/800/600',
+          thumbnailUrl: 'https://picsum.photos/seed/plumbing-service-2/300/200',
+          displayOrder: 1,
+        ),
+        JobPostImage(
+          id: 'img_jp1_3',
+          imageUrl: 'https://picsum.photos/seed/plumbing-service-3/800/600',
+          thumbnailUrl: 'https://picsum.photos/seed/plumbing-service-3/300/200',
+          displayOrder: 2,
+        ),
       ],
     ),
     JobPost(
@@ -89,6 +104,25 @@ class MockWorkerRepository implements WorkerRepository {
       services: ['Wiring', 'Troubleshooting', 'Panel Upgrades'],
       trustTier: TrustTier.verified,
       isAvailable: true,
+      jobPosts: [
+        JobPost(
+          id: 'jp3',
+          workerId: 'w2',
+          category: 'Electrical',
+          title: 'Residential & Commercial Wiring',
+          description: 'Safe, certified electrical installations and repairs.',
+          startingRate: 600,
+          rateType: RateType.perHour,
+          images: const [
+            JobPostImage(
+              id: 'img_jp3_1',
+              imageUrl: 'https://picsum.photos/seed/electric-1/800/600',
+              thumbnailUrl: 'https://picsum.photos/seed/electric-1/300/200',
+              displayOrder: 0,
+            ),
+          ],
+        ),
+      ],
     ),
     Worker(
       id: 'w3',
@@ -220,6 +254,28 @@ class MockWorkerRepository implements WorkerRepository {
   }
 
   @override
+  Future<JobPostListing?> getJobPostDetail(String postId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    for (final worker in _workers) {
+      for (final post in worker.jobPosts) {
+        if (post.id == postId) {
+          return JobPostListing(worker: worker, post: post);
+        }
+      }
+    }
+    for (final post in _mockJobPosts) {
+      if (post.id == postId) {
+        final worker = _workers.firstWhere(
+          (w) => w.id == post.workerId,
+          orElse: () => _workers.first,
+        );
+        return JobPostListing(worker: worker, post: post);
+      }
+    }
+    return null;
+  }
+
+  @override
   Future<AuthResult> submitVerificationDocuments({
     required String workerId,
     required String govIdPath,
@@ -282,7 +338,7 @@ class MockWorkerRepository implements WorkerRepository {
         hourlyRate: old.hourlyRate,
         isVerified: old.isVerified,
         verificationStatus: old.verificationStatus,
-        tags: categories, // Using categories as tags/specialties for now
+        tags: categories,
         distance: old.distance,
         bio: bio,
         services: categories,
@@ -303,6 +359,37 @@ class MockWorkerRepository implements WorkerRepository {
   Future<AuthResult> createJobPost(JobPost post) async {
     await Future.delayed(const Duration(seconds: 1));
     _mockJobPosts.add(post);
+    final workerIndex = _workers.indexWhere((w) => w.id == post.workerId);
+    if (workerIndex != -1) {
+      final w = _workers[workerIndex];
+      final updatedPosts = List<JobPost>.from(w.jobPosts)..add(post);
+      _workers[workerIndex] = Worker(
+        id: w.id,
+        name: w.name,
+        avatarUrl: w.avatarUrl,
+        specialty: w.specialty,
+        rating: w.rating,
+        reviewCount: w.reviewCount,
+        barangay: w.barangay,
+        barangayCoordinates: w.barangayCoordinates,
+        hourlyRate: w.hourlyRate,
+        isVerified: w.isVerified,
+        verificationStatus: w.verificationStatus,
+        rejectionReason: w.rejectionReason,
+        tags: w.tags,
+        distance: w.distance,
+        bio: w.bio,
+        services: w.services,
+        isAvailable: w.isAvailable,
+        availabilityStatus: w.availabilityStatus,
+        responseTime: w.responseTime,
+        portfolioImages: w.portfolioImages,
+        reviews: w.reviews,
+        trustTier: w.trustTier,
+        completedJobsCount: w.completedJobsCount,
+        jobPosts: updatedPosts,
+      );
+    }
     return AuthResult.success(message: 'Job post created successfully!');
   }
 
@@ -313,6 +400,40 @@ class MockWorkerRepository implements WorkerRepository {
     if (index != -1) {
       _mockJobPosts[index] = post;
     }
+    for (var i = 0; i < _workers.length; i++) {
+      final w = _workers[i];
+      final pIdx = w.jobPosts.indexWhere((p) => p.id == post.id);
+      if (pIdx != -1) {
+        final updatedPosts = List<JobPost>.from(w.jobPosts);
+        updatedPosts[pIdx] = post;
+        _workers[i] = Worker(
+          id: w.id,
+          name: w.name,
+          avatarUrl: w.avatarUrl,
+          specialty: w.specialty,
+          rating: w.rating,
+          reviewCount: w.reviewCount,
+          barangay: w.barangay,
+          barangayCoordinates: w.barangayCoordinates,
+          hourlyRate: w.hourlyRate,
+          isVerified: w.isVerified,
+          verificationStatus: w.verificationStatus,
+          rejectionReason: w.rejectionReason,
+          tags: w.tags,
+          distance: w.distance,
+          bio: w.bio,
+          services: w.services,
+          isAvailable: w.isAvailable,
+          availabilityStatus: w.availabilityStatus,
+          responseTime: w.responseTime,
+          portfolioImages: w.portfolioImages,
+          reviews: w.reviews,
+          trustTier: w.trustTier,
+          completedJobsCount: w.completedJobsCount,
+          jobPosts: updatedPosts,
+        );
+      }
+    }
     return AuthResult.success(message: 'Job post updated successfully!');
   }
 
@@ -320,6 +441,261 @@ class MockWorkerRepository implements WorkerRepository {
   Future<AuthResult> deleteJobPost(String postId) async {
     await Future.delayed(const Duration(seconds: 1));
     _mockJobPosts.removeWhere((jp) => jp.id == postId);
+    for (var i = 0; i < _workers.length; i++) {
+      final w = _workers[i];
+      final pIdx = w.jobPosts.indexWhere((p) => p.id == postId);
+      if (pIdx != -1) {
+        final updatedPosts = List<JobPost>.from(w.jobPosts)..removeAt(pIdx);
+        _workers[i] = Worker(
+          id: w.id,
+          name: w.name,
+          avatarUrl: w.avatarUrl,
+          specialty: w.specialty,
+          rating: w.rating,
+          reviewCount: w.reviewCount,
+          barangay: w.barangay,
+          barangayCoordinates: w.barangayCoordinates,
+          hourlyRate: w.hourlyRate,
+          isVerified: w.isVerified,
+          verificationStatus: w.verificationStatus,
+          rejectionReason: w.rejectionReason,
+          tags: w.tags,
+          distance: w.distance,
+          bio: w.bio,
+          services: w.services,
+          isAvailable: w.isAvailable,
+          availabilityStatus: w.availabilityStatus,
+          responseTime: w.responseTime,
+          portfolioImages: w.portfolioImages,
+          reviews: w.reviews,
+          trustTier: w.trustTier,
+          completedJobsCount: w.completedJobsCount,
+          jobPosts: updatedPosts,
+        );
+      }
+    }
     return AuthResult.success(message: 'Job post deleted successfully!');
+  }
+
+  @override
+  Future<List<JobPostImage>> uploadPostImages(String postId, List<String> filePaths) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    JobPost? targetPost;
+    int postIndex = _mockJobPosts.indexWhere((p) => p.id == postId);
+    if (postIndex != -1) {
+      targetPost = _mockJobPosts[postIndex];
+    } else {
+      for (final worker in _workers) {
+        final idx = worker.jobPosts.indexWhere((p) => p.id == postId);
+        if (idx != -1) {
+          targetPost = worker.jobPosts[idx];
+          break;
+        }
+      }
+    }
+
+    final currentImages = targetPost != null ? List<JobPostImage>.from(targetPost.images) : <JobPostImage>[];
+    final remainingSlots = 10 - currentImages.length;
+    if (remainingSlots <= 0) {
+      throw Exception('Maximum 10 images per post allowed.');
+    }
+
+    final toAdd = filePaths.take(remainingSlots).toList();
+    final newImages = <JobPostImage>[];
+    for (var i = 0; i < toAdd.length; i++) {
+      final order = currentImages.length + i;
+      newImages.add(JobPostImage(
+        id: 'img_${DateTime.now().millisecondsSinceEpoch}_$i',
+        imageUrl: toAdd[i],
+        thumbnailUrl: toAdd[i],
+        displayOrder: order,
+      ));
+    }
+    currentImages.addAll(newImages);
+
+    if (targetPost != null) {
+      final updated = targetPost.copyWith(images: currentImages);
+      if (postIndex != -1) {
+        _mockJobPosts[postIndex] = updated;
+      }
+      for (var i = 0; i < _workers.length; i++) {
+        final w = _workers[i];
+        final pIdx = w.jobPosts.indexWhere((p) => p.id == postId);
+        if (pIdx != -1) {
+          final updatedPosts = List<JobPost>.from(w.jobPosts);
+          updatedPosts[pIdx] = updated;
+          _workers[i] = Worker(
+            id: w.id,
+            name: w.name,
+            avatarUrl: w.avatarUrl,
+            specialty: w.specialty,
+            rating: w.rating,
+            reviewCount: w.reviewCount,
+            barangay: w.barangay,
+            barangayCoordinates: w.barangayCoordinates,
+            hourlyRate: w.hourlyRate,
+            isVerified: w.isVerified,
+            verificationStatus: w.verificationStatus,
+            rejectionReason: w.rejectionReason,
+            tags: w.tags,
+            distance: w.distance,
+            bio: w.bio,
+            services: w.services,
+            isAvailable: w.isAvailable,
+            availabilityStatus: w.availabilityStatus,
+            responseTime: w.responseTime,
+            portfolioImages: w.portfolioImages,
+            reviews: w.reviews,
+            trustTier: w.trustTier,
+            completedJobsCount: w.completedJobsCount,
+            jobPosts: updatedPosts,
+          );
+        }
+      }
+    }
+
+    return currentImages;
+  }
+
+  @override
+  Future<AuthResult> deletePostImage(String postId, String imageId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    JobPost? targetPost;
+    int postIndex = _mockJobPosts.indexWhere((p) => p.id == postId);
+    if (postIndex != -1) {
+      targetPost = _mockJobPosts[postIndex];
+    } else {
+      for (final worker in _workers) {
+        final idx = worker.jobPosts.indexWhere((p) => p.id == postId);
+        if (idx != -1) {
+          targetPost = worker.jobPosts[idx];
+          break;
+        }
+      }
+    }
+
+    if (targetPost == null) {
+      return AuthResult.failure(message: 'Post not found');
+    }
+
+    final images = List<JobPostImage>.from(targetPost.images);
+    images.removeWhere((img) => img.id == imageId);
+    final reordered = <JobPostImage>[];
+    for (var i = 0; i < images.length; i++) {
+      reordered.add(images[i].copyWith(displayOrder: i));
+    }
+
+    final updated = targetPost.copyWith(images: reordered);
+    if (postIndex != -1) {
+      _mockJobPosts[postIndex] = updated;
+    }
+    for (var i = 0; i < _workers.length; i++) {
+      final w = _workers[i];
+      final pIdx = w.jobPosts.indexWhere((p) => p.id == postId);
+      if (pIdx != -1) {
+        final updatedPosts = List<JobPost>.from(w.jobPosts);
+        updatedPosts[pIdx] = updated;
+        _workers[i] = Worker(
+          id: w.id,
+          name: w.name,
+          avatarUrl: w.avatarUrl,
+          specialty: w.specialty,
+          rating: w.rating,
+          reviewCount: w.reviewCount,
+          barangay: w.barangay,
+          barangayCoordinates: w.barangayCoordinates,
+          hourlyRate: w.hourlyRate,
+          isVerified: w.isVerified,
+          verificationStatus: w.verificationStatus,
+          rejectionReason: w.rejectionReason,
+          tags: w.tags,
+          distance: w.distance,
+          bio: w.bio,
+          services: w.services,
+          isAvailable: w.isAvailable,
+          availabilityStatus: w.availabilityStatus,
+          responseTime: w.responseTime,
+          portfolioImages: w.portfolioImages,
+          reviews: w.reviews,
+          trustTier: w.trustTier,
+          completedJobsCount: w.completedJobsCount,
+          jobPosts: updatedPosts,
+        );
+      }
+    }
+
+    return AuthResult.success(message: 'Image deleted.');
+  }
+
+  @override
+  Future<AuthResult> reorderPostImages(String postId, List<String> imageIds) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    JobPost? targetPost;
+    int postIndex = _mockJobPosts.indexWhere((p) => p.id == postId);
+    if (postIndex != -1) {
+      targetPost = _mockJobPosts[postIndex];
+    } else {
+      for (final worker in _workers) {
+        final idx = worker.jobPosts.indexWhere((p) => p.id == postId);
+        if (idx != -1) {
+          targetPost = worker.jobPosts[idx];
+          break;
+        }
+      }
+    }
+
+    if (targetPost == null) {
+      return AuthResult.failure(message: 'Post not found');
+    }
+
+    final imageMap = {for (final img in targetPost.images) img.id: img};
+    final reordered = <JobPostImage>[];
+    for (var i = 0; i < imageIds.length; i++) {
+      final img = imageMap[imageIds[i]];
+      if (img != null) {
+        reordered.add(img.copyWith(displayOrder: i));
+      }
+    }
+
+    final updated = targetPost.copyWith(images: reordered);
+    if (postIndex != -1) {
+      _mockJobPosts[postIndex] = updated;
+    }
+    for (var i = 0; i < _workers.length; i++) {
+      final w = _workers[i];
+      final pIdx = w.jobPosts.indexWhere((p) => p.id == postId);
+      if (pIdx != -1) {
+        final updatedPosts = List<JobPost>.from(w.jobPosts);
+        updatedPosts[pIdx] = updated;
+        _workers[i] = Worker(
+          id: w.id,
+          name: w.name,
+          avatarUrl: w.avatarUrl,
+          specialty: w.specialty,
+          rating: w.rating,
+          reviewCount: w.reviewCount,
+          barangay: w.barangay,
+          barangayCoordinates: w.barangayCoordinates,
+          hourlyRate: w.hourlyRate,
+          isVerified: w.isVerified,
+          verificationStatus: w.verificationStatus,
+          rejectionReason: w.rejectionReason,
+          tags: w.tags,
+          distance: w.distance,
+          bio: w.bio,
+          services: w.services,
+          isAvailable: w.isAvailable,
+          availabilityStatus: w.availabilityStatus,
+          responseTime: w.responseTime,
+          portfolioImages: w.portfolioImages,
+          reviews: w.reviews,
+          trustTier: w.trustTier,
+          completedJobsCount: w.completedJobsCount,
+          jobPosts: updatedPosts,
+        );
+      }
+    }
+
+    return AuthResult.success(message: 'Images reordered.');
   }
 }

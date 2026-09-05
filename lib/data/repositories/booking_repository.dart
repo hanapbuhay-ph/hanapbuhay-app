@@ -12,6 +12,7 @@ abstract class BookingRepository {
     required String time,
     required String notes,
     required String barangay,
+    String? jobPostId,
   });
 
   Future<AuthResult> submitReview({

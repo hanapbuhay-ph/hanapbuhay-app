@@ -130,8 +130,21 @@ class MockBookingRepository implements BookingRepository {
     required String time,
     required String notes,
     required String barangay,
+    String? jobPostId,
   }) async {
     await Future.delayed(const Duration(seconds: 1));
+    _mockBookings.add(Booking(
+      id: 'b${_mockBookings.length + 1}',
+      workerId: workerId,
+      clientId: 'c1',
+      jobPostId: jobPostId,
+      category: category,
+      date: date,
+      time: time,
+      barangay: barangay,
+      notes: notes,
+      status: BookingStatus.pending,
+    ));
     return AuthResult.success(message: 'Booking request sent successfully!');
   }
 

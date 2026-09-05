@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
@@ -238,24 +239,29 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            if (post.imageUrls.isNotEmpty) ...[
+            if (post.images.isNotEmpty || post.imageUrls.isNotEmpty) ...[
               Stack(
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      post.imageUrls.first,
+                    child: CachedNetworkImage(
+                      imageUrl: post.thumbnailUrl ?? post.previewImageUrl ?? post.imageUrls.first,
                       width: double.infinity,
                       height: 180,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      placeholder: (_, __) => Container(
+                        height: 180,
+                        color: colorScheme.surfaceContainerHighest,
+                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      ),
+                      errorWidget: (_, __, ___) => Container(
                         height: 180,
                         color: colorScheme.surfaceContainerHighest,
                         child: const Center(child: Icon(Icons.image_outlined)),
                       ),
                     ),
                   ),
-                  if (post.imageUrls.length > 1)
+                  if ((post.images.isNotEmpty ? post.images.length : post.imageUrls.length) > 1)
                     Positioned(
                       right: 10,
                       top: 10,
@@ -266,7 +272,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          '${post.imageUrls.length} photos',
+                          '${post.images.isNotEmpty ? post.images.length : post.imageUrls.length} photos',
                           style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
                         ),
                       ),

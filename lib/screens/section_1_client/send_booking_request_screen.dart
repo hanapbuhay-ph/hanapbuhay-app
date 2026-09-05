@@ -135,6 +135,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
         time: _selectedTime!.format(context),
         notes: _notesController.text.trim(),
         barangay: clientBarangay,
+        jobPostId: widget.postId,
       );
 
       if (!mounted) return;

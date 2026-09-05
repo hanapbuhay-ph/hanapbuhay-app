@@ -207,4 +207,27 @@ class WorkerProvider extends ChangeNotifier {
     notifyListeners();
     return result;
   }
+
+  Future<JobPostListing?> getJobPostDetail(String postId) =>
+      _repository.getJobPostDetail(postId);
+
+  Future<List<JobPostImage>> uploadPostImages(
+      String postId, List<String> filePaths) async {
+    final result = await _repository.uploadPostImages(postId, filePaths);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> deletePostImage(String postId, String imageId) async {
+    final result = await _repository.deletePostImage(postId, imageId);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> reorderPostImages(
+      String postId, List<String> imageIds) async {
+    final result = await _repository.reorderPostImages(postId, imageIds);
+    notifyListeners();
+    return result;
+  }
 }

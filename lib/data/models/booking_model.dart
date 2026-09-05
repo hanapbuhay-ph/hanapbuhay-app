@@ -4,6 +4,7 @@ class Booking {
   final String id;
   final String workerId;
   final String clientId;
+  final String? jobPostId;
   final String category;
   final DateTime date;
   final String time; // e.g. "10:00 AM"
@@ -20,6 +21,7 @@ class Booking {
     required this.id,
     required this.workerId,
     required this.clientId,
+    this.jobPostId,
     required this.category,
     required this.date,
     required this.time,

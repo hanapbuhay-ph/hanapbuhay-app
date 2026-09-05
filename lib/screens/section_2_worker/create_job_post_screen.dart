@@ -79,6 +79,15 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
 
       final result = await workerProvider.createJobPost(newPost);
 
+      if (result.success && _selectedImages.isNotEmpty) {
+        try {
+          await workerProvider.uploadPostImages(
+            newPost.id,
+            _selectedImages.map((image) => image.path).toList(),
+          );
+        } catch (_) {}
+      }
+
       if (mounted) {
         if (result.success) {
           ScaffoldMessenger.of(context).showSnackBar(
