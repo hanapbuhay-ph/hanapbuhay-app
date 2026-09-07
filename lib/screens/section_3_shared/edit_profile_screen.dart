@@ -32,6 +32,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _phoneController = TextEditingController(text: authProvider.userMobile ?? '');
     _email = authProvider.userEmail ?? '';
     _avatarPath = authProvider.userAvatar;
+    // Hydrate from server if mobile not yet cached (login response often lacks it)
+    if ((authProvider.userMobile == null || authProvider.userMobile!.isEmpty) && authProvider.isAuthenticated) {
+      authProvider.refreshProfile().then((_) {
+        if (!mounted) return;
+        setState(() {
+          _phoneController.text = context.read<AuthProvider>().userMobile ?? _phoneController.text;
+          _nameController.text = context.read<AuthProvider>().userName ?? _nameController.text;
+          _email = context.read<AuthProvider>().userEmail ?? _email;
+          _avatarPath = context.read<AuthProvider>().userAvatar ?? _avatarPath;
+        });
+      });
+    }
   }
 
   @override

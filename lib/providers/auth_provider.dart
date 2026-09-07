@@ -67,6 +67,56 @@ class AuthProvider extends ChangeNotifier {
     _twoFactorEnabled = prefs.getBool('2fa_enabled') ?? true;
 
     notifyListeners();
+    if (_isAuthenticated && (_userMobile == null || _userMobile!.isEmpty)) {
+      await refreshProfile();
+    }
+  }
+
+  /// Fetch GET /api/user and hydrate local fields. Login/Verify often omit mobile_number.
+  Future<void> refreshProfile() async {
+    try {
+      final res = await ApiClient.get('/user', requiresAuth: true);
+      if (res['success'] != true) return;
+      final raw = res['data'];
+      final user = raw is Map ? raw.map((k, v) => MapEntry(k.toString(), v)) : <String, dynamic>{};
+      final nested = user['user'] is Map ? (user['user'] as Map).map((k, v) => MapEntry(k.toString(), v)) : null;
+      final src = nested ?? user;
+      final prefs = await SharedPreferences.getInstance();
+      final mobile = (src['mobile_number'] ?? src['mobile'] ?? src['phone'])?.toString();
+      if (mobile != null && mobile.trim().isNotEmpty && mobile.trim() != 'null') {
+        await prefs.setString('user_mobile', mobile.trim());
+        _userMobile = mobile.trim();
+      }
+      final b = src['barangay'];
+      String? bName;
+      if (b is Map) bName = b['name']?.toString();
+      else if (b != null) bName = b.toString();
+      if (bName != null && bName.isNotEmpty && bName != 'null') {
+        await prefs.setString('user_barangay', bName);
+        _userBarangay = bName;
+      }
+      final name = src['name']?.toString();
+      if (name != null && name.isNotEmpty) {
+        await prefs.setString('user_name', name);
+        _userName = name;
+      }
+      final email = src['email']?.toString();
+      if (email != null && email.isNotEmpty) {
+        await prefs.setString('user_email', email);
+        _userEmail = email;
+      }
+      final avatar = (src['profile_photo_url'] ?? src['avatar_url'])?.toString();
+      if (avatar != null && avatar.isNotEmpty) {
+        await prefs.setString('user_avatar', avatar);
+        _userAvatar = avatar;
+      }
+      final role = src['role']?.toString();
+      if (role != null && role.isNotEmpty && role != 'null') {
+        await prefs.setString('user_role', role);
+        _userRole = role;
+      }
+      notifyListeners();
+    } catch (_) {}
   }
 
   bool get isGoogleLinked => _signInMethod == 'google';
@@ -88,7 +138,6 @@ class AuthProvider extends ChangeNotifier {
   Future<AuthResult> login(String email, String password) async {
     final result = await _authRepository.login(email, password);
     if (result.success) {
-      // No client-side OTP gate — backend 403 handles unverified; keep response passthrough
       final userData = result.data?['user'] as Map<String, dynamic>?;
       final token = result.data?['token']?.toString() ?? '';
       if (token.isNotEmpty) {
@@ -98,11 +147,14 @@ class AuthProvider extends ChangeNotifier {
           id: userData?['id']?.toString(),
           email: (userData?['email']?.toString() ?? email),
           name: userData?['name']?.toString(),
-          mobile: userData?['mobile_number']?.toString(),
+          mobile: (userData?['mobile_number'] ?? userData?['mobile'] ?? userData?['phone'])?.toString(),
           barangay: userData?['barangay'] is Map ? (userData?['barangay']['name']?.toString()) : userData?['barangay']?.toString(),
           avatar: (userData?['profile_photo_url'] ?? userData?['avatar_url'])?.toString(),
           method: (userData?['is_google_account'] == true ? 'google' : 'email'),
         );
+        if (_userMobile == null || _userMobile!.isEmpty) {
+          await refreshProfile();
+        }
       }
     }
     return result;
@@ -137,7 +189,10 @@ class AuthProvider extends ChangeNotifier {
         if (b is Map) barangayName = b['name']?.toString();
         final avatarUrl = (userData?['profile_photo_url'] ?? userData?['avatar_url'])?.toString();
         final isGoogle = userData?['is_google_account'] == true;
-        await setAuthenticated(token, (userData?['role']?.toString() ?? 'client'), id: userData?['id']?.toString(), email: (userData?['email']?.toString() ?? email), name: userData?['name']?.toString(), mobile: userData?['mobile_number']?.toString(), barangay: barangayName, avatar: avatarUrl, method: isGoogle ? 'google' : 'email');
+        await setAuthenticated(token, (userData?['role']?.toString() ?? 'client'), id: userData?['id']?.toString(), email: (userData?['email']?.toString() ?? email), name: userData?['name']?.toString(), mobile: (userData?['mobile_number'] ?? userData?['mobile'] ?? userData?['phone'])?.toString(), barangay: barangayName, avatar: avatarUrl, method: isGoogle ? 'google' : 'email');
+        if (_userMobile == null || _userMobile!.isEmpty) {
+          await refreshProfile();
+        }
       }
     }
     return result;
@@ -231,8 +286,11 @@ class AuthProvider extends ChangeNotifier {
       _userName = name;
     }
     if (mobile != null) {
-      await prefs.setString('user_mobile', mobile);
-      _userMobile = mobile;
+      final v = mobile.trim();
+      if (v.isNotEmpty && v != 'null') {
+        await prefs.setString('user_mobile', v);
+        _userMobile = v;
+      }
     }
     if (barangay != null) {
       await prefs.setString('user_barangay', barangay);
