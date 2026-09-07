@@ -26,15 +26,30 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
 
   Future<void> _onContinueWithGoogle() async {
     if (_selectedRole == null) return;
+    final ap = context.read<AuthProvider>();
+    // If user just came from Login Google (already authenticated, is_new_user without role), don't re-trigger Google.
+    // Go straight to Complete Profile with the role they just picked.
+    if (ap.isAuthenticated && (ap.userRole == null || ap.userRole!.isEmpty)) {
+      if (!mounted) return;
+      Navigator.pushNamed(context, '${AppRouter.completeProfile}?role=$_selectedRole');
+      return;
+    }
     setState(() => _isLoading = true);
     try {
-      final result = await context.read<AuthProvider>().googleLogin(roleForNewUser: _selectedRole, forceAccountPicker: true);
+      final result = await ap.googleLogin(roleForNewUser: _selectedRole, forceAccountPicker: true);
       if (!mounted) return;
       if (result.success) {
-        final isNew = result.data?['is_new_user'] == true;
-        if (isNew) {
+        final d = result.data ?? {};
+        final isNew = d['is_new_user'] == true || d['needs_profile_completion'] == true || d['isNewUser'] == true;
+        final user = d['user'] is Map ? (d['user'] as Map) : null;
+        final roleMissing = user != null && (user['role'] == null || user['role'].toString().isEmpty || user['role'].toString() == 'null');
+        final needsComplete = isNew || roleMissing;
+        if (needsComplete) {
           Navigator.pushNamed(context, '${AppRouter.completeProfile}?role=$_selectedRole');
         } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('This Google account is already registered. Redirecting to login.')),
+          );
           Navigator.pushReplacementNamed(context, context.read<AuthProvider>().getHomeRoute());
         }
       } else {

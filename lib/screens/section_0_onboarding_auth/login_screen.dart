@@ -80,11 +80,15 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await context.read<AuthProvider>().googleLogin(forceAccountPicker: true);
       if (!mounted) return;
       if (result.success) {
-        final isNew = result.data?['is_new_user'] == true;
-        if (isNew) {
-          // Backend says new Google user: needs role/profile completion
-          // If user came from registration flow role is known; otherwise go to role picker
-          Navigator.pushNamed(context, AppRouter.registerRole);
+        final d = result.data ?? {};
+        final isNew = d['is_new_user'] == true || d['needs_profile_completion'] == true || d['isNewUser'] == true;
+        // Also treat missing role/barangay as incomplete even if flag absent (defensive)
+        final user = d['user'] is Map ? (d['user'] as Map) : null;
+        final roleMissing = user != null && (user['role'] == null || user['role'].toString().isEmpty || user['role'].toString() == 'null');
+        final needsComplete = isNew || roleMissing;
+        if (needsComplete) {
+          // Direct to Complete Profile — role picker is inside that screen if not pre-selected
+          Navigator.pushNamed(context, AppRouter.completeProfile);
         } else {
           Navigator.pushReplacementNamed(context, context.read<AuthProvider>().getHomeRoute());
         }

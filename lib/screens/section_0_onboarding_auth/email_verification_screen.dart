@@ -259,6 +259,22 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
     );
   }
 
+  void _handlePaste(String pasted) {
+    final digits = pasted.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return;
+    final toFill = digits.length > 6 ? digits.substring(0, 6) : digits;
+    for (int i = 0; i < 6; i++) {
+      _controllers[i].text = i < toFill.length ? toFill[i] : '';
+    }
+    setState(() {});
+    if (toFill.length == 6) {
+      _focusNodes[5].unfocus();
+      _handleVerify();
+    } else {
+      _focusNodes[toFill.length.clamp(0, 5)].requestFocus();
+    }
+  }
+
   Widget _buildOtpBox(int index) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -290,7 +306,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
           textAlign: TextAlign.center,
           keyboardType: TextInputType.number,
           inputFormatters: [
-            LengthLimitingTextInputFormatter(1),
             FilteringTextInputFormatter.digitsOnly,
           ],
           style: AppTypography.headlineMedium.copyWith(
@@ -302,6 +317,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
             contentPadding: EdgeInsets.zero,
           ),
           onChanged: (value) {
+            // Paste support: if multiple digits pasted into one box, distribute
+            if (value.length > 1) {
+              _handlePaste(value);
+              return;
+            }
             if (value.isNotEmpty) {
               if (index < 5) {
                 _focusNodes[index + 1].requestFocus();

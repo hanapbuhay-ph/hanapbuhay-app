@@ -435,6 +435,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     );
   }
 
+  void _handleOtpPaste(String pasted) {
+    final digits = pasted.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return;
+    final toFill = digits.length > 6 ? digits.substring(0, 6) : digits;
+    for (int i = 0; i < 6; i++) {
+      _otpControllers[i].text = i < toFill.length ? toFill[i] : '';
+    }
+    setState(() {});
+    if (toFill.length == 6) {
+      _otpFocusNodes[5].unfocus();
+      _handleVerifyOtp();
+    } else {
+      _otpFocusNodes[toFill.length.clamp(0, 5)].requestFocus();
+    }
+  }
+
   Widget _buildOtpBox(int index) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
@@ -456,10 +472,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           focusNode: _otpFocusNodes[index],
           textAlign: TextAlign.center,
           keyboardType: TextInputType.number,
-          inputFormatters: [LengthLimitingTextInputFormatter(1), FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           style: AppTypography.headlineMedium.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800),
           decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.zero),
           onChanged: (value) {
+            if (value.length > 1) {
+              _handleOtpPaste(value);
+              return;
+            }
             if (value.isNotEmpty) {
               if (index < 5) {
                 _otpFocusNodes[index + 1].requestFocus();

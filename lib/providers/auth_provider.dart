@@ -160,10 +160,20 @@ class AuthProvider extends ChangeNotifier {
       final token = data['token']?.toString() ?? '';
       final userRaw = data['user'];
       final user = userRaw is Map ? userRaw.map((k, v) => MapEntry(k.toString(), v)) : <String, dynamic>{};
-      final role = user['role']?.toString() ?? roleForNewUser ?? 'client';
+      final isNew = data['is_new_user'] == true;
+      // Don't default role for new users — backend returns role=null and Flutter must go through CompleteProfile
+      String role = user['role']?.toString() ?? '';
+      if (role.isEmpty) {
+        if (!isNew && roleForNewUser != null) role = roleForNewUser;
+        else if (!isNew) role = 'client';
+        else role = roleForNewUser ?? '';
+      }
       if (token.isNotEmpty) {
         final avatarUrl = (user['profile_photo_url'] ?? user['avatar_url'])?.toString();
-        await setAuthenticated(token, role, id: user['id']?.toString(), email: (user['email']?.toString() ?? account.email), name: (user['name']?.toString() ?? account.displayName), avatar: avatarUrl, method: 'google');
+        // For new users with no role yet, keep role empty so getHomeRoute isn't confused; complete-profile will set it
+        final storedRole = role.isEmpty ? '' : role;
+        await setAuthenticated(token, storedRole, id: user['id']?.toString(), email: (user['email']?.toString() ?? account.email), name: (user['name']?.toString() ?? account.displayName), avatar: avatarUrl, method: 'google');
+        // Preserve raw role for caller by keeping it in result data; ensure is_new_user survives setAuthenticated
       }
     }
     return result;
