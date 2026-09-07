@@ -35,19 +35,32 @@ class AppHeader extends StatelessWidget {
               if (showBackButton) ...[
                 AppBackButton(onPressed: onBackPressed),
                 const SizedBox(width: 12),
-              ],
-              Expanded(
-                child: Text(
-                  title,
-                  style: AppTypography.headlineMedium.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTypography.headlineMedium.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
+              ] else
+                Expanded(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.headlineMedium.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
             ],
           ),
         ),

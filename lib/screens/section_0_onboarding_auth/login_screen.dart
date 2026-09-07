@@ -114,17 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: colorScheme.surface,
       body: Column(
         children: [
-          // 1. Standardized Header
-          AppHeader(
-            showBackButton: true,
-            onBackPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              } else {
-                Navigator.pushReplacementNamed(context, AppRouter.onboarding);
-              }
-            },
-          ),
+          // 1. Standardized Header — no back button: onboarding only on first install
+          const AppHeader(showBackButton: false),
 
           // 2. Scrollable Content
           Expanded(
