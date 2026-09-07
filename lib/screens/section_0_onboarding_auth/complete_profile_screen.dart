@@ -45,31 +45,26 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   Future<void> _handleCompleteProfile() async {
     if (!_formKey.currentState!.validate()) return;
-
+    if (_selectedBarangay == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please select your barangay'), backgroundColor: Theme.of(context).colorScheme.error));
+      return;
+    }
     setState(() => _isLoading = true);
-
     try {
       final authProvider = context.read<AuthProvider>();
-      final result = await authProvider.updateProfile(
-        name: _nameController.text.trim(),
-        mobileNumber: _mobileController.text.trim(),
-      );
-
+      final isGoogle = authProvider.signInMethod == 'google';
+      final result = isGoogle
+          ? await authProvider.completeGoogleProfile(name: _nameController.text.trim(), mobileNumber: _mobileController.text.trim(), role: widget.role, barangay: _selectedBarangay!)
+          : await authProvider.updateProfile(name: _nameController.text.trim(), mobileNumber: _mobileController.text.trim());
       if (!mounted) return;
-
       if (result.success) {
         Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
       } else {
-        final colorScheme = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message), backgroundColor: Theme.of(context).colorScheme.error));
       }
     } catch (e) {
-      final colorScheme = Theme.of(context).colorScheme;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: colorScheme.error),
-      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Theme.of(context).colorScheme.error));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

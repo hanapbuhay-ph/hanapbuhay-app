@@ -1,8 +1,8 @@
 import '../models/auth_result_model.dart';
 
 abstract class AuthRepository {
-  /// Set this to true to use MockAuthRepository across the app.
-  static const bool useMock = true;
+  /// Section A complete — app is now API-connected for auth.
+  static const bool useMock = false;
 
   Future<AuthResult> register({
     required String name,

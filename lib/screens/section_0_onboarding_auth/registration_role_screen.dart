@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/google_auth_service.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/buttons/google_signin_button.dart';
@@ -18,6 +17,7 @@ class RegistrationRoleScreen extends StatefulWidget {
 
 class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
   String? _selectedRole;
+  bool _isLoading = false;
 
   void _onContinueManual() {
     if (_selectedRole == null) return;
@@ -26,19 +26,27 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
 
   Future<void> _onContinueWithGoogle() async {
     if (_selectedRole == null) return;
-    await GoogleAuthService().signIn();
-    if (mounted) {
-      // Simulate Google Login success and mark as 'google' method
-      await context.read<AuthProvider>().setAuthenticated(
-        'mock_google_token',
-        _selectedRole!,
-        email: 'john.doe@gmail.com',
-        name: 'John Doe',
-        method: 'google',
-      );
-      if (mounted) {
-        Navigator.pushNamed(context, '${AppRouter.completeProfile}?role=$_selectedRole');
+    setState(() => _isLoading = true);
+    try {
+      final result = await context.read<AuthProvider>().googleLogin(roleForNewUser: _selectedRole, forceAccountPicker: true);
+      if (!mounted) return;
+      if (result.success) {
+        final isNew = result.data?['is_new_user'] == true;
+        if (isNew) {
+          Navigator.pushNamed(context, '${AppRouter.completeProfile}?role=$_selectedRole');
+        } else {
+          Navigator.pushReplacementNamed(context, context.read<AuthProvider>().getHomeRoute());
+        }
+      } else {
+        if (result.message != 'Google sign-in cancelled.') {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message), backgroundColor: Theme.of(context).colorScheme.error));
+        }
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Google sign-in failed: $e'), backgroundColor: Theme.of(context).colorScheme.error));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -121,7 +129,8 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
                 PrimaryButton(
                   label: 'Continue',
                   showArrow: true,
-                  onPressed: _selectedRole != null ? _onContinueManual : null,
+                  isLoading: _isLoading,
+                  onPressed: _selectedRole != null && !_isLoading ? _onContinueManual : null,
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -139,7 +148,8 @@ class _RegistrationRoleScreenState extends State<RegistrationRoleScreen> {
                 ),
                 const SizedBox(height: 20),
                 GoogleSignInButton(
-                  onPressed: _selectedRole != null ? _onContinueWithGoogle : null,
+                  isLoading: _isLoading,
+                  onPressed: _selectedRole != null && !_isLoading ? _onContinueWithGoogle : null,
                 ),
               ],
             ),

@@ -61,3 +61,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Secrets — do not commit Firebase/Maps configs
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist

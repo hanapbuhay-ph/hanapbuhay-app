@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/google_auth_service.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/buttons/google_signin_button.dart';
@@ -76,7 +75,30 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleGoogleLogin() async {
-    await GoogleAuthService().signIn();
+    setState(() => _isLoading = true);
+    try {
+      final result = await context.read<AuthProvider>().googleLogin(forceAccountPicker: true);
+      if (!mounted) return;
+      if (result.success) {
+        final isNew = result.data?['is_new_user'] == true;
+        if (isNew) {
+          // Backend says new Google user: needs role/profile completion
+          // If user came from registration flow role is known; otherwise go to role picker
+          Navigator.pushNamed(context, AppRouter.registerRole);
+        } else {
+          Navigator.pushReplacementNamed(context, context.read<AuthProvider>().getHomeRoute());
+        }
+      } else {
+        if (result.message != 'Google sign-in cancelled.') {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message), backgroundColor: Theme.of(context).colorScheme.error));
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Google sign-in failed: $e'), backgroundColor: Theme.of(context).colorScheme.error));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
