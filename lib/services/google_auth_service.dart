@@ -10,6 +10,8 @@ class GoogleAuthService {
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
+    // Web client ID (client_type 3) from google-services.json — required to get idToken on Android.
+    serverClientId: '416482556754-q1l1lbbs1u5bev0ob4q2k2t5klterlkg.apps.googleusercontent.com',
   );
 
   /// Sign in with Google.
