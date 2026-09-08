@@ -64,6 +64,31 @@ class WorkerProvider extends ChangeNotifier {
 
   Future<List<ServiceCategory>> getCategories() => _repository.getCategories();
   
+  /// Get feed with current filters applied
+  /// This calls the real backend GET /api/feed endpoint
+  Future<FeedResponse> getFeed({int page = 1}) async {
+    // Build filters from current state
+    String? verificationFilter;
+    if (_quickFilter == 'Verified') {
+      verificationFilter = 'verified';
+    } else if (_quickFilter == 'Unverified') {
+      verificationFilter = 'unverified';
+    } else {
+      verificationFilter = 'all';
+    }
+
+    final filters = FeedFilters(
+      categoryId: _selectedCategories.isNotEmpty ? _selectedCategories.first : null,
+      barangayId: _selectedBarangay,
+      rateType: _selectedRateTypes.isNotEmpty ? _selectedRateTypes.first.apiValue : null,
+      verification: verificationFilter,
+      availability: _onlyAvailableNow ? 'available' : 'all',
+      page: page,
+    );
+
+    return _repository.getFeed(filters);
+  }
+  
   Future<List<JobPostListing>> getFilteredWorkers({String? userBarangayName}) async {
     final allWorkers = await _repository.getTopRatedWorkers();
     

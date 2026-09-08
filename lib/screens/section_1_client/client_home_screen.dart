@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
+import '../../data/repositories/worker_repository.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/barangay_model.dart';
@@ -20,7 +20,7 @@ class ClientHomeScreen extends StatefulWidget {
 }
 
 class _ClientHomeScreenState extends State<ClientHomeScreen> {
-  late Future<List<JobPostListing>> _filteredWorkersFuture;
+  late Future<FeedResponse> _filteredWorkersFuture;
 
   @override
   void initState() {
@@ -30,8 +30,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
   void _loadData() {
     final workerProvider = context.read<WorkerProvider>();
-    final authProvider = context.read<AuthProvider>();
-    _filteredWorkersFuture = workerProvider.getFilteredWorkers(userBarangayName: authProvider.userBarangay);
+    _filteredWorkersFuture = workerProvider.getFeed();
   }
 
   @override
@@ -422,13 +421,13 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
   Widget _buildFeedSection() {
     final colorScheme = Theme.of(context).colorScheme;
-    return FutureBuilder<List<JobPostListing>>(
+    return FutureBuilder<FeedResponse>(
       future: _filteredWorkersFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator(color: colorScheme.primary));
         }
-        final listings = snapshot.data ?? [];
+        final listings = snapshot.data?.posts ?? [];
         if (listings.isEmpty) {
           return Column(
               children: [

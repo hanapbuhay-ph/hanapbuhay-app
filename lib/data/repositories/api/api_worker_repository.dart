@@ -13,6 +13,59 @@ class ApiWorkerRepository implements WorkerRepository {
   final SecureStorageService _storage = SecureStorageService();
 
   @override
+  Future<FeedResponse> getFeed(FeedFilters filters) async {
+    // GET /api/feed
+    try {
+      final token = await _storage.getToken();
+      final uri = Uri.parse('$baseUrl/feed').replace(queryParameters: filters.toQueryParams());
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final postsData = data['data']?['posts'] as List<dynamic>? ?? [];
+        final pagination = data['data']?['pagination'] as Map<String, dynamic>? ?? {};
+
+        final posts = postsData
+            .map((item) => JobPostListing.fromJson(item as Map<String, dynamic>))
+            .toList();
+
+        return FeedResponse(
+          posts: posts,
+          currentPage: pagination['current_page'] ?? 1,
+          perPage: pagination['per_page'] ?? 15,
+          total: pagination['total'] ?? 0,
+          lastPage: pagination['last_page'] ?? 1,
+        );
+      } else {
+        // Return empty response on error
+        return const FeedResponse(
+          posts: [],
+          currentPage: 1,
+          perPage: 15,
+          total: 0,
+          lastPage: 1,
+        );
+      }
+    } catch (e) {
+      print('[ApiWorkerRepository] getFeed error: $e');
+      return const FeedResponse(
+        posts: [],
+        currentPage: 1,
+        perPage: 15,
+        total: 0,
+        lastPage: 1,
+      );
+    }
+  }
+
+  @override
   Future<List<ServiceCategory>> getCategories() async {
     // GET /api/service-categories
     try {

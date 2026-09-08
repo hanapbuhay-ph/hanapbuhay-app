@@ -8,6 +8,27 @@ import '../../models/trust_tier.dart';
 import '../../../core/constants/app_constants.dart';
 
 class MockWorkerRepository implements WorkerRepository {
+  @override
+  Future<FeedResponse> getFeed(FeedFilters filters) async {
+    // Mock implementation - returns mock job posts
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    final mockPosts = _mockJobPosts.map((post) {
+      return JobPostListing(
+        worker: _workers[0], // Use first mock worker
+        post: post,
+      );
+    }).toList();
+
+    return FeedResponse(
+      posts: mockPosts,
+      currentPage: 1,
+      perPage: 15,
+      total: mockPosts.length,
+      lastPage: 1,
+    );
+  }
+
   final List<JobPost> _mockJobPosts = [
     JobPost(
       id: 'jp1',
