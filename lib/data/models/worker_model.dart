@@ -20,6 +20,7 @@ enum VerificationStatus {
 
 class Worker {
   final String id;
+  final String? userId;
   final String name;
   final String avatarUrl;
   final String specialty;
@@ -50,6 +51,7 @@ class Worker {
 
   Worker({
     required this.id,
+    this.userId,
     required this.name,
     required this.avatarUrl,
     required this.specialty,
@@ -146,8 +148,18 @@ class Worker {
           .toList();
     }
 
+    // Reviews if present (Worker Profile - GET /api/workers/{id})
+    List<WorkerReview> reviews = [];
+    if (json['reviews'] is List) {
+      reviews = (json['reviews'] as List)
+          .whereType<Map<String, dynamic>>()
+          .map((r) => WorkerReview.fromJson(r))
+          .toList();
+    }
+
     return Worker(
       id: id,
+      userId: json['user_id']?.toString(),
       name: name,
       avatarUrl: avatarUrl,
       specialty: specialty,
@@ -169,6 +181,7 @@ class Worker {
           ? json['completed_jobs'] as int
           : int.tryParse(json['completed_jobs']?.toString() ?? '0') ?? 0,
       jobPosts: posts,
+      reviews: reviews,
     );
   }
 }
@@ -189,6 +202,21 @@ class WorkerReview {
     required this.comment,
     required this.date,
   });
+
+  factory WorkerReview.fromJson(Map<String, dynamic> json) {
+    return WorkerReview(
+      id: json['id']?.toString() ?? '',
+      reviewerName: json['rated_by_name']?.toString() ?? '',
+      reviewerAvatar: json['reviewer_avatar_url']?.toString() ??
+          json['avatar_url']?.toString() ??
+          AppConstants.defaultAvatar,
+      rating: (json['score'] is num)
+          ? (json['score'] as num).toDouble()
+          : double.tryParse(json['score']?.toString() ?? '0') ?? 0.0,
+      comment: json['comment']?.toString() ?? '',
+      date: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
+    );
+  }
 }
 
 class ServiceCategory {

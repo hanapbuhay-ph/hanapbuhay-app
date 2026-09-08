@@ -89,6 +89,56 @@ class ApiWorkerRepository implements WorkerRepository {
   }
 
   @override
+  Future<CategoryWorkerResponse> getCategoryWorkers(
+    String categoryId, {
+    CategoryWorkerFilters filters = const CategoryWorkerFilters(),
+  }) async {
+    // GET /api/categories/{categoryId}/workers
+    try {
+      final token = await _storage.getToken();
+      final uri = Uri.parse('$baseUrl/categories/$categoryId/workers')
+          .replace(queryParameters: filters.toQueryParams());
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final dataBlock = data['data'] as Map<String, dynamic>? ?? {};
+        final category = dataBlock['category'] as Map<String, dynamic>? ?? {};
+        final rawWorkers = dataBlock['workers'] as List<dynamic>? ?? [];
+
+        // Backend returns workers[] (each with a single nested `job_post`)
+        // rather than JobPostListing pairs, so map them here.
+        final listings = rawWorkers.map((raw) {
+          final workerJson = raw as Map<String, dynamic>;
+          final worker = Worker.fromJson(workerJson);
+          final postJson = workerJson['job_post'] as Map<String, dynamic>? ?? {};
+          final post = JobPost.fromJson(postJson, defaultWorkerId: worker.id);
+          return JobPostListing(worker: worker, post: post);
+        }).toList();
+
+        return CategoryWorkerResponse(
+          categoryId: category['id']?.toString() ?? categoryId,
+          categoryName: category['name']?.toString() ?? '',
+          listings: listings,
+          total: dataBlock['total'] is int
+              ? dataBlock['total'] as int
+              : int.tryParse(dataBlock['total']?.toString() ?? '0') ?? listings.length,
+        );
+      }
+    } catch (e) {
+      // Return empty result on error (screen will show empty state)
+    }
+    return CategoryWorkerResponse(categoryId: categoryId);
+  }
+
+  @override
   Future<List<Worker>> getRecentlyViewedWorkers() {
     // GET /api/workers/recent
     throw UnimplementedError();

@@ -29,6 +29,31 @@ class MockWorkerRepository implements WorkerRepository {
     );
   }
 
+  @override
+  Future<CategoryWorkerResponse> getCategoryWorkers(
+    String categoryId, {
+    CategoryWorkerFilters filters = const CategoryWorkerFilters(),
+  }) async {
+    // Mock implementation - returns mock job posts filtered by availability
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final mockPosts = _mockJobPosts.map((post) {
+      return JobPostListing(worker: _workers[0], post: post);
+    }).toList();
+
+    var listings = mockPosts;
+    if (filters.availableOnly) {
+      listings = listings.where((l) => l.worker.isAvailable).toList();
+    }
+
+    return CategoryWorkerResponse(
+      categoryId: categoryId,
+      categoryName: 'Category',
+      listings: listings,
+      total: listings.length,
+    );
+  }
+
   final List<JobPost> _mockJobPosts = [
     JobPost(
       id: 'jp1',

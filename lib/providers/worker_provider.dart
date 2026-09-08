@@ -88,6 +88,37 @@ class WorkerProvider extends ChangeNotifier {
 
     return _repository.getFeed(filters);
   }
+
+  /// Browse workers within a category (B2.1) — GET /api/categories/{categoryId}/workers
+  Future<CategoryWorkerResponse> getCategoryWorkers(
+    String categoryId, {
+    String? barangayName,
+    bool verifiedOnly = false,
+    bool availableOnly = false,
+    int page = 1,
+  }) async {
+    // Map barangay name -> API barangay id (the endpoint expects barangay_id)
+    String? barangayId;
+    if (barangayName != null) {
+      try {
+        barangayId = Barangay.trinidadBarangays
+            .firstWhere((b) => b.name == barangayName)
+            .id;
+      } catch (_) {
+        barangayId = null;
+      }
+    }
+
+    return _repository.getCategoryWorkers(
+      categoryId,
+      filters: CategoryWorkerFilters(
+        barangayId: barangayId,
+        verifiedOnly: verifiedOnly,
+        availableOnly: availableOnly,
+        page: page,
+      ),
+    );
+  }
   
   Future<List<JobPostListing>> getFilteredWorkers({String? userBarangayName}) async {
     final allWorkers = await _repository.getTopRatedWorkers();

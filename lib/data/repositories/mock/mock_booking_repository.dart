@@ -107,9 +107,10 @@ class MockBookingRepository implements BookingRepository {
   ];
 
   @override
-  Future<List<Booking>> getBookings() async {
+  Future<List<Booking>> getBookings({String? status}) async {
     await Future.delayed(const Duration(milliseconds: 600));
-    return _mockBookings;
+    if (status == null) return _mockBookings;
+    return _mockBookings.where((b) => b.status.name == status).toList();
   }
 
   @override
@@ -125,11 +126,9 @@ class MockBookingRepository implements BookingRepository {
   @override
   Future<AuthResult> createBooking({
     required String workerId,
-    required String category,
-    required DateTime date,
-    required String time,
-    required String notes,
-    required String barangay,
+    required int? serviceCategoryId,
+    required DateTime scheduledAt,
+    String? notes,
     String? jobPostId,
   }) async {
     await Future.delayed(const Duration(seconds: 1));
@@ -138,11 +137,11 @@ class MockBookingRepository implements BookingRepository {
       workerId: workerId,
       clientId: 'c1',
       jobPostId: jobPostId,
-      category: category,
-      date: date,
-      time: time,
-      barangay: barangay,
-      notes: notes,
+      category: 'Service',
+      date: scheduledAt,
+      time: '9:00 AM',
+      barangay: 'Poblacion',
+      notes: notes ?? '',
       status: BookingStatus.pending,
     ));
     return AuthResult.success(message: 'Booking request sent successfully!');
@@ -268,5 +267,73 @@ class MockBookingRepository implements BookingRepository {
       );
     }
     return AuthResult.success(message: 'Status updated to ${status.name}');
+  }
+
+  @override
+  Future<AuthResult> cancelBooking({
+    required String bookingId,
+    String? reason,
+  }) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return AuthResult.success(message: 'Booking cancelled.');
+  }
+
+  @override
+  Future<AuthResult> completeBooking({required String bookingId}) async {
+    await Future.delayed(const Duration(seconds: 1));
+    final index = _mockBookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      final old = _mockBookings[index];
+      _mockBookings[index] = Booking(
+        id: old.id,
+        workerId: old.workerId,
+        clientId: old.clientId,
+        category: old.category,
+        date: old.date,
+        time: old.time,
+        barangay: old.barangay,
+        barangayCoordinates: old.barangayCoordinates,
+        notes: old.notes,
+        status: BookingStatus.completed,
+        timeline: old.timeline,
+        isRated: old.isRated,
+        isClientRated: old.isClientRated,
+      );
+    }
+    return AuthResult.success(message: 'Booking completed.');
+  }
+
+  @override
+  Future<AuthResult> startTracking({required String bookingId}) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return AuthResult.success(message: 'Tracking started.');
+  }
+
+  @override
+  Future<AuthResult> stopTracking({required String bookingId}) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return AuthResult.success(message: 'Tracking stopped.');
+  }
+
+  @override
+  Future<AuthResult> updateTrackingLocation({
+    required String bookingId,
+    required double latitude,
+    required double longitude,
+    double? accuracy,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return AuthResult.success(message: 'Location updated.');
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getTrackingStatus(String bookingId) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return const {
+      'is_client_tracking': false,
+      'is_worker_tracking': false,
+      'client_barangay': {'name': 'Poblacion', 'latitude': 9.9575, 'longitude': 124.3517},
+      'worker_barangay': {'name': 'Calanggaman', 'latitude': 9.9312, 'longitude': 124.3121},
+    };
   }
 }

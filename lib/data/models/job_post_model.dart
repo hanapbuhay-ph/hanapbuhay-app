@@ -145,6 +145,7 @@ class JobPost {
   final String id;
   final String workerId;
   final String category;
+  final int? serviceCategoryId;
   final String title;
   final String description;
   final double startingRate;
@@ -157,6 +158,7 @@ class JobPost {
     required this.id,
     required this.workerId,
     required this.category,
+    this.serviceCategoryId,
     required this.title,
     required this.description,
     required this.startingRate,
@@ -237,11 +239,17 @@ class JobPost {
     final categoryName = categoryVal is Map
         ? (categoryVal['name'] ?? '')
         : (json['category_name'] ?? categoryVal ?? '');
+    final catId = (categoryVal is Map && categoryVal['id'] is num)
+        ? (categoryVal['id'] as num).toInt()
+        : (json['service_category_id'] is num)
+            ? (json['service_category_id'] as num).toInt()
+            : null;
 
     return JobPost(
       id: (json['id'] ?? json['job_post_id'])?.toString() ?? '',
       workerId: (json['worker_profile_id'] ?? json['worker_id'] ?? defaultWorkerId)?.toString() ?? '',
       category: categoryName.toString(),
+      serviceCategoryId: catId,
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       startingRate: (json['rate_amount'] is num)

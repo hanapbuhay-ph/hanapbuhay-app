@@ -124,17 +124,30 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
 
     setState(() => _isSubmitting = true);
 
-    // In a real app, we'd get the actual barangay ID from the user object
-    const clientBarangay = AppConstants.defaultBarangay;
-
     try {
+      final worker = _worker;
+      final scheduledAt = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
+      // Resolve the service category id from the worker's job posts.
+      int? categoryId;
+      if (worker != null) {
+        final matchingPost = worker.jobPosts
+            .where((p) => p.category.contains(_selectedCategory!))
+            .firstOrNull;
+        categoryId = matchingPost?.serviceCategoryId ?? worker.jobPosts.firstOrNull?.serviceCategoryId;
+      }
+
       final result = await context.read<BookingProvider>().createBooking(
-        workerId: widget.workerId,
-        category: _selectedCategory!,
-        date: _selectedDate!,
-        time: _selectedTime!.format(context),
+        workerId: worker?.userId ?? widget.workerId,
+        serviceCategoryId: categoryId,
+        scheduledAt: scheduledAt,
         notes: _notesController.text.trim(),
-        barangay: clientBarangay,
         jobPostId: widget.postId,
       );
 

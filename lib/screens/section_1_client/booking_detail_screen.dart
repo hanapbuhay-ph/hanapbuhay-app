@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/utils/formatters.dart';
 import '../../widgets/info/compact_info_row.dart';
 import '../../providers/booking_provider.dart';
-import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
-import '../../data/models/worker_model.dart';
+import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/navigation/app_bottom_nav.dart';
 import '../../widgets/maps/live_tracking_map.dart';
@@ -29,7 +29,6 @@ class BookingDetailScreen extends StatefulWidget {
 
 class _BookingDetailScreenState extends State<BookingDetailScreen> {
   Booking? _booking;
-  Worker? _worker;
   bool _isLoading = true;
   bool _isTracking = false;
 
@@ -42,17 +41,18 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
   Future<void> _loadData() async {
     final bookingProvider = context.read<BookingProvider>();
-    final workerProvider = context.read<WorkerProvider>();
     final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await workerProvider.getWorkerById(booking.workerId);
       if (mounted) {
         setState(() {
           _booking = booking;
-          _worker = worker;
           _isLoading = false;
         });
       }
+    } else if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -65,12 +65,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
-    if (_booking == null || _worker == null) {
+    if (_booking == null) {
       return const Scaffold(body: Center(child: Text('Booking not found')));
     }
 
     final booking = _booking!;
-    final worker = _worker!;
     final showMap = booking.status == BookingStatus.accepted || booking.status == BookingStatus.active;
 
     return Scaffold(
@@ -85,15 +84,18 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildWorkerCard(worker),
+                  _buildWorkerCard(booking),
                   const SizedBox(height: 24),
                   
                   if (showMap) ...[
-                    _buildMapSection(booking, worker),
+                    _buildMapSection(booking),
                     const SizedBox(height: 24),
                   ],
 
                   _buildJobDetails(booking),
+                  const SizedBox(height: 24),
+
+                  _buildActionButtons(booking),
                   const SizedBox(height: 24),
 
                   _buildTimeline(booking),
@@ -121,7 +123,128 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     );
   }
 
-  Widget _buildWorkerCard(Worker worker) {
+  Widget _buildActionButtons(Booking booking) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (booking.status == BookingStatus.pending ||
+        booking.status == BookingStatus.accepted) {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _handleCancel(booking),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: colorScheme.error),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text('Cancel Request', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (booking.status == BookingStatus.active &&
+        booking.startedAt != null) {
+      return SizedBox(
+        width: double.infinity,
+        child: PrimaryButton(
+          label: 'Confirm Job Completed',
+          onPressed: () => _handleComplete(booking),
+        ),
+      );
+    }
+
+    if (booking.status == BookingStatus.completed && !booking.isRated) {
+      return SizedBox(
+        width: double.infinity,
+        child: PrimaryButton(
+          label: 'Rate & Review',
+          onPressed: () {
+            Navigator.pushNamed(context, '${AppRouter.rateReview}/${booking.id}');
+          },
+        ),
+      );
+    }
+
+    return SizedBox.shrink();
+  }
+
+  Future<void> _handleCancel(Booking booking) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final reasonController = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cancel Booking'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Why are you cancelling this booking?'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              maxLines: 3,
+              maxLength: 500,
+              decoration: const InputDecoration(
+                hintText: 'Cancellation reason (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Back')),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, reasonController.text.trim()),
+            child: Text('Confirm Cancel', style: TextStyle(color: colorScheme.error)),
+          ),
+        ],
+      ),
+    );
+    if (reason == null || !mounted) return;
+
+    final result = await context.read<BookingProvider>().cancelBooking(bookingId: booking.id, reason: reason);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+      setState(() {
+        _isLoading = true;
+      });
+      _loadData();
+    }
+  }
+
+  Future<void> _handleComplete(Booking booking) async {
+    final theme = Theme.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Job Completion'),
+        content: const Text('Did the worker finish the job? This will mark the booking as completed.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final result = await context.read<BookingProvider>().completeBooking(bookingId: booking.id);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+      setState(() {
+        _isLoading = true;
+      });
+      _loadData();
+    }
+  }
+
+  Widget _buildWorkerCard(Booking booking) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -141,20 +264,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       ),
       child: Row(
         children: [
-          CircleAvatar(radius: 24, backgroundImage: NetworkImage(worker.avatarUrl)),
+          CircleAvatar(radius: 24, backgroundImage: NetworkImage(booking.workerPhotoUrl ?? AppConstants.defaultAvatar)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(worker.name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 14),
-                    const SizedBox(width: 4),
-                    Text(worker.rating.toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: colorScheme.onSurface)),
-                  ],
-                ),
+                Text(booking.workerName ?? 'Worker', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
               ],
             ),
           ),
@@ -173,12 +289,12 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     );
   }
 
-  Widget _buildMapSection(Booking booking, Worker worker) {
+  Widget _buildMapSection(Booking booking) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    // Conceptual client location: Poblacion center
-    const clientLoc = LatLng(9.9575, 124.3517);
-    final workerLoc = worker.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
+    // Blue pin: client's registered barangay; Green pin: worker's registered barangay.
+    final clientLoc = booking.clientBarangayCoordinates ?? const LatLng(9.9575, 124.3517);
+    final workerLoc = booking.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
 
     return Container(
       height: 280,

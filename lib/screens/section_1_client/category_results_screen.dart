@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
-import '../../providers/auth_provider.dart';
+import '../../data/repositories/worker_repository.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/barangay_model.dart';
@@ -27,7 +27,7 @@ class CategoryResultsScreen extends StatefulWidget {
 }
 
 class _CategoryResultsScreenState extends State<CategoryResultsScreen> {
-  late Future<List<JobPostListing>> _listingsFuture;
+  late Future<CategoryWorkerResponse> _listingsFuture;
   String? _selectedBarangay;
   bool _verifiedOnly = false;
   bool _availableOnly = false;
@@ -40,22 +40,12 @@ class _CategoryResultsScreenState extends State<CategoryResultsScreen> {
 
   void _loadListings() {
     final workerProvider = context.read<WorkerProvider>();
-    final authProvider = context.read<AuthProvider>();
-    workerProvider.setAdvancedFilters(
-      categories: [widget.categoryName],
-      barangay: _selectedBarangay,
+    _listingsFuture = workerProvider.getCategoryWorkers(
+      widget.categoryId,
+      barangayName: _selectedBarangay,
+      verifiedOnly: _verifiedOnly,
+      availableOnly: _availableOnly,
     );
-    _listingsFuture = workerProvider.getFilteredWorkers(
-      userBarangayName: authProvider.userBarangay,
-    ).then((list) {
-      if (_verifiedOnly) {
-        list = list.where((l) => l.worker.isVerified).toList();
-      }
-      if (_availableOnly) {
-        list = list.where((l) => l.worker.isAvailable).toList();
-      }
-      return list;
-    });
   }
 
   @override
@@ -120,13 +110,13 @@ class _CategoryResultsScreenState extends State<CategoryResultsScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<JobPostListing>>(
+            child: FutureBuilder<CategoryWorkerResponse>(
               future: _listingsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator(color: colorScheme.primary));
                 }
-                final listings = snapshot.data ?? [];
+                final listings = snapshot.data?.listings ?? [];
                 if (listings.isEmpty) {
                   return _buildEmptyState(colorScheme);
                 }

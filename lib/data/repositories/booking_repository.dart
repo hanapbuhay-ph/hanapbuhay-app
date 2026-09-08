@@ -2,18 +2,36 @@ import '../models/booking_model.dart';
 import '../models/auth_result_model.dart';
 
 abstract class BookingRepository {
-  Future<List<Booking>> getBookings();
+  Future<List<Booking>> getBookings({String? status});
   Future<Booking?> getBookingById(String id);
   
   Future<AuthResult> createBooking({
     required String workerId,
-    required String category,
-    required DateTime date,
-    required String time,
-    required String notes,
-    required String barangay,
+    required int? serviceCategoryId,
+    required DateTime scheduledAt,
+    String? notes,
     String? jobPostId,
   });
+
+  Future<AuthResult> cancelBooking({
+    required String bookingId,
+    String? reason,
+  });
+
+  Future<AuthResult> completeBooking({required String bookingId});
+
+  Future<AuthResult> startTracking({required String bookingId});
+
+  Future<AuthResult> stopTracking({required String bookingId});
+
+  Future<AuthResult> updateTrackingLocation({
+    required String bookingId,
+    required double latitude,
+    required double longitude,
+    double? accuracy,
+  });
+
+  Future<Map<String, dynamic>?> getTrackingStatus(String bookingId);
 
   Future<AuthResult> submitReview({
     required String bookingId,

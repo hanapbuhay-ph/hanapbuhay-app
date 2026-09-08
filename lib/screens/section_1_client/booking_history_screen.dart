@@ -4,9 +4,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/utils/formatters.dart';
 import '../../providers/booking_provider.dart';
-import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
-import '../../data/models/worker_model.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/filters/status_filter_chips.dart';
 import '../../widgets/status/status_badge.dart';
@@ -53,6 +51,24 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
       case BookingStatus.completed: return 'Completed';
       case BookingStatus.cancelled: return 'Cancelled';
       default: return '';
+    }
+  }
+
+  // Map a tab status to a set of underlying API statuses per the B3.2 spec.
+  bool _matchesTab(BookingStatus tab, Booking booking) {
+    switch (tab) {
+      case BookingStatus.upcoming:
+        return booking.status == BookingStatus.pending ||
+            booking.status == BookingStatus.accepted;
+      case BookingStatus.active:
+        return booking.status == BookingStatus.active;
+      case BookingStatus.completed:
+        return booking.status == BookingStatus.completed;
+      case BookingStatus.cancelled:
+        return booking.status == BookingStatus.cancelled ||
+            booking.status == BookingStatus.declined;
+      default:
+        return false;
     }
   }
 
@@ -107,7 +123,9 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                           child: TabBarView(
                             controller: _tabController,
                             children: _tabs.map((status) {
-                              final filteredList = allBookings.where((b) => b.status == status).toList();
+                              final filteredList = allBookings
+                                  .where((b) => _matchesTab(status, b))
+                                  .toList();
                               if (filteredList.isEmpty) {
                                 return _buildEmptyState(status);
                               }
@@ -155,7 +173,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
       selectedIndex: _tabController.index,
       onSelected: (index) => setState(() => _tabController.animateTo(index)),
       labelBuilder: _getStatusLabel,
-      countBuilder: (status) => allBookings.where((booking) => booking.status == status).length,
+      countBuilder: (status) => allBookings.where((booking) => _matchesTab(status, booking)).length,
       colorBuilder: (status, colorScheme) => _getStatusColor(status, colorScheme),
     );
   }
@@ -164,60 +182,56 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return FutureBuilder<Worker?>(
-      future: context.read<WorkerProvider>().getWorkerById(booking.workerId),
-      builder: (context, snapshot) {
-        final worker = snapshot.data;
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundImage: NetworkImage(booking.workerPhotoUrl ?? 'https://i.pravatar.cc/150'),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      booking.workerName ?? 'Worker',
+                      style: AppTypography.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      booking.category,
+                      style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Code: ${booking.bookingCode}',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                    ),
+                  ],
+                ),
+              ),
+              _buildStatusPill(booking.status),
             ],
           ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundImage: NetworkImage(worker?.avatarUrl ?? 'https://i.pravatar.cc/150'),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          worker?.name ?? 'Loading...',
-                          style: AppTypography.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          booking.category,
-                          style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Code: ${booking.bookingCode}',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildStatusPill(booking.status),
-                ],
-              ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -243,8 +257,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
               _buildActionButtons(booking),
             ],
           ),
-        );
-      },
     );
   }
 
@@ -300,7 +312,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     
     return Row(
       children: [
-        if (booking.status == BookingStatus.upcoming) ...[
+        if (booking.status == BookingStatus.pending ||
+        booking.status == BookingStatus.accepted) ...[
           Expanded(
             child: OutlinedButton(
               onPressed: () => _handleUpdateStatus(booking, BookingStatus.cancelled),
@@ -362,27 +375,75 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
 
   Future<void> _handleUpdateStatus(Booking booking, BookingStatus newStatus) async {
     final theme = Theme.of(context);
+    final isCancelling = newStatus == BookingStatus.cancelled;
+
+    String? reason;
+    if (isCancelling) {
+      final reasonController = TextEditingController();
+      reason = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Cancel Booking'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Why are you cancelling this booking?'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonController,
+                maxLines: 3,
+                maxLength: 500,
+                decoration: const InputDecoration(
+                  hintText: 'Cancellation reason (optional)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Back')),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, reasonController.text.trim()),
+              child: Text('Confirm Cancel', style: TextStyle(color: theme.colorScheme.error)),
+            ),
+          ],
+        ),
+      );
+      if (reason == null) return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(newStatus == BookingStatus.cancelled ? 'Cancel Booking' : 'Confirm Completion'),
-        content: Text('Are you sure you want to ${newStatus == BookingStatus.cancelled ? 'cancel this booking' : 'mark this booking as completed'}?'),
+        title: Text(isCancelling ? 'Cancel Booking' : 'Confirm Completion'),
+        content: Text(isCancelling
+            ? 'Are you sure you want to cancel this booking?'
+            : 'Are you sure you want to mark this booking as completed?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Yes', style: TextStyle(color: newStatus == BookingStatus.cancelled ? theme.colorScheme.error : theme.colorScheme.primary)),
+            child: Text('Yes', style: TextStyle(color: isCancelling ? theme.colorScheme.error : theme.colorScheme.primary)),
           ),
         ],
       ),
     );
 
     if (confirmed == true && mounted) {
-      final result = await context.read<BookingProvider>().updateBookingStatus(bookingId: booking.id, status: newStatus);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
-        _loadBookings();
-        setState(() {});
+      if (isCancelling) {
+        final result = await context.read<BookingProvider>().cancelBooking(bookingId: booking.id, reason: reason);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+          _loadBookings();
+          setState(() {});
+        }
+      } else {
+        final result = await context.read<BookingProvider>().updateBookingStatus(bookingId: booking.id, status: newStatus);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+          _loadBookings();
+          setState(() {});
+        }
       }
     }
   }

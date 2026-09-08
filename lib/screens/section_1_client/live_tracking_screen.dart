@@ -4,11 +4,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
-import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
-import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/maps/live_tracking_map.dart';
+import '../../core/constants/app_constants.dart';
 
 class LiveTrackingScreen extends StatefulWidget {
   final String bookingId;
@@ -25,9 +24,8 @@ class LiveTrackingScreen extends StatefulWidget {
 class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   final GlobalKey<LiveTrackingMapState> _mapKey = GlobalKey<LiveTrackingMapState>();
   Booking? _booking;
-  Worker? _worker;
   bool _isLoading = true;
-  bool _isTracking = true;
+  bool _isTracking = false;
 
   @override
   void initState() {
@@ -37,16 +35,37 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
 
   Future<void> _loadData() async {
     final bookingProvider = context.read<BookingProvider>();
-    final workerProvider = context.read<WorkerProvider>();
     final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await workerProvider.getWorkerById(booking.workerId);
+      // Load REST tracking status (B3.5)
+      final tracking = await bookingProvider.getTrackingStatus(widget.bookingId);
       if (mounted) {
         setState(() {
           _booking = booking;
-          _worker = worker;
+          _isTracking = tracking?['is_worker_tracking'] == true || tracking?['is_client_tracking'] == true;
           _isLoading = false;
         });
+      }
+    } else if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleToggleTracking() async {
+    final bookingProvider = context.read<BookingProvider>();
+    if (_isTracking) {
+      final result = await bookingProvider.stopTracking(bookingId: widget.bookingId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+        if (result.success) setState(() => _isTracking = false);
+      }
+    } else {
+      final result = await bookingProvider.startTracking(bookingId: widget.bookingId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+        if (result.success) setState(() => _isTracking = true);
       }
     }
   }
@@ -57,19 +76,19 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (_booking == null || _worker == null) {
+    if (_booking == null) {
       return const Scaffold(body: Center(child: Text('Booking not found')));
     }
 
-    final worker = _worker!;
+    final booking = _booking!;
     final colorScheme = Theme.of(context).colorScheme;
-    const clientLoc = LatLng(9.9575, 124.3517);
-    final workerLoc = worker.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
+    final workerLoc = booking.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
+    final clientLoc = booking.clientBarangayCoordinates ?? const LatLng(9.9575, 124.3517);
 
     return Scaffold(
       body: Stack(
         children: [
-          // 1. Full Screen Map
+          // 1. Full Screen Map (static barangay pins per B3.5)
           LiveTrackingMap(
             key: _mapKey,
             clientLocation: clientLoc,
@@ -122,14 +141,15 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: _buildBottomCard(worker),
+            child: _buildBottomCard(booking),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomCard(Worker worker) {
+  Widget _buildBottomCard(Booking booking) {
+    final theme = Theme.of(context);
     return Container(
       padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).padding.bottom + 24),
       decoration: BoxDecoration(
@@ -142,7 +162,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 32, backgroundImage: NetworkImage(worker.avatarUrl)),
+              CircleAvatar(radius: 32, backgroundImage: NetworkImage(booking.workerPhotoUrl ?? AppConstants.defaultAvatar)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -150,17 +170,16 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(worker.name, style: AppTypography.headlineMedium.copyWith(fontSize: 20)),
+                        Text(booking.workerName ?? 'Worker', style: AppTypography.headlineMedium.copyWith(fontSize: 20)),
                         const SizedBox(width: 6),
-                        if (worker.isVerified)
-                          Icon(Icons.verified, color: Theme.of(context).colorScheme.primary, size: 18),
+                        Icon(Icons.verified, color: Theme.of(context).colorScheme.primary, size: 18),
                       ],
                     ),
                     Row(
                       children: [
                         Container(width: 8, height: 8, decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle)),
                         const SizedBox(width: 8),
-                        Text('En Route', style: AppTypography.labelLarge.copyWith(color: Theme.of(context).colorScheme.primary)),
+                        Text(_isTracking ? 'En Route' : 'Booking Confirmed', style: AppTypography.labelLarge.copyWith(color: Theme.of(context).colorScheme.primary)),
                       ],
                     ),
                   ],
@@ -180,22 +199,43 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildMetric('ETA', '10 mins'),
-              _buildMetric('Distance', worker.distance),
-              _buildMetric('Price', '₱${worker.hourlyRate.toInt()}/hr'),
+              _buildMetric('Service', booking.category),
+              _buildMetric('Scheduled', booking.time),
             ],
           ),
           const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () => Navigator.pop(context),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 52,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      side: BorderSide(color: theme.colorScheme.outlineVariant),
+                    ),
+                    child: Text('Details', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
+                  ),
+                ),
               ),
-              child: Text('View Booking Details', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SizedBox(
+                  height: 52,
+                  child: FilledButton(
+                    onPressed: _handleToggleTracking,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _isTracking ? theme.colorScheme.errorContainer : theme.colorScheme.primary,
+                      foregroundColor: _isTracking ? theme.colorScheme.error : theme.colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: Text(_isTracking ? 'Stop Tracking' : 'Start Tracking',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -30,6 +30,14 @@ class AppFormatters {
 		return '${_months[value.month - 1]} ${value.day}, ${value.year}';
 	}
 
+	static String time(DateTime value) {
+		final hour = value.hour;
+		final minute = value.minute.toString().padLeft(2, '0');
+		final period = hour >= 12 ? 'PM' : 'AM';
+		final displayHour = hour % 12 == 0 ? 12 : hour % 12;
+		return '$displayHour:$minute $period';
+	}
+
 	static String relativeDate(DateTime value) {
 		final now = DateTime.now();
 		final today = DateTime(now.year, now.month, now.day);
