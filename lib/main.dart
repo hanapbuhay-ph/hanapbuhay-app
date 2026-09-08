@@ -10,6 +10,7 @@ import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/service_locator.dart';
 import 'core/routing/app_router.dart';
+import 'core/api/api_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,7 @@ class HanapBuhayApp extends StatelessWidget {
     return MaterialApp(
       title: 'HanapBuhay',
       debugShowCheckedModeBanner: false,
+      navigatorKey: ApiClient.navigatorKey,
       onGenerateRoute: AppRouter.onGenerateRoute,
       initialRoute: AppRouter.splash,
       theme: AppTheme.lightTheme,

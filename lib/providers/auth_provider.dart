@@ -5,6 +5,7 @@ import '../data/models/auth_result_model.dart';
 import '../services/secure_storage_service.dart';
 import '../services/google_auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/constants/app_constants.dart';
 import '../core/api/api_client.dart'; // ignore: unused_import - used in logout()
 
 class AuthProvider extends ChangeNotifier {
@@ -34,6 +35,9 @@ class AuthProvider extends ChangeNotifier {
   String? _userBarangay;
   String? get userBarangay => _userBarangay;
 
+  int? _userBarangayId;
+  int? get userBarangayId => _userBarangayId;
+
   String? _userAvatar;
   String? get userAvatar => _userAvatar;
 
@@ -62,6 +66,7 @@ class AuthProvider extends ChangeNotifier {
     _userName = prefs.getString('user_name');
     _userMobile = prefs.getString('user_mobile');
     _userBarangay = prefs.getString('user_barangay');
+    _userBarangayId = prefs.getInt('user_barangay_id');
     _userAvatar = prefs.getString('user_avatar');
     _signInMethod = prefs.getString('sign_in_method');
     _twoFactorEnabled = prefs.getBool('2fa_enabled') ?? true;
@@ -95,6 +100,15 @@ class AuthProvider extends ChangeNotifier {
         await prefs.setString('user_barangay', bName);
         _userBarangay = bName;
       }
+      // Extract barangay id (integer) for dropdown matching
+      if (b is Map) {
+        final bId = b['id'];
+        final parsedId = bId is int ? bId : int.tryParse(bId?.toString() ?? '');
+        if (parsedId != null) {
+          await prefs.setInt('user_barangay_id', parsedId);
+          _userBarangayId = parsedId;
+        }
+      }
       final name = src['name']?.toString();
       if (name != null && name.isNotEmpty) {
         await prefs.setString('user_name', name);
@@ -105,8 +119,9 @@ class AuthProvider extends ChangeNotifier {
         await prefs.setString('user_email', email);
         _userEmail = email;
       }
-      final avatar = (src['profile_photo_url'] ?? src['avatar_url'])?.toString();
-      if (avatar != null && avatar.isNotEmpty) {
+      final rawAvatar = (src['profile_photo_url'] ?? src['avatar_url'])?.toString();
+      if (rawAvatar != null && rawAvatar.isNotEmpty) {
+        final avatar = AppConstants.getPhotoUrl(rawAvatar);
         await prefs.setString('user_avatar', avatar);
         _userAvatar = avatar;
       }
@@ -141,6 +156,9 @@ class AuthProvider extends ChangeNotifier {
       final userData = result.data?['user'] as Map<String, dynamic>?;
       final token = result.data?['token']?.toString() ?? '';
       if (token.isNotEmpty) {
+        final bar = userData?['barangay'];
+        final barIdRaw = bar is Map ? bar['id'] : null;
+        final barId = barIdRaw is int ? barIdRaw : int.tryParse(barIdRaw?.toString() ?? '');
         await setAuthenticated(
           token,
           (userData?['role']?.toString() ?? 'client'),
@@ -148,7 +166,8 @@ class AuthProvider extends ChangeNotifier {
           email: (userData?['email']?.toString() ?? email),
           name: userData?['name']?.toString(),
           mobile: (userData?['mobile_number'] ?? userData?['mobile'] ?? userData?['phone'])?.toString(),
-          barangay: userData?['barangay'] is Map ? (userData?['barangay']['name']?.toString()) : userData?['barangay']?.toString(),
+          barangay: bar is Map ? (bar['name']?.toString()) : bar?.toString(),
+          barangayId: barId,
           avatar: (userData?['profile_photo_url'] ?? userData?['avatar_url'])?.toString(),
           method: (userData?['is_google_account'] == true ? 'google' : 'email'),
         );
@@ -185,11 +204,16 @@ class AuthProvider extends ChangeNotifier {
       final token = result.data?['token']?.toString() ?? '';
       if (token.isNotEmpty) {
         String? barangayName;
+        int? barangayId;
         final b = userData?['barangay'];
-        if (b is Map) barangayName = b['name']?.toString();
+        if (b is Map) {
+          barangayName = b['name']?.toString();
+          final bId = b['id'];
+          barangayId = bId is int ? bId : int.tryParse(bId?.toString() ?? '');
+        }
         final avatarUrl = (userData?['profile_photo_url'] ?? userData?['avatar_url'])?.toString();
         final isGoogle = userData?['is_google_account'] == true;
-        await setAuthenticated(token, (userData?['role']?.toString() ?? 'client'), id: userData?['id']?.toString(), email: (userData?['email']?.toString() ?? email), name: userData?['name']?.toString(), mobile: (userData?['mobile_number'] ?? userData?['mobile'] ?? userData?['phone'])?.toString(), barangay: barangayName, avatar: avatarUrl, method: isGoogle ? 'google' : 'email');
+        await setAuthenticated(token, (userData?['role']?.toString() ?? 'client'), id: userData?['id']?.toString(), email: (userData?['email']?.toString() ?? email), name: userData?['name']?.toString(), mobile: (userData?['mobile_number'] ?? userData?['mobile'] ?? userData?['phone'])?.toString(), barangay: barangayName, barangayId: barangayId, avatar: avatarUrl, method: isGoogle ? 'google' : 'email');
         if (_userMobile == null || _userMobile!.isEmpty) {
           await refreshProfile();
         }
@@ -248,11 +272,16 @@ class AuthProvider extends ChangeNotifier {
         String? barangayName2;
         if (b2 is Map) barangayName2 = b2['name']?.toString(); else if (b2 != null) barangayName2 = b2.toString();
         if (barangayName2 != null) { await prefs.setString('user_barangay', barangayName2); _userBarangay = barangayName2; }
+        if (b2 is Map) {
+          final b2Id = b2['id'];
+          final parsedB2Id = b2Id is int ? b2Id : int.tryParse(b2Id?.toString() ?? '');
+          if (parsedB2Id != null) { await prefs.setInt('user_barangay_id', parsedB2Id); _userBarangayId = parsedB2Id; }
+        }
         notifyListeners();
       }
       return r;
     }
-    return await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, barangay: barangay, avatarPath: avatarPath);
+    return await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, avatarPath: avatarPath);
   }
 
   Future<void> setAuthenticated(String token, String role, {
@@ -261,6 +290,7 @@ class AuthProvider extends ChangeNotifier {
     String? name, 
     String? mobile, 
     String? barangay,
+    int? barangayId,
     String? avatar,
     String method = 'email',
   }) async {
@@ -296,6 +326,10 @@ class AuthProvider extends ChangeNotifier {
       await prefs.setString('user_barangay', barangay);
       _userBarangay = barangay;
     }
+    if (barangayId != null) {
+      await prefs.setInt('user_barangay_id', barangayId);
+      _userBarangayId = barangayId;
+    }
     if (avatar != null) {
       await prefs.setString('user_avatar', avatar);
       _userAvatar = avatar;
@@ -305,10 +339,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<AuthResult> updateProfile({required String name, required String mobileNumber, String? barangay, String? avatarPath}) async {
-    final result = await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, barangay: barangay, avatarPath: avatarPath);
+  Future<AuthResult> updateProfile({required String name, required String mobileNumber, int? barangayId, String? barangayName, String? avatarPath}) async {
+    final result = await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, barangayId: barangayId, avatarPath: avatarPath);
     if (result.success) {
-      await updateLocalProfile(name: name, mobile: mobileNumber, barangay: barangay, avatar: avatarPath);
+      await updateLocalProfile(name: name, mobile: mobileNumber, barangayId: barangayId, barangayName: barangayName, avatar: avatarPath);
     }
     return result;
   }
@@ -336,15 +370,19 @@ class AuthProvider extends ChangeNotifier {
     return result;
   }
 
-  Future<void> updateLocalProfile({required String name, required String mobile, String? barangay, String? avatar}) async {
+  Future<void> updateLocalProfile({required String name, required String mobile, int? barangayId, String? barangayName, String? avatar}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
     _userName = name;
     await prefs.setString('user_mobile', mobile);
     _userMobile = mobile;
-    if (barangay != null) {
-      await prefs.setString('user_barangay', barangay);
-      _userBarangay = barangay;
+    if (barangayId != null) {
+      await prefs.setInt('user_barangay_id', barangayId);
+      _userBarangayId = barangayId;
+    }
+    if (barangayName != null) {
+      await prefs.setString('user_barangay', barangayName);
+      _userBarangay = barangayName;
     }
     if (avatar != null) {
       await prefs.setString('user_avatar', avatar);
@@ -368,9 +406,10 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove('user_mobile');
     await prefs.remove('user_avatar');
     await prefs.remove('user_barangay');
+    await prefs.remove('user_barangay_id');
     await prefs.remove('sign_in_method');
     _isAuthenticated = false;
-    _userId = null; _userEmail = null; _userRole = null; _userName = null; _userMobile = null; _userBarangay = null; _userAvatar = null; _signInMethod = null;
+    _userId = null; _userEmail = null; _userRole = null; _userName = null; _userMobile = null; _userBarangay = null; _userBarangayId = null; _userAvatar = null; _signInMethod = null;
     notifyListeners();
   }
 }

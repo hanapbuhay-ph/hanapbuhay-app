@@ -12,11 +12,9 @@ void main() {
     test('createBooking records jobPostId when provided', () async {
       final result = await repository.createBooking(
         workerId: 'w1',
-        category: 'Plumbing',
-        date: DateTime.now().add(const Duration(days: 2)),
-        time: '10:00 AM',
+        serviceCategoryId: 1,
+        scheduledAt: DateTime.now().add(const Duration(days: 2)),
         notes: 'Fix faucet',
-        barangay: 'Poblacion',
         jobPostId: 'jp1',
       );
 
@@ -31,11 +29,9 @@ void main() {
     test('createBooking remains compatible without jobPostId', () async {
       final result = await repository.createBooking(
         workerId: 'w2',
-        category: 'Electrical',
-        date: DateTime.now().add(const Duration(days: 3)),
-        time: '2:00 PM',
+        serviceCategoryId: 2,
+        scheduledAt: DateTime.now().add(const Duration(days: 3)),
         notes: 'Check wiring',
-        barangay: 'Poblacion',
       );
 
       expect(result.success, true);

@@ -1,61 +1,33 @@
-﻿import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../../../core/constants/app_constants.dart';
-import '../../../services/secure_storage_service.dart';
+﻿import '../../../core/api/api_client.dart';
 import '../../models/booking_model.dart';
 import '../booking_repository.dart';
 import '../../models/auth_result_model.dart';
 
 class ApiBookingRepository implements BookingRepository {
-  final String baseUrl = AppConstants.apiBaseUrl;
-  final SecureStorageService _storage = SecureStorageService();
-
-  Future<Map<String, String>> _headers() async {
-    final token = await _storage.getToken();
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
-  }
-
   @override
   Future<List<Booking>> getBookings({String? status}) async {
     // GET /api/bookings?status=...
-    try {
-      final headers = await _headers();
-      final uri = Uri.parse('$baseUrl/bookings').replace(queryParameters: status != null ? {'status': status} : null);
-      final response = await http.get(uri, headers: headers);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final bookingsData = data['data']?['bookings'] as List<dynamic>? ?? [];
-        return bookingsData.whereType<Map<String, dynamic>>().map((item) => Booking.fromJson(item)).toList();
-      }
-      return [];
-    } catch (e) {
-      print('[ApiBookingRepository] getBookings error: $e');
-      return [];
-    }
+    final res = await ApiClient.get(
+      status != null ? '/bookings?status=$status' : '/bookings',
+      requiresAuth: true,
+    );
+    if (res['success'] != true) return [];
+    final bookingsData = res['data']?['bookings'] as List<dynamic>? ?? [];
+    return bookingsData
+        .whereType<Map<String, dynamic>>()
+        .map((item) => Booking.fromJson(item))
+        .toList();
   }
 
   @override
   Future<Booking?> getBookingById(String id) async {
     // GET /api/bookings/{id}
-    try {
-      final headers = await _headers();
-      final response = await http.get(Uri.parse('$baseUrl/bookings/$id'), headers: headers);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final bookingJson = data['data']?['booking'];
-        if (bookingJson is Map<String, dynamic>) return Booking.fromJson(bookingJson);
-      }
-      return null;
-    } catch (e) {
-      print('[ApiBookingRepository] getBookingById error: $e');
-      return null;
-    }
+    final res = await ApiClient.get('/bookings/$id', requiresAuth: true);
+    if (res['success'] != true) return null;
+    final bookingJson = res['data']?['booking'];
+    if (bookingJson is Map<String, dynamic>) return Booking.fromJson(bookingJson);
+    return null;
   }
-
 
   @override
   Future<AuthResult> createBooking({
@@ -66,25 +38,27 @@ class ApiBookingRepository implements BookingRepository {
     String? jobPostId,
   }) async {
     // POST /api/bookings
-    try {
-      final headers = await _headers();
-      final body = <String, dynamic>{
+    final res = await ApiClient.post(
+      '/bookings',
+      body: {
         'worker_id': int.tryParse(workerId) ?? workerId,
         'service_category_id': serviceCategoryId,
         'scheduled_at': scheduledAt.toIso8601String(),
         if (notes != null && notes.isNotEmpty) 'notes': notes,
         if (jobPostId != null) 'job_post_id': int.tryParse(jobPostId) ?? jobPostId,
-      };
-      final response = await http.post(Uri.parse('$baseUrl/bookings'), headers: headers, body: jsonEncode(body));
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return AuthResult.success(message: data['message'] ?? 'Booking request sent.', data: data['data']);
-      } else {
-        return AuthResult.failure(message: data['message'] ?? 'Failed to send booking request.', errors: data['errors']);
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
+      },
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Booking request sent.',
+        data: res['data'],
+      );
     }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to send booking request.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   @override
@@ -92,36 +66,40 @@ class ApiBookingRepository implements BookingRepository {
     required String bookingId,
     String? reason,
   }) async {
-    try {
-      final headers = await _headers();
-      final response = await http.post(Uri.parse('$baseUrl/bookings/$bookingId/cancel'), headers: headers, body: jsonEncode({'reason': reason}));
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return AuthResult.success(message: data['message'] ?? 'Booking cancelled.', data: data['data']);
-      } else {
-        return AuthResult.failure(message: data['message'] ?? 'Failed to cancel booking.', errors: data['errors']);
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/cancel',
+      body: {'reason': reason},
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Booking cancelled.',
+        data: res['data'],
+      );
     }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to cancel booking.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   @override
   Future<AuthResult> completeBooking({required String bookingId}) async {
-    try {
-      final headers = await _headers();
-      final response = await http.post(Uri.parse('$baseUrl/bookings/$bookingId/complete'), headers: headers);
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return AuthResult.success(message: data['message'] ?? 'Booking completed.', data: data['data']);
-      } else {
-        return AuthResult.failure(message: data['message'] ?? 'Failed to complete booking.', errors: data['errors']);
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/complete',
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Booking completed.',
+        data: res['data'],
+      );
     }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to complete booking.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
-
 
   @override
   Future<AuthResult> startTracking({required String bookingId}) async {
@@ -140,64 +118,53 @@ class ApiBookingRepository implements BookingRepository {
     required double longitude,
     double? accuracy,
   }) async {
-    try {
-      final headers = await _headers();
-      final response = await http.post(
-        Uri.parse('$baseUrl/bookings/$bookingId/tracking/location'),
-        headers: headers,
-        body: jsonEncode({
-          'latitude': latitude,
-          'longitude': longitude,
-          if (accuracy != null) 'accuracy': accuracy,
-        }),
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/tracking/location',
+      body: {
+        'latitude': latitude,
+        'longitude': longitude,
+        if (accuracy != null) 'accuracy': accuracy,
+      },
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Location updated.',
+        data: res['data'],
       );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return AuthResult.success(message: data['message'] ?? 'Location updated.', data: data['data']);
-      } else {
-        return AuthResult.failure(message: data['message'] ?? 'Failed to update location.', errors: data['errors']);
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
     }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to update location.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   Future<AuthResult> _trackingAction(String bookingId, String action) async {
-    try {
-      final headers = await _headers();
-      final response = await http.post(
-        Uri.parse('$baseUrl/bookings/$bookingId/tracking/$action'),
-        headers: headers,
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/tracking/$action',
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Tracking $action.',
+        data: res['data'],
       );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return AuthResult.success(message: data['message'] ?? 'Tracking $action.', data: data['data']);
-      } else {
-        return AuthResult.failure(message: data['message'] ?? 'Failed to $action tracking.', errors: data['errors']);
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
     }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to $action tracking.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   @override
   Future<Map<String, dynamic>?> getTrackingStatus(String bookingId) async {
-    try {
-      final headers = await _headers();
-      final response = await http.get(
-        Uri.parse('$baseUrl/bookings/$bookingId/tracking'),
-        headers: headers,
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['data'] as Map<String, dynamic>?;
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
+    final res = await ApiClient.get(
+      '/bookings/$bookingId/tracking',
+      requiresAuth: true,
+    );
+    if (res['success'] != true) return null;
+    return res['data'] as Map<String, dynamic>?;
   }
-
 
   @override
   Future<AuthResult> submitReview({
@@ -206,7 +173,26 @@ class ApiBookingRepository implements BookingRepository {
     required int rating,
     required String comment,
   }) async {
-    throw UnimplementedError('submitReview uses /api/ratings - not a B3 method.');
+    // POST /api/bookings/{id}/rate
+    // Body: { score: int, comment: string (optional) }
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/rate',
+      body: {
+        'score': rating,
+        if (comment.isNotEmpty) 'comment': comment,
+      },
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Review submitted successfully.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to submit review.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   @override
@@ -245,4 +231,3 @@ class ApiBookingRepository implements BookingRepository {
     }
   }
 }
-

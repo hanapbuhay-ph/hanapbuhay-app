@@ -1,4 +1,4 @@
-﻿import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/formatters.dart';
@@ -112,9 +112,10 @@ class Booking {
     final wj = json['worker'] is Map ? json['worker'] as Map<String, dynamic> : null;
     final wUserId = wj != null ? (wj['id'] ?? json['worker_id']) : json['worker_id'];
     final wName = wj?['name']?.toString();
-    final wPhoto = wj?['profile_photo_url']?.toString() ??
-        wj?['profile_photo_path']?.toString() ??
-        AppConstants.defaultAvatar;
+    final wPhoto = AppConstants.getPhotoUrl(
+      wj?['profile_photo_url']?.toString() ??
+          wj?['profile_photo_path']?.toString(),
+    );
 
     final wbJ = wj?['barangay'] is Map ? wj!['barangay'] as Map<String, dynamic> : null;
     final wbName = wbJ?['name']?.toString() ?? (wj?['barangay']?.toString() ?? '');
@@ -124,9 +125,10 @@ class Booking {
 
     final cj = json['client'] is Map ? json['client'] as Map<String, dynamic> : null;
     final cName = cj?['name']?.toString();
-    final cPhoto = cj?['profile_photo_url']?.toString() ??
-        cj?['profile_photo_path']?.toString() ??
-        AppConstants.defaultAvatar;
+    final cPhoto = AppConstants.getPhotoUrl(
+      cj?['profile_photo_url']?.toString() ??
+          cj?['profile_photo_path']?.toString(),
+    );
 
     final cbJ = cj?['barangay'] is Map ? cj!['barangay'] as Map<String, dynamic> : null;
     final cbName = cbJ?['name']?.toString();

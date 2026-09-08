@@ -5,7 +5,14 @@ class AppConstants {
   // - Physical device WiFi (same WiFi as PC): 'http://192.168.1.XX:8000/api'
   static const String apiBaseUrl = 'http://127.0.0.1:8000/api';
 
+  /// Base URL for the Laravel public `storage/` disk (no trailing slash).
+  /// Storage-relative photo paths returned by the API are prepended with this.
+  static const String storageBaseUrl = 'http://127.0.0.1:8000/storage';
+
   static const String appName = 'HanapBuhay';
+
+  /// Route used by [ApiClient] when a 401 (session expiry) is detected.
+  static const String loginRoute = '/login';
 
   static const String mockWorkerId = 'w1';
   static const String mockClientId = 'c1';
@@ -29,4 +36,19 @@ class AppConstants {
 
   static const int otpLength = 6;
   static const int otpExpiryMinutes = 10;
+
+  /// Normalizes a profile-photo path/URL into a displayable image URL.
+  ///
+  /// - null/empty                    -> falls back to [defaultAvatar]
+  /// - already a full URL (http/https) -> returned as-is (e.g. Google photos)
+  /// - otherwise (storage-relative path) -> prepended with [storageBaseUrl]
+  static String getPhotoUrl(String? path) {
+    if (path == null || path.isEmpty) {
+      return defaultAvatar;
+    }
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path; // already a full URL, use as-is
+    }
+    return '$storageBaseUrl/$path'; // relative path — prepend storage base URL
+  }
 }

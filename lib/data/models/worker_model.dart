@@ -84,9 +84,9 @@ class Worker {
         json['user_id'];
     final id = rawProfileId?.toString() ?? '';
     final name = json['name']?.toString() ?? '';
-    final avatarUrl = json['profile_photo_url']?.toString() ??
-        json['avatar_url']?.toString() ??
-        AppConstants.defaultAvatar;
+    final rawAvatar = json['profile_photo_url']?.toString() ??
+        json['avatar_url']?.toString();
+    final avatarUrl = AppConstants.getPhotoUrl(rawAvatar);
 
     // Trust tier
     TrustTier? parsedTrustTier;
@@ -207,9 +207,10 @@ class WorkerReview {
     return WorkerReview(
       id: json['id']?.toString() ?? '',
       reviewerName: json['rated_by_name']?.toString() ?? '',
-      reviewerAvatar: json['reviewer_avatar_url']?.toString() ??
-          json['avatar_url']?.toString() ??
-          AppConstants.defaultAvatar,
+      reviewerAvatar: AppConstants.getPhotoUrl(
+        json['reviewer_avatar_url']?.toString() ??
+            json['avatar_url']?.toString(),
+      ),
       rating: (json['score'] is num)
           ? (json['score'] as num).toDouble()
           : double.tryParse(json['score']?.toString() ?? '0') ?? 0.0,

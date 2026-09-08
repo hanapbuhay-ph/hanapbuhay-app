@@ -150,7 +150,7 @@ class MockAuthRepository implements AuthRepository {
   Future<AuthResult> updateProfile({
     required String name,
     required String mobileNumber,
-    String? barangay,
+    int? barangayId,
     String? avatarPath,
   }) async {
     await Future.delayed(const Duration(seconds: 1));

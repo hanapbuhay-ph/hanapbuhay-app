@@ -30,6 +30,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
+  Map<String, dynamic>? _serverErrors;
   
   Booking? _booking;
   Worker? _worker;
@@ -43,8 +44,24 @@ class _FileReportScreenState extends State<FileReportScreen> {
     'No-show',
     'Unsatisfactory work',
     'Misconduct',
+    'Non-payment',
+    'Unsafe Environment',
+    'Abusive Behavior',
+    'False Information',
     'Other'
   ];
+
+  // Maps display labels to the backend snake_case `reason` enum (CreateReportRequest).
+  static const Map<String, String> _reasonToApi = {
+    'No-show': 'no_show',
+    'Unsatisfactory work': 'unsatisfactory_work',
+    'Misconduct': 'misconduct',
+    'Non-payment': 'non_payment',
+    'Unsafe Environment': 'unsafe_environment',
+    'Abusive Behavior': 'abusive_behavior',
+    'False Information': 'false_information',
+    'Other': 'other',
+  };
 
   @override
   void initState() {
@@ -109,7 +126,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
       final result = await context.read<ReportProvider>().submitReport(
         bookingId: widget.bookingId,
         workerId: _worker!.id,
-        reason: _selectedReason!,
+        reason: _reasonToApi[_selectedReason!] ?? 'other',
         description: _descriptionController.text.trim(),
         photoPaths: _selectedPhotos.map((p) => p.path).toList(),
       );
@@ -122,8 +139,18 @@ class _FileReportScreenState extends State<FileReportScreen> {
         );
         Navigator.pushReplacementNamed(context, AppRouter.reportStatus);
       } else {
+        setState(() => _serverErrors = result.errors);
+        final msgs = <String>[];
+        (result.errors ?? const {}).forEach((key, value) {
+          if (value is List && value.isNotEmpty) {
+            msgs.add('• ${value.join(', ')}');
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(msgs.isEmpty ? result.message : msgs.join('\n')),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } catch (e) {
@@ -178,6 +205,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
                       onChanged: (val) => setState(() => _selectedReason = val),
                       validator: (val) => val == null ? 'Please select a reason' : null,
                     ),
+                    _buildFieldErrors('reason'),
                     const SizedBox(height: 24),
 
                     // Description
@@ -192,6 +220,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
                       ),
                       validator: (val) => val == null || val.isEmpty ? 'Please provide a description' : null,
                     ),
+                    _buildFieldErrors('description'),
                     const SizedBox(height: 32),
 
                     // Photo Evidence
@@ -321,6 +350,33 @@ class _FileReportScreenState extends State<FileReportScreen> {
     return PhotoPreviewTile(
       path: _selectedPhotos[index].path,
       onRemove: () => _removeImage(index),
+    );
+  }
+
+  List<String> _fieldErrors(String field) {
+    final map = _serverErrors;
+    if (map == null) return const [];
+    final raw = map[field];
+    if (raw is List) return raw.map((e) => e.toString()).toList();
+    if (raw is String) return [raw];
+    return const [];
+  }
+
+  Widget _buildFieldErrors(String field) {
+    final errors = _fieldErrors(field);
+    if (errors.isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: errors
+            .map((e) => Text(
+                  e,
+                  style: AppTypography.bodySmall.copyWith(color: colorScheme.error),
+                ))
+            .toList(),
+      ),
     );
   }
 

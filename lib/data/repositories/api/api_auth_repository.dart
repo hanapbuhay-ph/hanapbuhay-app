@@ -51,7 +51,8 @@ class ApiAuthRepository implements AuthRepository {
 
   Future<AuthResult> completeGoogleProfile({required String name, required String mobileNumber, required String role, required String barangay, String? avatarPath}) async {
     final fields = <String, String>{'name': name, 'mobile_number': mobileNumber, 'role': role, 'barangay_id': _barangayIdFor(barangay)};
-    final files = avatarPath != null ? <String, String>{'profile_photo': avatarPath} : null;
+    final isNewFile = avatarPath != null && !avatarPath.startsWith('http');
+    final files = isNewFile ? <String, List<String>>{'profile_photo': [avatarPath!]} : null;
     final res = await ApiClient.postMultipart('/auth/google/complete-profile', fields: fields, files: files, requiresAuth: true);
     return _toResult(res);
   }
@@ -86,12 +87,13 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthResult> updateProfile({required String name, required String mobileNumber, String? barangay, String? avatarPath}) async {
+  Future<AuthResult> updateProfile({required String name, required String mobileNumber, int? barangayId, String? avatarPath}) async {
     final fields = <String, String>{'name': name, 'mobile_number': mobileNumber};
-    if (barangay != null) {
-      fields['barangay_id'] = _barangayIdFor(barangay);
+    if (barangayId != null) {
+      fields['barangay_id'] = barangayId.toString();
     }
-    final files = avatarPath != null ? <String, String>{'profile_photo': avatarPath} : null;
+    final isNewFile = avatarPath != null && !avatarPath.startsWith('http');
+    final files = isNewFile ? <String, List<String>>{'profile_photo': [avatarPath!]} : null;
     final res = await ApiClient.postMultipart('/user/profile', fields: fields, files: files, requiresAuth: true);
     return _toResult(res);
   }

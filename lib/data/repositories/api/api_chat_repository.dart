@@ -1,6 +1,7 @@
 import '../../models/chat_model.dart';
 import '../chat_repository.dart';
 import '../../../core/api/api_client.dart';
+import '../../../core/constants/app_constants.dart';
 
 /// API-connected ChatRepository — Section I of 07_API_ENDPOINTS.md
 class ApiChatRepository implements ChatRepository {
@@ -72,9 +73,9 @@ class ApiChatRepository implements ChatRepository {
         fields['message'] = text;  // ← Backend expects 'message', not 'content'
       }
 
-      Map<String, String>? files;
+      Map<String, List<String>>? files;
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        files = <String, String>{'attachment': imageUrl};
+        files = <String, List<String>>{'attachment': [imageUrl]};
       }
 
       final res = await ApiClient.postMultipart(
@@ -131,7 +132,10 @@ class ApiChatRepository implements ChatRepository {
       final otherUserId = otherParty['id']?.toString();
       final otherUserName = otherParty['name']?.toString();
       final otherUserRole = otherParty['role']?.toString();
-      final otherUserAvatar = otherParty['profile_photo_url']?.toString() ?? otherParty['profile_photo']?.toString() ?? otherParty['avatar']?.toString();
+      final rawAvatar = otherParty['profile_photo_url']?.toString() ?? otherParty['profile_photo']?.toString() ?? otherParty['avatar']?.toString();
+      final otherUserAvatar = (rawAvatar != null && rawAvatar.isNotEmpty)
+          ? AppConstants.getPhotoUrl(rawAvatar)
+          : null;
       
       final lastMessage = item['last_message']?.toString();
       final lastMessageTimeStr = item['last_message_at']?.toString();

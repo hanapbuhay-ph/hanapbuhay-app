@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 import '../../services/secure_storage_service.dart';
 
@@ -8,6 +10,10 @@ import '../../services/secure_storage_service.dart';
 class ApiClient {
   static const String _baseUrl = AppConstants.apiBaseUrl;
   static final _storage = SecureStorageService();
+
+  /// Global navigator key used by [ApiClient] to force a (re)login on a 401.
+  /// Wired into `MaterialApp.navigatorKey` in main.dart.
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   /// GET request
   static Future<Map<String, dynamic>> get(
@@ -51,7 +57,7 @@ class ApiClient {
   static Future<Map<String, dynamic>> postMultipart(
     String endpoint, {
     required Map<String, String> fields,
-    Map<String, String>? files,
+    Map<String, List<String>>? files,
     bool requiresAuth = false,
   }) async {
     try {
@@ -71,13 +77,12 @@ class ApiClient {
       // Add fields
       request.fields.addAll(fields);
       
-      // Add files if provided
+      // Add files if provided (each key may hold multiple paths)
       if (files != null) {
         for (var entry in files.entries) {
-          request.files.add(await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value,
-          ));
+          for (final path in entry.value) {
+            request.files.add(await http.MultipartFile.fromPath(entry.key, path));
+          }
         }
       }
       
@@ -147,6 +152,11 @@ class ApiClient {
 
   /// Handle HTTP response
   static Map<String, dynamic> _handleResponse(http.Response response) {
+    // Centralized 401 / session-expiry handling. This is the single place in
+    // the app where an expired/invalid auth token triggers a forced re-login.
+    if (response.statusCode == 401) {
+      _handleUnauthorized();
+    }
     try {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return data;
@@ -156,6 +166,31 @@ class ApiClient {
         'message': 'Invalid server response: ${response.body}',
       };
     }
+  }
+
+  /// Clears the stored auth token + user role and forces navigation to the
+  /// Login screen (clearing the entire navigation stack). Defined here only.
+  static Future<void> _handleUnauthorized() async {
+    try {
+      await _storage.deleteToken();
+    } catch (_) {}
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_role');
+    } catch (_) {}
+
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) return;
+
+    // Don't force navigation if the user is already on the Login screen.
+    final currentRoute = ModalRoute.of(navigator.context);
+    if (currentRoute?.settings.name == AppConstants.loginRoute) return;
+
+    navigator.pushNamedAndRemoveUntil(
+      AppConstants.loginRoute,
+      (route) => false,
+    );
   }
 
   /// Handle errors

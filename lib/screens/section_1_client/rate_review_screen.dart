@@ -29,6 +29,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
   // Submit Button States
   bool _isSubmitting = false;
   bool _isSuccess = false;
+  Map<String, dynamic>? _serverErrors;
 
   @override
   void initState() {
@@ -92,9 +93,21 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
         }
       } else if (mounted) {
         final colorScheme = Theme.of(context).colorScheme;
-        setState(() => _isSubmitting = false);
+        setState(() {
+          _isSubmitting = false;
+          _serverErrors = result.errors;
+        });
+        final msgs = <String>[];
+        (result.errors ?? const {}).forEach((key, value) {
+          if (value is List && value.isNotEmpty) {
+            msgs.add('• ${value.join(', ')}');
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
+          SnackBar(
+            content: Text(msgs.isEmpty ? result.message : msgs.join('\n')),
+            backgroundColor: colorScheme.error,
+          ),
         );
       }
     } catch (e) {
@@ -154,6 +167,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildStarRating(),
+                  _buildFieldErrors('score'),
                   const SizedBox(height: 40),
 
                   Align(
@@ -187,6 +201,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
                       ),
                     ),
                   ),
+                  _buildFieldErrors('comment'),
                   const SizedBox(height: 48),
 
                   _buildSubmitButton(),
@@ -195,6 +210,33 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  List<String> _fieldErrors(String field) {
+    final map = _serverErrors;
+    if (map == null) return const [];
+    final raw = map[field];
+    if (raw is List) return raw.map((e) => e.toString()).toList();
+    if (raw is String) return [raw];
+    return const [];
+  }
+
+  Widget _buildFieldErrors(String field) {
+    final errors = _fieldErrors(field);
+    if (errors.isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: errors
+            .map((e) => Text(
+                  e,
+                  style: AppTypography.bodySmall.copyWith(color: colorScheme.error),
+                ))
+            .toList(),
       ),
     );
   }

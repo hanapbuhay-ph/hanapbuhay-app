@@ -33,6 +33,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   final _notesController = TextEditingController();
+  Map<String, dynamic>? _serverErrors;
 
   final List<String> _categories = [
     'Electrical',
@@ -164,8 +165,18 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
         // TODO: Eventually go to booking_detail_screen (1.6)
         Navigator.pop(context); 
       } else {
+        setState(() => _serverErrors = result.errors);
+        final msgs = <String>[];
+        (result.errors ?? const {}).forEach((key, value) {
+          if (value is List && value.isNotEmpty) {
+            msgs.add('• ${value.join(', ')}');
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(msgs.isEmpty ? result.message : msgs.join('\n')),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } catch (e) {
@@ -284,6 +295,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                         ),
                       ],
                     ),
+                    _buildFieldErrors('scheduled_at'),
                     const SizedBox(height: 24),
 
                     // Service Location (Architecture Correction: Read-only Barangay)
@@ -329,6 +341,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                       ),
                       validator: (val) => val == null || val.isEmpty ? 'Please provide some details' : null,
                     ),
+                    _buildFieldErrors('notes'),
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -411,6 +424,33 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
+    );
+  }
+
+  List<String> _fieldErrors(String field) {
+    final map = _serverErrors;
+    if (map == null) return const [];
+    final raw = map[field];
+    if (raw is List) return raw.map((e) => e.toString()).toList();
+    if (raw is String) return [raw];
+    return const [];
+  }
+
+  Widget _buildFieldErrors(String field) {
+    final errors = _fieldErrors(field);
+    if (errors.isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: errors
+            .map((e) => Text(
+                  e,
+                  style: AppTypography.bodySmall.copyWith(color: colorScheme.error),
+                ))
+            .toList(),
+      ),
     );
   }
 

@@ -1,60 +1,26 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../../../core/constants/app_constants.dart';
-import '../../../services/secure_storage_service.dart';
+import '../../../core/api/api_client.dart';
 import '../../models/worker_model.dart';
 import '../worker_repository.dart';
 import '../../models/auth_result_model.dart';
 import '../../models/job_post_model.dart';
 
 class ApiWorkerRepository implements WorkerRepository {
-  final String baseUrl = AppConstants.apiBaseUrl;
-  final SecureStorageService _storage = SecureStorageService();
+  String _queryString(Map<String, String> params) {
+    return params.entries
+        .map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}')
+        .join('&');
+  }
 
   @override
   Future<FeedResponse> getFeed(FeedFilters filters) async {
     // GET /api/feed
-    try {
-      final token = await _storage.getToken();
-      final uri = Uri.parse('$baseUrl/feed').replace(queryParameters: filters.toQueryParams());
-      
-      final response = await http.get(
-        uri,
-        headers: {
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-      );
+    final query = _queryString(filters.toQueryParams());
+    final res = await ApiClient.get('/feed?$query', requiresAuth: true);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final postsData = data['data']?['posts'] as List<dynamic>? ?? [];
-        final pagination = data['data']?['pagination'] as Map<String, dynamic>? ?? {};
-
-        final posts = postsData
-            .map((item) => JobPostListing.fromJson(item as Map<String, dynamic>))
-            .toList();
-
-        return FeedResponse(
-          posts: posts,
-          currentPage: pagination['current_page'] ?? 1,
-          perPage: pagination['per_page'] ?? 15,
-          total: pagination['total'] ?? 0,
-          lastPage: pagination['last_page'] ?? 1,
-        );
-      } else {
-        // Return empty response on error
-        return const FeedResponse(
-          posts: [],
-          currentPage: 1,
-          perPage: 15,
-          total: 0,
-          lastPage: 1,
-        );
-      }
-    } catch (e) {
-      print('[ApiWorkerRepository] getFeed error: $e');
+    if (res['success'] != true) {
+      // Return empty response on error (screen will show empty state)
+      print('[ApiWorkerRepository] getFeed error: ${res['message']}');
       return const FeedResponse(
         posts: [],
         currentPage: 1,
@@ -63,29 +29,36 @@ class ApiWorkerRepository implements WorkerRepository {
         lastPage: 1,
       );
     }
+
+    final postsData = res['data']?['posts'] as List<dynamic>? ?? [];
+    final pagination = res['data']?['pagination'] as Map<String, dynamic>? ?? {};
+
+    final posts = postsData
+        .map((item) => JobPostListing.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    return FeedResponse(
+      posts: posts,
+      currentPage: pagination['current_page'] ?? 1,
+      perPage: pagination['per_page'] ?? 15,
+      total: pagination['total'] ?? 0,
+      lastPage: pagination['last_page'] ?? 1,
+    );
   }
 
   @override
   Future<List<ServiceCategory>> getCategories() async {
     // GET /api/service-categories
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/service-categories'),
-        headers: {'Accept': 'application/json'},
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final list = data['data'] as List<dynamic>? ?? [];
-        return list.map((cat) => ServiceCategory(
-          id: cat['id'].toString(),
-          label: cat['name']?.toString() ?? '',
-          icon: cat['icon'] == 'electrical'
-              ? Icons.electrical_services
-              : Icons.work_outline,
-        )).toList();
-      }
-    } catch (_) {}
-    return [];
+    final res = await ApiClient.get('/service-categories');
+    if (res['success'] != true) return [];
+    final list = res['data'] as List<dynamic>? ?? [];
+    return list.map((cat) => ServiceCategory(
+      id: cat['id'].toString(),
+      label: cat['name']?.toString() ?? '',
+      icon: cat['icon'] == 'electrical'
+          ? Icons.electrical_services
+          : Icons.work_outline,
+    )).toList();
   }
 
   @override
@@ -94,46 +67,35 @@ class ApiWorkerRepository implements WorkerRepository {
     CategoryWorkerFilters filters = const CategoryWorkerFilters(),
   }) async {
     // GET /api/categories/{categoryId}/workers
-    try {
-      final token = await _storage.getToken();
-      final uri = Uri.parse('$baseUrl/categories/$categoryId/workers')
-          .replace(queryParameters: filters.toQueryParams());
+    final query = _queryString(filters.toQueryParams());
+    final res = await ApiClient.get(
+      '/categories/$categoryId/workers?$query',
+      requiresAuth: true,
+    );
 
-      final response = await http.get(
-        uri,
-        headers: {
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
+    if (res['success'] == true) {
+      final dataBlock = res['data'] as Map<String, dynamic>? ?? {};
+      final category = dataBlock['category'] as Map<String, dynamic>? ?? {};
+      final rawWorkers = dataBlock['workers'] as List<dynamic>? ?? [];
+
+      // Backend returns workers[] (each with a single nested `job_post`)
+      // rather than JobPostListing pairs, so map them here.
+      final listings = rawWorkers.map((raw) {
+        final workerJson = raw as Map<String, dynamic>;
+        final worker = Worker.fromJson(workerJson);
+        final postJson = workerJson['job_post'] as Map<String, dynamic>? ?? {};
+        final post = JobPost.fromJson(postJson, defaultWorkerId: worker.id);
+        return JobPostListing(worker: worker, post: post);
+      }).toList();
+
+      return CategoryWorkerResponse(
+        categoryId: category['id']?.toString() ?? categoryId,
+        categoryName: category['name']?.toString() ?? '',
+        listings: listings,
+        total: dataBlock['total'] is int
+            ? dataBlock['total'] as int
+            : int.tryParse(dataBlock['total']?.toString() ?? '0') ?? listings.length,
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final dataBlock = data['data'] as Map<String, dynamic>? ?? {};
-        final category = dataBlock['category'] as Map<String, dynamic>? ?? {};
-        final rawWorkers = dataBlock['workers'] as List<dynamic>? ?? [];
-
-        // Backend returns workers[] (each with a single nested `job_post`)
-        // rather than JobPostListing pairs, so map them here.
-        final listings = rawWorkers.map((raw) {
-          final workerJson = raw as Map<String, dynamic>;
-          final worker = Worker.fromJson(workerJson);
-          final postJson = workerJson['job_post'] as Map<String, dynamic>? ?? {};
-          final post = JobPost.fromJson(postJson, defaultWorkerId: worker.id);
-          return JobPostListing(worker: worker, post: post);
-        }).toList();
-
-        return CategoryWorkerResponse(
-          categoryId: category['id']?.toString() ?? categoryId,
-          categoryName: category['name']?.toString() ?? '',
-          listings: listings,
-          total: dataBlock['total'] is int
-              ? dataBlock['total'] as int
-              : int.tryParse(dataBlock['total']?.toString() ?? '0') ?? listings.length,
-        );
-      }
-    } catch (e) {
-      // Return empty result on error (screen will show empty state)
     }
     return CategoryWorkerResponse(categoryId: categoryId);
   }
@@ -152,49 +114,19 @@ class ApiWorkerRepository implements WorkerRepository {
 
   @override
   Future<Worker?> getWorkerById(String id) async {
-    try {
-      final token = await _storage.getToken();
-      final response = await http.get(
-        Uri.parse('$baseUrl/workers/$id'),
-        headers: {
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final workerData = data['data'];
-        if (workerData != null) {
-          return Worker.fromJson(workerData);
-        }
-      }
-    } catch (_) {}
+    final res = await ApiClient.get('/workers/$id', requiresAuth: true);
+    if (res['success'] != true) return null;
+    final workerData = res['data'];
+    if (workerData != null) return Worker.fromJson(workerData);
     return null;
   }
 
   @override
   Future<JobPostListing?> getJobPostDetail(String postId) async {
-    try {
-      final token = await _storage.getToken();
-      final response = await http.get(
-        Uri.parse('$baseUrl/posts/$postId'),
-        headers: {
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final postData = data['data']?['job_post'] ?? data['data'];
-        if (postData != null) {
-          return JobPostListing.fromJson(postData);
-        }
-      } else if (response.statusCode == 404) {
-        return null;
-      }
-    } catch (e) {
-      return null;
-    }
+    final res = await ApiClient.get('/posts/$postId', requiresAuth: true);
+    if (res['success'] != true) return null;
+    final postData = res['data']?['job_post'] ?? res['data'];
+    if (postData != null) return JobPostListing.fromJson(postData);
     return null;
   }
 
@@ -222,177 +154,104 @@ class ApiWorkerRepository implements WorkerRepository {
 
   @override
   Future<AuthResult> createJobPost(JobPost post) async {
-    try {
-      final token = await _storage.getToken();
-      final response = await http.post(
-        Uri.parse('$baseUrl/worker/posts'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'service_category_id': int.tryParse(post.category) ?? 1,
-          'title': post.title,
-          'description': post.description,
-          'rate_amount': post.startingRate,
-          'rate_type': post.rateType.apiValue,
-          'is_available': post.isAvailable,
-        }),
+    final res = await ApiClient.post(
+      '/worker/posts',
+      body: {
+        'service_category_id': int.tryParse(post.category) ?? 1,
+        'title': post.title,
+        'description': post.description,
+        'rate_amount': post.startingRate,
+        'rate_type': post.rateType.apiValue,
+        'is_available': post.isAvailable,
+      },
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Job post created.',
+        data: res['data'],
       );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return AuthResult.success(
-          message: data['message'] ?? 'Job post created.',
-          data: data['data'],
-        );
-      } else {
-        return AuthResult.failure(
-          message: data['message'] ?? 'Failed to create job post.',
-          errors: data['errors'],
-        );
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
     }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to create job post.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   @override
   Future<AuthResult> updateJobPost(JobPost post) async {
-    try {
-      final token = await _storage.getToken();
-      final response = await http.put(
-        Uri.parse('$baseUrl/worker/posts/${post.id}'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'title': post.title,
-          'description': post.description,
-          'rate_amount': post.startingRate,
-          'rate_type': post.rateType.apiValue,
-          'is_available': post.isAvailable,
-        }),
+    final res = await ApiClient.put(
+      '/worker/posts/${post.id}',
+      body: {
+        'title': post.title,
+        'description': post.description,
+        'rate_amount': post.startingRate,
+        'rate_type': post.rateType.apiValue,
+        'is_available': post.isAvailable,
+      },
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Job post updated.',
+        data: res['data'],
       );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        return AuthResult.success(
-          message: data['message'] ?? 'Job post updated.',
-          data: data['data'],
-        );
-      } else {
-        return AuthResult.failure(
-          message: data['message'] ?? 'Failed to update job post.',
-          errors: data['errors'],
-        );
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
     }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to update job post.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   @override
   Future<AuthResult> deleteJobPost(String postId) async {
-    try {
-      final token = await _storage.getToken();
-      final response = await http.delete(
-        Uri.parse('$baseUrl/worker/posts/$postId'),
-        headers: {
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-      );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        return AuthResult.success(message: data['message'] ?? 'Job post deactivated.');
-      } else {
-        return AuthResult.failure(message: data['message'] ?? 'Failed to deactivate job post.');
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
+    final res = await ApiClient.delete('/worker/posts/$postId', requiresAuth: true);
+    if (res['success'] == true) {
+      return AuthResult.success(message: res['message'] ?? 'Job post deactivated.');
     }
+    return AuthResult.failure(message: res['message'] ?? 'Failed to deactivate job post.');
   }
 
   @override
   Future<List<JobPostImage>> uploadPostImages(String postId, List<String> filePaths) async {
-    try {
-      final token = await _storage.getToken();
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl/worker/posts/$postId/images'),
-      );
-      if (token != null) {
-        request.headers['Authorization'] = 'Bearer $token';
-      }
-      request.headers['Accept'] = 'application/json';
-
-      for (final path in filePaths) {
-        request.files.add(await http.MultipartFile.fromPath('images[]', path));
-      }
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final rawImages = data['data']?['images'] as List<dynamic>? ?? [];
-        return rawImages
-            .map((img) => JobPostImage.fromJson(img as Map<String, dynamic>))
-            .toList();
-      } else {
-        throw Exception(data['message'] ?? 'Failed to upload images');
-      }
-    } catch (e) {
-      rethrow;
+    final res = await ApiClient.postMultipart(
+      '/worker/posts/$postId/images',
+      fields: const {},
+      files: {'images[]': filePaths},
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      final rawImages = res['data']?['images'] as List<dynamic>? ?? [];
+      return rawImages
+          .map((img) => JobPostImage.fromJson(img as Map<String, dynamic>))
+          .toList();
     }
+    throw Exception(res['message'] ?? 'Failed to upload images');
   }
 
   @override
   Future<AuthResult> deletePostImage(String postId, String imageId) async {
-    try {
-      final token = await _storage.getToken();
-      final response = await http.delete(
-        Uri.parse('$baseUrl/worker/posts/$postId/images/$imageId'),
-        headers: {
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-      );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        return AuthResult.success(message: data['message'] ?? 'Image deleted.');
-      } else {
-        return AuthResult.failure(message: data['message'] ?? 'Failed to delete image.');
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
+    final res = await ApiClient.delete(
+      '/worker/posts/$postId/images/$imageId',
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(message: res['message'] ?? 'Image deleted.');
     }
+    return AuthResult.failure(message: res['message'] ?? 'Failed to delete image.');
   }
 
   @override
   Future<AuthResult> reorderPostImages(String postId, List<String> imageIds) async {
-    try {
-      final token = await _storage.getToken();
-      final intOrStrIds = imageIds.map((id) => int.tryParse(id) ?? id).toList();
-      final response = await http.put(
-        Uri.parse('$baseUrl/worker/posts/$postId/images/order'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({'image_ids': intOrStrIds}),
-      );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        return AuthResult.success(message: data['message'] ?? 'Images reordered.');
-      } else {
-        return AuthResult.failure(message: data['message'] ?? 'Failed to reorder images.');
-      }
-    } catch (e) {
-      return AuthResult.failure(message: 'Network error: $e');
+    final intOrStrIds = imageIds.map((id) => int.tryParse(id) ?? id).toList();
+    final res = await ApiClient.put(
+      '/worker/posts/$postId/images/order',
+      body: {'image_ids': intOrStrIds},
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(message: res['message'] ?? 'Images reordered.');
     }
+    return AuthResult.failure(message: res['message'] ?? 'Failed to reorder images.');
   }
 }

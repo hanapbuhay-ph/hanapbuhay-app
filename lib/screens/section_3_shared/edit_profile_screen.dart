@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/api/api_client.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
-import '../../data/models/barangay_model.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -20,7 +20,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late String _email;
-  String? _selectedBarangay;
+  int? _selectedBarangayId;
+  String? _selectedBarangayName;
+  List<Map<String, dynamic>> _barangays = [];
+  bool _barangaysLoading = true;
   
   String? _avatarPath;
   bool _isLoading = false;
@@ -33,21 +36,57 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _nameController = TextEditingController(text: authProvider.userName ?? '');
     _phoneController = TextEditingController(text: authProvider.userMobile ?? '');
     _email = authProvider.userEmail ?? '';
-    _selectedBarangay = authProvider.userBarangay;
+    _selectedBarangayId = authProvider.userBarangayId;
+    _selectedBarangayName = authProvider.userBarangay;
     _avatarPath = authProvider.userAvatar;
+    _loadBarangays();
     // Hydrate from server if mobile not yet cached (login response often lacks it)
     if ((authProvider.userMobile == null || authProvider.userMobile!.isEmpty) && authProvider.isAuthenticated) {
       authProvider.refreshProfile().then((_) {
         if (!mounted) return;
         setState(() {
-          _phoneController.text = context.read<AuthProvider>().userMobile ?? _phoneController.text;
-          _nameController.text = context.read<AuthProvider>().userName ?? _nameController.text;
-          _email = context.read<AuthProvider>().userEmail ?? _email;
-          _selectedBarangay = context.read<AuthProvider>().userBarangay ?? _selectedBarangay;
-          _avatarPath = context.read<AuthProvider>().userAvatar ?? _avatarPath;
+          final refreshed = context.read<AuthProvider>();
+          _phoneController.text = refreshed.userMobile ?? _phoneController.text;
+          _nameController.text = refreshed.userName ?? _nameController.text;
+          _email = refreshed.userEmail ?? _email;
+          _selectedBarangayId = _safeBarangayId(refreshed.userBarangayId) ?? _selectedBarangayId;
+          _selectedBarangayName = refreshed.userBarangay ?? _selectedBarangayName;
+          _avatarPath = refreshed.userAvatar ?? _avatarPath;
         });
       });
     }
+  }
+
+  /// Safety guard: only keep a barangay id that actually exists in the loaded list.
+  int? _safeBarangayId(int? id) {
+    if (id == null) return null;
+    return _barangays.any((b) => b['id'] == id) ? id : null;
+  }
+
+  Future<void> _loadBarangays() async {
+    try {
+      final res = await ApiClient.get('/barangays');
+      final raw = res['data'];
+      if (raw is List) {
+        final list = raw
+            .whereType<Map>()
+            .map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
+            .toList();
+        if (!mounted) return;
+        setState(() {
+          _barangays = list;
+          _barangaysLoading = false;
+          _selectedBarangayId = _safeBarangayId(_selectedBarangayId);
+        });
+        return;
+      }
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _barangaysLoading = false;
+      // If loading failed, ensure we never keep an id that can't match an item
+      _selectedBarangayId = _safeBarangayId(_selectedBarangayId);
+    });
   }
 
   @override
@@ -76,7 +115,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final result = await authProvider.updateProfile(
         name: _nameController.text.trim(),
         mobileNumber: _phoneController.text.trim(),
-        barangay: _selectedBarangay,
+        barangayId: _selectedBarangayId,
+        barangayName: _selectedBarangayName,
         avatarPath: _avatarPath,
       );
 
@@ -276,37 +316,54 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       children: [
         Text('Barangay', style: AppTypography.labelLarge.copyWith(color: colorScheme.onSurfaceVariant)),
         const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          key: const Key('barangay_dropdown'),
-          initialValue: _selectedBarangay,
-          isExpanded: true,
-          decoration: InputDecoration(
-            prefixIcon: Icon(Icons.location_on_outlined, color: colorScheme.onSurfaceVariant, size: 20),
-            filled: true,
-            fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 1)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        if (_barangaysLoading)
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
+        else
+          DropdownButtonFormField<int?>(
+            key: const Key('barangay_dropdown'),
+            initialValue: _selectedBarangayId,
+            isExpanded: true,
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.location_on_outlined, color: colorScheme.onSurfaceVariant, size: 20),
+              filled: true,
+              fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 1)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            ),
+            hint: Text(
+              'Select barangay',
+              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+            ),
+            items: _barangays.map((b) {
+              final name = b['name']?.toString() ?? '';
+              return DropdownMenuItem<int?>(
+                value: b['id'] is int ? (b['id'] as int) : int.tryParse(b['id']?.toString() ?? ''),
+                child: Text(name, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedBarangayId = value;
+                _selectedBarangayName = value == null
+                    ? null
+                    : _barangays.firstWhere(
+                        (b) => b['id'] == value,
+                        orElse: () => const {},
+                      )['name']?.toString();
+              });
+            },
+            validator: (value) => value == null ? 'Please select your barangay' : null,
           ),
-          hint: Text(
-            'Select barangay',
-            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
-          ),
-          items: Barangay.trinidadBarangays
-              .map((b) => DropdownMenuItem<String>(
-                    value: b.name,
-                    child: Text(b.name, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
-                  ))
-              .toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedBarangay = value;
-            });
-          },
-          validator: (value) =>
-              (value == null || value.isEmpty) ? 'Please select your barangay' : null,
-        ),
       ],
     );
   }
