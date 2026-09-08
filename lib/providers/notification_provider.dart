@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/repositories/notification_repository.dart';
+import '../data/repositories/api/api_notification_repository.dart';
 import '../data/models/notification_model.dart';
 
 class NotificationProvider extends ChangeNotifier {
@@ -11,6 +12,14 @@ class NotificationProvider extends ChangeNotifier {
   
   Future<void> markAsRead(String notificationId) async {
     await _repository.markAsRead(notificationId);
+    notifyListeners();
+  }
+
+  Future<void> markAllAsRead() async {
+    // Delegate to ApiNotificationRepository if available
+    if (_repository case ApiNotificationRepository repo) {
+      await repo.markAllAsRead();
+    }
     notifyListeners();
   }
 

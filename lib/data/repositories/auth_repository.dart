@@ -31,6 +31,7 @@ abstract class AuthRepository {
   Future<AuthResult> updateProfile({
     required String name,
     required String mobileNumber,
+    String? barangay,
     String? avatarPath,
   });
 }

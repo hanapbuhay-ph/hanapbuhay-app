@@ -252,7 +252,7 @@ class AuthProvider extends ChangeNotifier {
       }
       return r;
     }
-    return await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, avatarPath: avatarPath);
+    return await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, barangay: barangay, avatarPath: avatarPath);
   }
 
   Future<void> setAuthenticated(String token, String role, {
@@ -305,10 +305,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<AuthResult> updateProfile({required String name, required String mobileNumber, String? avatarPath}) async {
-    final result = await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, avatarPath: avatarPath);
+  Future<AuthResult> updateProfile({required String name, required String mobileNumber, String? barangay, String? avatarPath}) async {
+    final result = await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, barangay: barangay, avatarPath: avatarPath);
     if (result.success) {
-      await updateLocalProfile(name: name, mobile: mobileNumber, avatar: avatarPath);
+      await updateLocalProfile(name: name, mobile: mobileNumber, barangay: barangay, avatar: avatarPath);
     }
     return result;
   }
@@ -336,12 +336,16 @@ class AuthProvider extends ChangeNotifier {
     return result;
   }
 
-  Future<void> updateLocalProfile({required String name, required String mobile, String? avatar}) async {
+  Future<void> updateLocalProfile({required String name, required String mobile, String? barangay, String? avatar}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
     _userName = name;
     await prefs.setString('user_mobile', mobile);
     _userMobile = mobile;
+    if (barangay != null) {
+      await prefs.setString('user_barangay', barangay);
+      _userBarangay = barangay;
+    }
     if (avatar != null) {
       await prefs.setString('user_avatar', avatar);
       _userAvatar = avatar;

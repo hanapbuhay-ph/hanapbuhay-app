@@ -86,8 +86,11 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthResult> updateProfile({required String name, required String mobileNumber, String? avatarPath}) async {
+  Future<AuthResult> updateProfile({required String name, required String mobileNumber, String? barangay, String? avatarPath}) async {
     final fields = <String, String>{'name': name, 'mobile_number': mobileNumber};
+    if (barangay != null) {
+      fields['barangay_id'] = _barangayIdFor(barangay);
+    }
     final files = avatarPath != null ? <String, String>{'profile_photo': avatarPath} : null;
     final res = await ApiClient.postMultipart('/user/profile', fields: fields, files: files, requiresAuth: true);
     return _toResult(res);
