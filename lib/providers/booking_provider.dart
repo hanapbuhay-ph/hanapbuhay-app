@@ -116,6 +116,27 @@ class BookingProvider extends ChangeNotifier {
     return result;
   }
 
+  /// POST /api/bookings/{id}/accept — Worker accepts a pending booking.
+  Future<AuthResult> acceptBooking({required String bookingId}) async {
+    final result = await _repository.acceptBooking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
+  /// POST /api/bookings/{id}/decline — Worker declines a pending booking.
+  Future<AuthResult> declineBooking({required String bookingId}) async {
+    final result = await _repository.declineBooking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
+  /// POST /api/bookings/{id}/start — Worker marks job as active (started).
+  Future<AuthResult> startBooking({required String bookingId}) async {
+    final result = await _repository.startBooking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
   Future<AuthResult> updateBookingStatus({
     required String bookingId,
     required BookingStatus status,

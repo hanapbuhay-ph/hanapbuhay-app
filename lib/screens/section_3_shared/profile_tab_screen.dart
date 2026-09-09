@@ -344,6 +344,13 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               subtitle: 'Showcase your work history',
               onTap: () => Navigator.pushNamed(context, AppRouter.portfolioSkills),
             ),
+            const Divider(height: 1),
+            _buildOptionRow(
+              icon: Icons.star_outline,
+              title: 'My Reviews',
+              subtitle: 'See ratings received from clients',
+              onTap: () => Navigator.pushNamed(context, AppRouter.receivedReviews),
+            ),
           ],
         ],
       ),
@@ -374,14 +381,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             title: 'Notification Preferences',
             onTap: () => Navigator.pushNamed(context, AppRouter.notificationPreferences),
           ),
-          if (!isWorker) ...[
-            const Divider(height: 1),
-            _buildOptionRow(
-              icon: Icons.flag_outlined,
-              title: 'My Reports',
-              onTap: () => Navigator.pushNamed(context, AppRouter.reportStatus),
-            ),
-          ],
+          const Divider(height: 1),
+          _buildOptionRow(
+            icon: Icons.flag_outlined,
+            title: 'My Reports',
+            onTap: () => Navigator.pushNamed(context, AppRouter.reportStatus),
+          ),
           const Divider(height: 1),
           _buildOptionRow(
             icon: Icons.help_outline,

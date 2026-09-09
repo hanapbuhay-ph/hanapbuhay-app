@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/report_provider.dart';
@@ -188,18 +189,15 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                     const SizedBox(height: 16),
                   ],
 
-                  if (report.status == ReportStatus.underReview || report.status == ReportStatus.pending)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: OutlinedButton(
-                        onPressed: () => _showAddNoteDialog(report.id),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: colorScheme.primary),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: Text('Add Note', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
+                  if (report.photoPaths.isNotEmpty) ...[
+                    _buildEvidencePhotos(report.photoPaths),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // "Add Note" button intentionally removed:
+                  // POST /api/reports/{id}/notes does not exist in the backend.
+                  // ApiReportRepository.addReportNote() throws UnimplementedError.
+                  // Documented in HANDOFF.md as a missing endpoint blocker.
                 ],
               ),
             ),
@@ -285,6 +283,103 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
     );
   }
 
+  Widget _buildEvidencePhotos(List<String> paths) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Evidence Photos',
+          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 88,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: paths.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final url = AppConstants.getPhotoUrl(paths[index]);
+              return GestureDetector(
+                onTap: () => _showFullScreenImage(url),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    url,
+                    width: 88,
+                    height: 88,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: colorScheme.outlineVariant),
+                      ),
+                      child: Icon(Icons.broken_image_outlined, color: colorScheme.onSurfaceVariant, size: 28),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showFullScreenImage(String url) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Container(
+                    padding: const EdgeInsets.all(32),
+                    color: colorScheme.surface,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.broken_image_outlined, size: 48, color: colorScheme.onSurfaceVariant),
+                        const SizedBox(height: 12),
+                        Text('Image unavailable', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Material(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(20),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -303,39 +398,6 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showAddNoteDialog(String reportId) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Note'),
-        content: TextField(
-          controller: controller,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Add more details to your report...',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              if (controller.text.trim().isEmpty) return;
-              final reportProvider = context.read<ReportProvider>();
-              await reportProvider.addReportNote(reportId: reportId, note: controller.text.trim());
-              if (context.mounted) {
-                Navigator.pop(context);
-                setState(() => _loadReports());
-              }
-            },
-            child: const Text('Submit'),
-          ),
-        ],
       ),
     );
   }

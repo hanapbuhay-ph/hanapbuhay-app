@@ -202,7 +202,87 @@ class ApiBookingRepository implements BookingRepository {
     required int rating,
     String? comment,
   }) async {
-    throw UnimplementedError('submitClientRating not implemented yet.');
+    // POST /api/bookings/{id}/rate — same endpoint as client rating; both roles use it.
+    // Body: { score: int (1-5, required), comment: string max 1000 (optional) }
+    // Note: comment max is 1000 not 300 as docs claim (verified from RateBookingRequest.php).
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/rate',
+      body: {
+        'score': rating,
+        if (comment != null && comment.isNotEmpty) 'comment': comment,
+      },
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Rating submitted.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to submit rating.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
+  }
+
+  @override
+  Future<AuthResult> acceptBooking({required String bookingId}) async {
+    // POST /api/bookings/{id}/accept — no request body
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/accept',
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Booking accepted.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to accept booking.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
+  }
+
+  @override
+  Future<AuthResult> declineBooking({required String bookingId}) async {
+    // POST /api/bookings/{id}/decline — no request body
+    // Note: reason field on /respond is silently ignored by the backend service,
+    // so we use the cleaner /decline route with no body.
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/decline',
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Booking declined.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to decline booking.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
+  }
+
+  @override
+  Future<AuthResult> startBooking({required String bookingId}) async {
+    // POST /api/bookings/{id}/start — no request body
+    // Worker marks the booking as active (job started). Sets started_at on backend.
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/start',
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Booking started.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to start booking.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   @override
@@ -210,7 +290,10 @@ class ApiBookingRepository implements BookingRepository {
     required String bookingId,
     required bool accept,
   }) async {
-    throw UnimplementedError('respondToBooking is worker-side, not used by B3 client screens.');
+    // Delegates to the individual accept/decline routes.
+    return accept
+        ? acceptBooking(bookingId: bookingId)
+        : declineBooking(bookingId: bookingId);
   }
 
   @override

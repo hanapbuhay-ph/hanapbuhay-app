@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -42,14 +43,30 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Future<void> _loadWorkerData() async {
-    final worker = await context.read<WorkerProvider>().getWorkerById(AppConstants.mockWorkerId);
-    if (mounted && worker != null) {
+    final authProvider = context.read<AuthProvider>();
+    final workerProvider = context.read<WorkerProvider>();
+
+    // Use workerProfileId from AuthProvider (populated by GET /api/user → worker_profile.id).
+    // Falls back to refreshProfile() if not yet loaded.
+    String? profileId = authProvider.workerProfileId;
+    if (profileId == null) {
+      await authProvider.refreshProfile();
+      profileId = authProvider.workerProfileId;
+    }
+
+    Worker? worker;
+    if (profileId != null) {
+      // GET /api/workers/{workerProfileId} — returns bio, categories, etc.
+      worker = await workerProvider.getWorkerById(profileId);
+    }
+
+    if (mounted) {
       setState(() {
         _worker = worker;
-        _selectedCategories = List.from(worker.services);
-        _portfolioPaths = List.from(worker.portfolioImages);
-        _currentBio = worker.bio;
-        _bioController.text = worker.bio;
+        _selectedCategories = List.from(worker?.services ?? []);
+        _portfolioPaths = List.from(worker?.portfolioImages ?? []);
+        _currentBio = worker?.bio ?? '';
+        _bioController.text = _currentBio;
 
         _initialCategories = List.from(_selectedCategories);
         _initialPortfolioPaths = List.from(_portfolioPaths);
@@ -112,8 +129,12 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
 
     try {
       final theme = Theme.of(context);
+      // POST /api/worker/profile — worker-authenticated, workerId param ignored by API.
+      // bio max: 1000 chars (not 500 as docs say — verified from UpdateWorkerProfileRequest.php)
+      // portfolio_photos: accepted by validation but SILENTLY DROPPED by backend (no DB table yet)
+      // category_ids: mapped from category labels to integer IDs inside updateWorkerProfile()
       final result = await context.read<WorkerProvider>().updateWorkerProfile(
-        workerId: _worker!.id,
+        workerId: _worker?.id ?? '',
         categories: _selectedCategories,
         photoPaths: _portfolioPaths,
         bio: _currentBio,
@@ -121,14 +142,19 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: theme.colorScheme.primary),
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: result.success ? theme.colorScheme.primary : theme.colorScheme.error,
+          ),
         );
-        setState(() {
-          _initialCategories = List.from(_selectedCategories);
-          _initialPortfolioPaths = List.from(_portfolioPaths);
-          _initialBio = _currentBio;
-          _isSaving = false;
-        });
+        if (result.success) {
+          setState(() {
+            _initialCategories = List.from(_selectedCategories);
+            _initialPortfolioPaths = List.from(_portfolioPaths);
+            _initialBio = _currentBio;
+          });
+        }
+        setState(() => _isSaving = false);
       }
     } catch (e) {
       if (mounted) {
@@ -267,7 +293,31 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
+          // NOTE: Portfolio photos are accepted by the API validation but the backend
+          // currently drops them silently (no worker_portfolio_photos table yet).
+          // Photos selected here are stored locally for UI preview only.
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, size: 14, color: Colors.amber),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Photo saving is coming soon — use job post images for now.',
+                    style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           ResponsiveGrid(
             minimumItemWidth: 104,
             itemCount: _portfolioPaths.length < 6 ? _portfolioPaths.length + 1 : 6,
@@ -322,7 +372,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
               TextFormField(
                 controller: _bioController,
                 maxLines: 5,
-                maxLength: 500,
+                maxLength: 1000, // backend allows 1000 chars (not 500 as docs say)
                 style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
                 onChanged: (val) => setState(() => _currentBio = val),
                 decoration: InputDecoration(
@@ -341,7 +391,7 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(color: colorScheme.surface.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(4)),
                   child: Text(
-                    '${_currentBio.length}/500',
+                    '${_currentBio.length}/1000',
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
                   ),
                 ),

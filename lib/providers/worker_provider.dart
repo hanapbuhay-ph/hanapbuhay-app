@@ -64,6 +64,31 @@ class WorkerProvider extends ChangeNotifier {
 
   Future<List<ServiceCategory>> getCategories() => _repository.getCategories();
   
+  /// GET /api/worker/posts — fetch the authenticated worker's own posts.
+  Future<List<JobPost>> getWorkerPosts({bool includeInactive = false}) =>
+      _repository.getWorkerPosts(includeInactive: includeInactive);
+
+  /// POST /api/worker/profile { availability_status } — update worker availability.
+  /// Valid values: available | busy | offline
+  /// Maps [WorkerAvailability] enum to the API string value.
+  Future<AuthResult> updateAvailability(WorkerAvailability availability) async {
+    final apiValue = _availabilityToApiString(availability);
+    final result = await _repository.updateAvailability(apiValue);
+    if (result.success) notifyListeners();
+    return result;
+  }
+
+  static String _availabilityToApiString(WorkerAvailability availability) {
+    switch (availability) {
+      case WorkerAvailability.available:
+        return 'available';
+      case WorkerAvailability.busy:
+        return 'busy';
+      case WorkerAvailability.offline:
+        return 'offline';
+    }
+  }
+
   /// Get feed with current filters applied
   /// This calls the real backend GET /api/feed endpoint
   Future<FeedResponse> getFeed({int page = 1}) async {
@@ -214,21 +239,29 @@ class WorkerProvider extends ChangeNotifier {
   Future<List<Worker>> getRecentlyViewedWorkers() => _repository.getRecentlyViewedWorkers();
   Future<Worker?> getWorkerById(String id) => _repository.getWorkerById(id);
   
+  /// POST /api/worker/verification/submit — multipart upload.
+  /// Required: govIdPath, brgyCertPath, selfiePath (local file paths)
+  /// Optional: skillCertPath
   Future<AuthResult> submitVerificationDocuments({
-    required String workerId,
     required String govIdPath,
     required String brgyCertPath,
     required String selfiePath,
+    String? skillCertPath,
   }) async {
     final result = await _repository.submitVerificationDocuments(
-      workerId: workerId,
       govIdPath: govIdPath,
       brgyCertPath: brgyCertPath,
       selfiePath: selfiePath,
+      skillCertPath: skillCertPath,
     );
-    notifyListeners();
+    if (result.success) notifyListeners();
     return result;
   }
+
+  /// GET /api/worker/verification/status
+  /// Returns map with: verification_status, trust_tier, remarks, documents[]
+  Future<Map<String, dynamic>?> getVerificationStatus() =>
+      _repository.getVerificationStatus();
 
   Future<AuthResult> updateWorkerProfile({
     required String workerId,

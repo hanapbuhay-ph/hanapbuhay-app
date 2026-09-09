@@ -32,6 +32,7 @@ import '../../screens/section_2_worker/job_detail_screen.dart';
 import '../../screens/section_2_worker/rate_client_screen.dart';
 import '../../screens/section_2_worker/create_job_post_screen.dart';
 import '../../screens/section_2_worker/edit_job_post_screen.dart';
+import '../../screens/section_2_worker/received_reviews_screen.dart';
 import '../../screens/section_3_shared/chat_thread_screen.dart';
 import '../../screens/section_3_shared/help_faq_screen.dart';
 import '../../screens/section_3_shared/edit_profile_screen.dart';
@@ -83,6 +84,7 @@ class AppRouter {
   static const String manageJobPosts = '/manage-job-posts';
   static const String workerMap = '/worker-map';
   static const String incomingRequests = '/incoming-requests';
+  static const String receivedReviews = '/my-reviews';
   static const String browseCategory = '/browse-category';
   static const String categoryResults = '/category-results';
   static const String clientPostDetail = '/client/posts';
@@ -164,6 +166,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ManagePostsScreen());
       case incomingRequests:
         return MaterialPageRoute(builder: (_) => const IncomingRequestsScreen());
+      case receivedReviews:
+        return MaterialPageRoute(builder: (_) => const ReceivedReviewsScreen());
       case browseCategory:
         return MaterialPageRoute(builder: (_) => const BrowseCategoryScreen());
       case verificationStatus:

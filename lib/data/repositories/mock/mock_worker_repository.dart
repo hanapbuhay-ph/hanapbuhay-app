@@ -322,43 +322,46 @@ class MockWorkerRepository implements WorkerRepository {
   }
 
   @override
+  @override
   Future<AuthResult> submitVerificationDocuments({
-    required String workerId,
     required String govIdPath,
     required String brgyCertPath,
     required String selfiePath,
+    String? skillCertPath,
   }) async {
     await Future.delayed(const Duration(seconds: 2));
-    final index = _workers.indexWhere((w) => w.id == workerId);
-    if (index != -1) {
-      final old = _workers[index];
-      _workers[index] = Worker(
-        id: old.id,
-        name: old.name,
-        avatarUrl: old.avatarUrl,
-        specialty: old.specialty,
-        rating: old.rating,
-        reviewCount: old.reviewCount,
-        barangay: old.barangay,
-        barangayCoordinates: old.barangayCoordinates,
-        hourlyRate: old.hourlyRate,
-        isVerified: false,
-        verificationStatus: VerificationStatus.pending,
-        tags: old.tags,
-        distance: old.distance,
-        bio: old.bio,
-        services: old.services,
-        isAvailable: old.isAvailable,
-        availabilityStatus: old.availabilityStatus,
-        responseTime: old.responseTime,
-        portfolioImages: old.portfolioImages,
-        reviews: old.reviews,
-        trustTier: old.trustTier,
-        completedJobsCount: old.completedJobsCount,
-        jobPosts: old.jobPosts,
-      );
-    }
-    return AuthResult.success(message: 'Verification submitted.');
+    return AuthResult.success(
+      message: 'Documents submitted for review.',
+      data: {'verification_status': 'pending'},
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getVerificationStatus() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return {
+      'verification_status': 'pending',
+      'trust_tier': null,
+      'remarks': null,
+      'documents': [
+        {'type': 'government_id', 'status': 'pending'},
+        {'type': 'barangay_certificate', 'status': 'pending'},
+        {'type': 'selfie_with_id', 'status': 'pending'},
+      ],
+    };
+  }
+
+  @override
+  Future<List<JobPost>> getWorkerPosts({bool includeInactive = false}) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (includeInactive) return List.from(_mockJobPosts);
+    return _mockJobPosts.where((p) => p.isActive).toList();
+  }
+
+  @override
+  Future<AuthResult> updateAvailability(String availabilityStatus) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return AuthResult.success(message: 'Availability updated.');
   }
 
   @override

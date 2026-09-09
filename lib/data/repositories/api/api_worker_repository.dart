@@ -101,6 +101,91 @@ class ApiWorkerRepository implements WorkerRepository {
   }
 
   @override
+  Future<List<JobPost>> getWorkerPosts({bool includeInactive = false}) async {
+    // GET /api/worker/posts
+    // Response: { success, data: { posts: [ { id, category:{id,name}, title, description,
+    //   rate_amount, rate_type, rate_display, is_available, is_active, images[], created_at } ] } }
+    final query = includeInactive ? '?include_inactive=true' : '';
+    final res = await ApiClient.get('/worker/posts$query', requiresAuth: true);
+    if (res['success'] != true) {
+      print('[ApiWorkerRepository] getWorkerPosts error: ${res['message']}');
+      return [];
+    }
+    final rawPosts = res['data']?['posts'] as List<dynamic>? ?? [];
+    return rawPosts
+        .whereType<Map<String, dynamic>>()
+        .map((item) => JobPost.fromJson(item))
+        .toList();
+  }
+
+  @override
+  Future<AuthResult> updateAvailability(String availabilityStatus) async {
+    // POST /api/worker/profile — only send availability_status
+    // Valid values: available | busy | offline
+    final res = await ApiClient.post(
+      '/worker/profile',
+      body: {'availability_status': availabilityStatus},
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Availability updated.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to update availability.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
+  }
+
+  @override
+  Future<AuthResult> submitVerificationDocuments({
+    required String govIdPath,
+    required String brgyCertPath,
+    required String selfiePath,
+    String? skillCertPath,
+  }) async {
+    // POST /api/worker/verification/submit — multipart/form-data
+    // Required: government_id, barangay_certificate, selfie_with_id (images, max 5MB each)
+    // Optional: skill_certificate
+    // Returns 422 if already pending or approved.
+    // Backend returns data.verification_status = "pending" on success.
+    final files = <String, List<String>>{
+      'government_id': [govIdPath],
+      'barangay_certificate': [brgyCertPath],
+      'selfie_with_id': [selfiePath],
+      if (skillCertPath != null) 'skill_certificate': [skillCertPath],
+    };
+    final res = await ApiClient.postMultipart(
+      '/worker/verification/submit',
+      fields: const {},
+      files: files,
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Documents submitted for review.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to submit documents.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getVerificationStatus() async {
+    // GET /api/worker/verification/status
+    // Response: { success, data: { verification_status, trust_tier, remarks, documents[] } }
+    // NOTE: real backend uses "remarks" key, NOT "verification_remarks" as docs claim
+    final res = await ApiClient.get('/worker/verification/status', requiresAuth: true);
+    if (res['success'] != true) return null;
+    return res['data'] as Map<String, dynamic>?;
+  }
+
+  @override
   Future<List<Worker>> getRecentlyViewedWorkers() {
     // GET /api/workers/recent
     throw UnimplementedError();
@@ -131,16 +216,6 @@ class ApiWorkerRepository implements WorkerRepository {
   }
 
   @override
-  Future<AuthResult> submitVerificationDocuments({
-    required String workerId,
-    required String govIdPath,
-    required String brgyCertPath,
-    required String selfiePath,
-  }) async {
-    // POST /api/worker/verification/submit
-    throw UnimplementedError();
-  }
-
   @override
   Future<AuthResult> updateProfile({
     required String workerId,
@@ -148,16 +223,72 @@ class ApiWorkerRepository implements WorkerRepository {
     required List<String> photoPaths,
     required String bio,
   }) async {
-    // POST /api/worker/profile
-    throw UnimplementedError();
+    // POST /api/worker/profile — multipart/form-data
+    // Accepted fields: bio (string max:1000), availability_status (available|busy|offline),
+    //   category_ids[] (integer array), portfolio_photos[] (image files)
+    // NOTE: portfolio_photos[] is accepted by validation but SILENTLY DROPPED by the backend
+    //   service (WorkerService.php) — no worker_portfolio_photos table exists yet.
+    //   We send bio + category_ids only. Photos are ignored by the backend.
+    //
+    // Category names → IDs: The categories list contains label strings from the local
+    // AppConstants.workerCategories list. We must match them to ServiceCategory IDs.
+    // Since getCategories() is already wired, we re-use the categories from the API to
+    // perform the mapping client-side.
+    //
+    // The workerId param is ignored — this is a worker-authenticated endpoint.
+
+    // Build multipart fields: bio + category_ids[]
+    final fields = <String, String>{};
+    if (bio.trim().isNotEmpty) {
+      fields['bio'] = bio.trim();
+    }
+
+    // Map category labels → integer IDs via GET /api/service-categories
+    // Note: categories list contains label strings (e.g. "Plumbing Services").
+    // We fetch the categories to get their IDs.
+    final catRes = await ApiClient.get('/service-categories');
+    final catList = catRes['data'] as List<dynamic>? ?? [];
+    final categoryIds = <int>[];
+    for (final cat in catList) {
+      final name = cat['name']?.toString() ?? '';
+      if (categories.any((c) => c.toLowerCase() == name.toLowerCase())) {
+        final id = cat['id'];
+        if (id is int) categoryIds.add(id);
+      }
+    }
+    for (int i = 0; i < categoryIds.length; i++) {
+      fields['category_ids[$i]'] = categoryIds[i].toString();
+    }
+
+    // Post multipart — portfolio_photos intentionally omitted (silently dropped by backend)
+    final res = await ApiClient.postMultipart(
+      '/worker/profile',
+      fields: fields,
+      files: const {},
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Profile updated.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to update profile.',
+      errors: (res['errors'] is Map) ? res['errors'] as Map<String, dynamic> : null,
+    );
   }
 
   @override
   Future<AuthResult> createJobPost(JobPost post) async {
+    // POST /api/worker/posts — JSON body
+    // service_category_id must be an integer (the category's numeric ID).
+    // Bug-fix: previously sent int.tryParse(post.category) which always returned 1
+    // since post.category holds a label string. Now uses post.serviceCategoryId directly.
     final res = await ApiClient.post(
       '/worker/posts',
       body: {
-        'service_category_id': int.tryParse(post.category) ?? 1,
+        'service_category_id': post.serviceCategoryId ?? 1,
         'title': post.title,
         'description': post.description,
         'rate_amount': post.startingRate,
@@ -180,6 +311,8 @@ class ApiWorkerRepository implements WorkerRepository {
 
   @override
   Future<AuthResult> updateJobPost(JobPost post) async {
+    // PUT /api/worker/posts/{postId}
+    // All fields optional. is_active accepted (undocumented in docs but real — used for reactivation).
     final res = await ApiClient.put(
       '/worker/posts/${post.id}',
       body: {
@@ -188,6 +321,7 @@ class ApiWorkerRepository implements WorkerRepository {
         'rate_amount': post.startingRate,
         'rate_type': post.rateType.apiValue,
         'is_available': post.isAvailable,
+        'is_active': post.isActive, // needed to reactivate a soft-deleted post
       },
       requiresAuth: true,
     );

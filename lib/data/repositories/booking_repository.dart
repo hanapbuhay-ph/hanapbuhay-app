@@ -52,6 +52,16 @@ abstract class BookingRepository {
     required bool accept,
   });
 
+  /// POST /api/bookings/{id}/accept — Worker accepts a pending booking.
+  Future<AuthResult> acceptBooking({required String bookingId});
+
+  /// POST /api/bookings/{id}/decline — Worker declines a pending booking.
+  /// Note: reason field exists on /respond route but is silently ignored by the backend service.
+  Future<AuthResult> declineBooking({required String bookingId});
+
+  /// POST /api/bookings/{id}/start — Worker marks a booking as active (job started).
+  Future<AuthResult> startBooking({required String bookingId});
+
   Future<AuthResult> updateBookingStatus({
     required String bookingId,
     required BookingStatus status,

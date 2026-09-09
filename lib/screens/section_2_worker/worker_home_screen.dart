@@ -12,6 +12,7 @@ import '../../providers/booking_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/job_post_model.dart';
+import '../../data/models/auth_result_model.dart';
 
 class WorkerHomeScreen extends StatefulWidget {
   const WorkerHomeScreen({super.key});
@@ -21,9 +22,10 @@ class WorkerHomeScreen extends StatefulWidget {
 }
 
 class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
-  late Future<Worker?> _workerFuture;
   late Future<List<Booking>> _requestsFuture;
+  late Future<List<JobPost>> _activePostsFuture;
   WorkerAvailability _currentStatus = WorkerAvailability.available;
+  bool _availabilityLoading = false;
 
   @override
   void initState() {
@@ -32,26 +34,56 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
   void _loadData() {
-    final workerProvider = context.read<WorkerProvider>();
     final bookingProvider = context.read<BookingProvider>();
-    
-    // For demo/mock, we assume worker ID 'w1'
-    _workerFuture = workerProvider.getWorkerById(AppConstants.mockWorkerId);
-    _requestsFuture = bookingProvider.getBookings().then(
-      (list) => list.where((b) => b.status == BookingStatus.pending).toList()
-    );
+    final workerProvider = context.read<WorkerProvider>();
+
+    // GET /api/bookings?status=pending — incoming booking requests
+    _requestsFuture = bookingProvider.getBookings(status: 'pending');
+    // GET /api/worker/posts — authenticated worker's own active posts
+    _activePostsFuture = workerProvider.getWorkerPosts();
   }
 
+  /// POST /api/bookings/{id}/accept or /decline via the dedicated routes.
+  /// No reason input shown for decline — the backend silently ignores reason anyway.
   Future<void> _handleResponse(String bookingId, bool accept) async {
     final bookingProvider = context.read<BookingProvider>();
-    final result = await bookingProvider.respondToBooking(bookingId: bookingId, accept: accept);
+    final AuthResult result;
+    if (accept) {
+      result = await bookingProvider.acceptBooking(bookingId: bookingId);
+    } else {
+      result = await bookingProvider.declineBooking(bookingId: bookingId);
+    }
     if (mounted) {
       final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message), backgroundColor: accept ? theme.colorScheme.primary : theme.colorScheme.error),
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: accept ? theme.colorScheme.primary : theme.colorScheme.error,
+        ),
       );
       if (accept) Navigator.pushNamed(context, '${AppRouter.jobDetail}/$bookingId');
       setState(() => _loadData());
+    }
+  }
+
+  /// POST /api/worker/profile { availability_status } — toggle the availability status.
+  Future<void> _handleAvailabilityChange(WorkerAvailability newStatus) async {
+    if (_availabilityLoading) return;
+    setState(() => _availabilityLoading = true);
+    final workerProvider = context.read<WorkerProvider>();
+    final result = await workerProvider.updateAvailability(newStatus);
+    if (mounted) {
+      if (result.success) {
+        setState(() => _currentStatus = newStatus);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+      setState(() => _availabilityLoading = false);
     }
   }
 
@@ -216,58 +248,43 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final firstName = authProvider.userName?.split(' ').first ?? authProvider.userEmail?.split('@').first ?? 'Ricardo';
+    final firstName = authProvider.userName?.split(' ').first ?? authProvider.userEmail?.split('@').first ?? 'Worker';
     final theme = Theme.of(context);
 
-    return FutureBuilder<Worker?>(
-        future: _workerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
-          }
-          final worker = snapshot.data;
-          if (worker == null) return const Center(child: Text('Worker profile not found'));
-
-          return Column(
-            children: [
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    setState(() => _loadData());
-                  },
-                  color: theme.colorScheme.primary,
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.zero,
-                    physics: const BouncingScrollPhysics(),
-                    child: ResponsiveContent(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                        _buildGreeting(firstName),
-                        const SizedBox(height: 24),
-                        if (worker.verificationStatus != VerificationStatus.verified) ...[
-                          _buildVerificationBanner(worker),
-                          const SizedBox(height: 24),
-                        ],
-                        _buildAvailabilityCard(),
-                        const SizedBox(height: 24),
-                        _buildStatsRow(worker),
-                        const SizedBox(height: 32),
-                        _buildActivePostsSection(worker),
-                        const SizedBox(height: 32),
-                        _buildIncomingRequestsSection(),
-                        const SizedBox(height: 32),
-                        ],
-                      ),
-                    ),
-                  ),
+    return Column(
+      children: [
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              setState(() => _loadData());
+            },
+            color: theme.colorScheme.primary,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.zero,
+              physics: const BouncingScrollPhysics(),
+              child: ResponsiveContent(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildGreeting(firstName),
+                    const SizedBox(height: 24),
+                    _buildAvailabilityCard(),
+                    const SizedBox(height: 24),
+                    _buildStatsRow(authProvider),
+                    const SizedBox(height: 32),
+                    _buildActivePostsSection(),
+                    const SizedBox(height: 32),
+                    _buildIncomingRequestsSection(),
+                    const SizedBox(height: 32),
+                  ],
                 ),
               ),
-            ],
-          );
-        }
-      );
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildGreeting(String name) {
@@ -366,7 +383,22 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Current Status', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
+          Row(
+            children: [
+              Text('Current Status', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
+              if (_availabilityLoading) ...[
+                const SizedBox(width: 10),
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
+            ],
+          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(4),
@@ -392,7 +424,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     final isSelected = _currentStatus == status;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _currentStatus = status),
+        onTap: _availabilityLoading ? null : () => _handleAvailabilityChange(status),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
@@ -422,28 +454,31 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     );
   }
 
-  Widget _buildStatsRow(Worker worker) {
+  Widget _buildStatsRow(AuthProvider authProvider) {
     final theme = Theme.of(context);
+    // Worker stats come from GET /api/user → worker_profile sub-object.
+    // They are not stored in SharedPreferences, so they appear on next refreshProfile() call.
+    // The screen reads them live from the auth provider.
     return Row(
       children: [
         _buildStatCard(
           icon: Icons.verified,
-          label: 'Trust Tier',
-          value: worker.isVerified ? 'Verified' : 'Unverified',
+          label: 'Status',
+          value: authProvider.userRole == 'worker' ? 'Worker' : '—',
           color: theme.colorScheme.primary,
         ),
         const SizedBox(width: 12),
         _buildStatCard(
           icon: Icons.star,
-          label: 'Rating',
-          value: worker.rating.toString(),
+          label: 'Profile',
+          value: authProvider.userName?.split(' ').first ?? '—',
           color: Colors.amber,
         ),
         const SizedBox(width: 12),
         _buildStatCard(
           icon: Icons.work,
-          label: 'Jobs',
-          value: '${worker.completedJobsCount} Done',
+          label: 'Posts',
+          value: 'Active',
           color: theme.colorScheme.secondary,
         ),
       ],
@@ -480,7 +515,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     );
   }
 
-  Widget _buildActivePostsSection(Worker worker) {
+  Widget _buildActivePostsSection() {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -496,30 +531,46 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        if (worker.jobPosts.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              children: [
-                Icon(Icons.post_add_outlined, size: 48, color: theme.colorScheme.outlineVariant),
-                const SizedBox(height: 12),
-                Text('No active posts yet', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, AppRouter.createJobPost),
-                  child: const Text('Create your first post'),
+        FutureBuilder<List<JobPost>>(
+          future: _activePostsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(color: theme.colorScheme.primary),
                 ),
-              ],
-            ),
-          )
-        else
-          ...worker.jobPosts.map((post) => _buildJobPostCard(post)),
+              );
+            }
+            final posts = snapshot.data ?? [];
+            if (posts.isEmpty) {
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.post_add_outlined, size: 48, color: theme.colorScheme.outlineVariant),
+                    const SizedBox(height: 12),
+                    Text('No active posts yet', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, AppRouter.createJobPost),
+                      child: const Text('Create your first post'),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return Column(
+              children: posts.map((post) => _buildJobPostCard(post)).toList(),
+            );
+          },
+        ),
       ],
     );
   }

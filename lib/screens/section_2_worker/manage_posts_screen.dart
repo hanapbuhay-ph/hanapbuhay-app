@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
@@ -26,15 +25,17 @@ class _ManagePostsScreenState extends State<ManagePostsScreen> {
   }
 
   void _loadPosts() {
-    _postsFuture = context.read<WorkerProvider>().getWorkerById(AppConstants.mockWorkerId).then(
-      (worker) => worker?.jobPosts ?? [],
-    );
+    // GET /api/worker/posts?include_inactive=true — authenticated worker's own posts.
+    // Returns active + inactive posts for the manage screen.
+    _postsFuture = context.read<WorkerProvider>().getWorkerPosts(includeInactive: true);
   }
 
   Future<void> _reactivatePost(JobPost post) async {
     final colorScheme = Theme.of(context).colorScheme;
     final workerProvider = context.read<WorkerProvider>();
-    final updated = post.copyWith(isAvailable: true);
+    // Send is_active: true + is_available: true to reactivate a soft-deleted post.
+    // Both flags needed: is_active restores it to the feed, is_available marks it bookable.
+    final updated = post.copyWith(isAvailable: true, isActive: true);
     final result = await workerProvider.updateJobPost(updated);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

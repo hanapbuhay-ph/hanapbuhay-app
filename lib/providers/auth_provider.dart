@@ -41,6 +41,12 @@ class AuthProvider extends ChangeNotifier {
   String? _userAvatar;
   String? get userAvatar => _userAvatar;
 
+  String? _workerProfileId;
+  /// The authenticated worker's profile ID (integer stored as string).
+  /// Populated from GET /api/user → data.worker_profile.id.
+  /// null for client-role users or before refreshProfile() completes.
+  String? get workerProfileId => _workerProfileId;
+
   String? _signInMethod;
   String? get signInMethod => _signInMethod;
 
@@ -68,6 +74,7 @@ class AuthProvider extends ChangeNotifier {
     _userBarangay = prefs.getString('user_barangay');
     _userBarangayId = prefs.getInt('user_barangay_id');
     _userAvatar = prefs.getString('user_avatar');
+    _workerProfileId = prefs.getString('worker_profile_id');
     _signInMethod = prefs.getString('sign_in_method');
     _twoFactorEnabled = prefs.getBool('2fa_enabled') ?? true;
 
@@ -124,6 +131,16 @@ class AuthProvider extends ChangeNotifier {
         final avatar = AppConstants.getPhotoUrl(rawAvatar);
         await prefs.setString('user_avatar', avatar);
         _userAvatar = avatar;
+      }
+      // Extract worker_profile.id for worker-authenticated endpoints
+      final wp = src['worker_profile'];
+      if (wp is Map) {
+        final wpId = wp['id'];
+        final wpIdStr = wpId?.toString();
+        if (wpIdStr != null && wpIdStr.isNotEmpty && wpIdStr != 'null') {
+          await prefs.setString('worker_profile_id', wpIdStr);
+          _workerProfileId = wpIdStr;
+        }
       }
       final role = src['role']?.toString();
       if (role != null && role.isNotEmpty && role != 'null') {
@@ -408,8 +425,9 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove('user_barangay');
     await prefs.remove('user_barangay_id');
     await prefs.remove('sign_in_method');
+    await prefs.remove('worker_profile_id');
     _isAuthenticated = false;
-    _userId = null; _userEmail = null; _userRole = null; _userName = null; _userMobile = null; _userBarangay = null; _userBarangayId = null; _userAvatar = null; _signInMethod = null;
+    _userId = null; _userEmail = null; _userRole = null; _userName = null; _userMobile = null; _userBarangay = null; _userBarangayId = null; _userAvatar = null; _signInMethod = null; _workerProfileId = null;
     notifyListeners();
   }
 }

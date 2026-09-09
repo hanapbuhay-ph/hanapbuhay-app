@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -23,13 +22,17 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
   XFile? _govId;
   XFile? _brgyCert;
   XFile? _selfie;
+  XFile? _skillCert;
   bool _isSubmitting = false;
   final Map<String, _DocumentUploadState> _uploadStates = {
     'govId': _DocumentUploadState.idle,
     'brgyCert': _DocumentUploadState.idle,
     'selfie': _DocumentUploadState.idle,
+    'skillCert': _DocumentUploadState.idle,
   };
   String? _uploadError;
+  // Fix 3 — inline 422 validation errors per field
+  Map<String, dynamic> _fieldErrors = {};
 
   bool get _isComplete => _govId != null && _brgyCert != null && _selfie != null;
 
@@ -61,8 +64,29 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
         if (type == 'govId') _govId = image;
         if (type == 'brgyCert') _brgyCert = image;
         if (type == 'selfie') _selfie = image;
+        if (type == 'skillCert') _skillCert = image;
+        // Clear field error for this slot on new pick
+        _fieldErrors.remove(_fieldErrorKey(type));
       });
     }
+  }
+
+  String _fieldErrorKey(String type) {
+    switch (type) {
+      case 'govId': return 'government_id';
+      case 'brgyCert': return 'barangay_certificate';
+      case 'selfie': return 'selfie_with_id';
+      case 'skillCert': return 'skill_certificate';
+      default: return type;
+    }
+  }
+
+  String? _fieldError(String type) {
+    final key = _fieldErrorKey(type);
+    final val = _fieldErrors[key];
+    if (val is List && val.isNotEmpty) return val.first.toString();
+    if (val is String) return val;
+    return null;
   }
 
   Future<void> _handleSubmit() async {
@@ -71,17 +95,23 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
     setState(() {
       _isSubmitting = true;
       _uploadError = null;
+      _fieldErrors = {};
       for (final type in _uploadStates.keys) {
         _uploadStates[type] = _DocumentUploadState.uploading;
       }
     });
 
     try {
+      // POST /api/worker/verification/submit — multipart/form-data
+      // Required: government_id, barangay_certificate, selfie_with_id (images, max 5MB)
+      // Optional: skill_certificate
+      // Returns 422 if already pending or approved.
+      // Note: success message is short: "Documents submitted for review." (not the longer docs version)
       final result = await context.read<WorkerProvider>().submitVerificationDocuments(
-        workerId: AppConstants.mockWorkerId, 
         govIdPath: _govId!.path,
         brgyCertPath: _brgyCert!.path,
         selfiePath: _selfie!.path,
+        skillCertPath: _skillCert?.path,
       );
 
       if (!mounted) return;
@@ -95,16 +125,22 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
         });
         Navigator.pushReplacementNamed(context, AppRouter.verificationStatus);
       } else {
+        // Fix 3 — extract inline 422 field errors if present
+        final errors = result.errors ?? {};
         setState(() {
           _isSubmitting = false;
           _uploadError = result.message;
+          _fieldErrors = errors;
           for (final type in _uploadStates.keys) {
             _uploadStates[type] = _DocumentUploadState.failed;
           }
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: theme.colorScheme.error),
-        );
+        // Show aggregated error snackbar if no field-specific errors
+        if (errors.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result.message), backgroundColor: theme.colorScheme.error),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -112,6 +148,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
         setState(() {
           _isSubmitting = false;
           _uploadError = 'Error: $e';
+          _fieldErrors = {};
           for (final type in _uploadStates.keys) {
             _uploadStates[type] = _DocumentUploadState.failed;
           }
@@ -155,11 +192,12 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
                     title: 'Valid Government ID',
                     icon: Icons.badge_outlined,
                     hint: 'Upload Government ID',
-                    subHint: 'PNG, JPG up to 10MB',
+                    subHint: 'PNG, JPG up to 5MB',
                     file: _govId,
                     uploadState: _uploadStates['govId']!,
                     onTap: () => _pickImage('govId'),
                     onRemove: () => _removeImage('govId'),
+                    fieldError: _fieldError('govId'),
                   ),
                   const SizedBox(height: 24),
 
@@ -167,11 +205,12 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
                     title: 'Barangay Certificate',
                     icon: Icons.description_outlined,
                     hint: 'Upload Certificate',
-                    subHint: 'PNG, JPG up to 10MB',
+                    subHint: 'PNG, JPG up to 5MB',
                     file: _brgyCert,
                     uploadState: _uploadStates['brgyCert']!,
                     onTap: () => _pickImage('brgyCert'),
                     onRemove: () => _removeImage('brgyCert'),
+                    fieldError: _fieldError('brgyCert'),
                   ),
                   const SizedBox(height: 24),
 
@@ -185,6 +224,22 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
                     onTap: () => _pickImage('selfie', source: ImageSource.camera),
                     onRemove: () => _removeImage('selfie'),
                     actionLabel: 'Take Photo',
+                    fieldError: _fieldError('selfie'),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Optional skill certificate
+                  _buildUploadSection(
+                    title: 'Skill Certificate (Optional)',
+                    icon: Icons.workspace_premium_outlined,
+                    hint: 'Upload Certificate',
+                    subHint: 'PNG, JPG up to 5MB — optional',
+                    file: _skillCert,
+                    uploadState: _uploadStates['skillCert']!,
+                    onTap: () => _pickImage('skillCert'),
+                    onRemove: () => _removeImage('skillCert'),
+                    fieldError: _fieldError('skillCert'),
+                    isRequired: false,
                   ),
                   const SizedBox(height: 40),
                       ],
@@ -286,6 +341,8 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
     required VoidCallback onTap,
     required VoidCallback onRemove,
     String actionLabel = 'Choose File',
+    String? fieldError,
+    bool isRequired = true,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -295,7 +352,22 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: AppTypography.bodyLarge.copyWith(fontSize: 18, fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+            Row(
+              children: [
+                Text(title, style: AppTypography.bodyLarge.copyWith(fontSize: 18, fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                if (!isRequired) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text('optional', style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                  ),
+                ],
+              ],
+            ),
             Icon(icon, color: colorScheme.onSurfaceVariant, size: 20),
           ],
         ),
@@ -309,7 +381,11 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
               color: file == null ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.1) : colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: file == null ? colorScheme.outlineVariant.withValues(alpha: 0.5) : colorScheme.primary,
+                color: fieldError != null
+                    ? colorScheme.error
+                    : file == null
+                        ? colorScheme.outlineVariant.withValues(alpha: 0.5)
+                        : colorScheme.primary,
                 width: file == null ? 2 : 1,
               ),
             ),
@@ -366,9 +442,15 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
                   ),
           ),
         ),
+        // Fix 3 — inline field error text below each upload section
+        if (fieldError != null) ...[
+          const SizedBox(height: 6),
+          Text(fieldError, style: TextStyle(color: colorScheme.error, fontSize: 12)),
+        ],
         if (uploadState == _DocumentUploadState.uploading) _buildUploadProgress(colorScheme),
         if (uploadState == _DocumentUploadState.complete) _buildUploadStatus('Upload complete', colorScheme.primary),
-        if (uploadState == _DocumentUploadState.failed) _buildUploadStatus('Upload failed. Try again.', colorScheme.error),
+        if (uploadState == _DocumentUploadState.failed && fieldError == null)
+          _buildUploadStatus('Upload failed. Try again.', colorScheme.error),
       ],
     );
   }
@@ -406,6 +488,7 @@ class _VerificationDocumentScreenState extends State<VerificationDocumentScreen>
       if (type == 'govId') _govId = null;
       if (type == 'brgyCert') _brgyCert = null;
       if (type == 'selfie') _selfie = null;
+      if (type == 'skillCert') _skillCert = null;
       _uploadStates[type] = _DocumentUploadState.idle;
       _uploadError = null;
     });

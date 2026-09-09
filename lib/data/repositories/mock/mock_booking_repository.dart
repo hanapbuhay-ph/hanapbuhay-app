@@ -218,27 +218,61 @@ class MockBookingRepository implements BookingRepository {
     required String bookingId,
     required bool accept,
   }) async {
+    return accept
+        ? acceptBooking(bookingId: bookingId)
+        : declineBooking(bookingId: bookingId);
+  }
+
+  @override
+  Future<AuthResult> acceptBooking({required String bookingId}) async {
     await Future.delayed(const Duration(seconds: 1));
     final index = _mockBookings.indexWhere((b) => b.id == bookingId);
     if (index != -1) {
       final old = _mockBookings[index];
       _mockBookings[index] = Booking(
-        id: old.id,
-        workerId: old.workerId,
-        clientId: old.clientId,
-        category: old.category,
-        date: old.date,
-        time: old.time,
-        barangay: old.barangay,
-        barangayCoordinates: old.barangayCoordinates,
-        notes: old.notes,
-        status: accept ? BookingStatus.accepted : BookingStatus.cancelled,
-        timeline: old.timeline,
-        isRated: old.isRated,
-        isClientRated: old.isClientRated,
+        id: old.id, workerId: old.workerId, clientId: old.clientId,
+        category: old.category, date: old.date, time: old.time,
+        barangay: old.barangay, barangayCoordinates: old.barangayCoordinates,
+        notes: old.notes, status: BookingStatus.accepted,
+        timeline: old.timeline, isRated: old.isRated, isClientRated: old.isClientRated,
       );
     }
-    return AuthResult.success(message: accept ? 'Booking accepted!' : 'Booking declined.');
+    return AuthResult.success(message: 'Booking accepted.');
+  }
+
+  @override
+  Future<AuthResult> declineBooking({required String bookingId}) async {
+    await Future.delayed(const Duration(seconds: 1));
+    final index = _mockBookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      final old = _mockBookings[index];
+      _mockBookings[index] = Booking(
+        id: old.id, workerId: old.workerId, clientId: old.clientId,
+        category: old.category, date: old.date, time: old.time,
+        barangay: old.barangay, barangayCoordinates: old.barangayCoordinates,
+        notes: old.notes, status: BookingStatus.declined,
+        timeline: old.timeline, isRated: old.isRated, isClientRated: old.isClientRated,
+      );
+    }
+    return AuthResult.success(message: 'Booking declined.');
+  }
+
+  @override
+  Future<AuthResult> startBooking({required String bookingId}) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    final index = _mockBookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      final old = _mockBookings[index];
+      _mockBookings[index] = Booking(
+        id: old.id, workerId: old.workerId, clientId: old.clientId,
+        category: old.category, date: old.date, time: old.time,
+        barangay: old.barangay, barangayCoordinates: old.barangayCoordinates,
+        notes: old.notes, status: BookingStatus.active,
+        timeline: old.timeline, isRated: old.isRated, isClientRated: old.isClientRated,
+        startedAt: DateTime.now(),
+      );
+    }
+    return AuthResult.success(message: 'Booking started.');
   }
 
   @override

@@ -24,7 +24,8 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
   final _descriptionController = TextEditingController();
   final _rateController = TextEditingController();
 
-  String? _selectedCategory;
+  String? _selectedCategory;      // label for display
+  int? _selectedCategoryId;       // integer ID for the API
   RateType _selectedRateType = RateType.perHour;
   bool _isAvailable = true;
   bool _isLoading = false;
@@ -49,7 +50,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
 
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedCategory == null) {
+    if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a category')),
       );
@@ -61,44 +62,65 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
     try {
       final workerProvider = context.read<WorkerProvider>();
       final authProvider = context.read<AuthProvider>();
-      
-      // In a real app, we'd get the worker ID from the auth state
       final workerId = authProvider.userId ?? AppConstants.mockWorkerId;
 
+      // Build the JobPost with the correct numeric service_category_id.
+      // category field stores the label for display; serviceCategoryId stores the int ID.
       final newPost = JobPost(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: '', // placeholder — real ID comes from the backend response
         workerId: workerId,
-        category: _selectedCategory!,
+        category: _selectedCategory ?? '',
+        serviceCategoryId: _selectedCategoryId, // correct integer ID
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         startingRate: double.tryParse(_rateController.text) ?? 0.0,
         rateType: _selectedRateType,
         isAvailable: _isAvailable,
-        imageUrls: _selectedImages.map((image) => image.path).toList(),
       );
 
       final result = await workerProvider.createJobPost(newPost);
 
-      if (result.success && _selectedImages.isNotEmpty) {
-        try {
-          await workerProvider.uploadPostImages(
-            newPost.id,
-            _selectedImages.map((image) => image.path).toList(),
-          );
-        } catch (_) {}
-      }
+      if (!mounted) return;
 
-      if (mounted) {
-        if (result.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result.message), backgroundColor: Theme.of(context).colorScheme.primary),
-          );
-          Navigator.pop(context);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result.message), backgroundColor: Theme.of(context).colorScheme.error),
-          );
+      if (result.success) {
+        // Extract the real backend-assigned post ID for image upload.
+        // Response: { success, data: { job_post: { id, ... } } }
+        final realPostId = result.data?['job_post']?['id']?.toString();
+
+        if (_selectedImages.isNotEmpty && realPostId != null && realPostId.isNotEmpty) {
+          try {
+            // POST /api/worker/posts/{postId}/images (multipart, field: images[])
+            // Max 10 images total per post; each max 10MB (jpeg/jpg/png/webp)
+            await workerProvider.uploadPostImages(
+              realPostId,
+              _selectedImages.map((img) => img.path).toList(),
+            );
+          } catch (_) {
+            // Image upload failure is non-fatal — post was created successfully
+          }
         }
+
+        // Fix 3 — show success and pop
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.message), backgroundColor: Theme.of(context).colorScheme.primary),
+        );
+        Navigator.pop(context);
+      } else {
+        // Fix 3 — show inline field errors if present
+        final errors = result.errors ?? {};
+        String displayMessage = result.message;
+        if (errors.isNotEmpty) {
+          final fieldMessages = errors.entries
+              .map((e) {
+                final msgs = e.value is List ? (e.value as List).join(', ') : e.value.toString();
+                return '• $msgs';
+              })
+              .join('\n');
+          displayMessage = fieldMessages;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(displayMessage), backgroundColor: Theme.of(context).colorScheme.error),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -138,19 +160,30 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Category Dropdown
+                    // Category Dropdown — stores both label (display) and id (API)
                     FutureBuilder<List<ServiceCategory>>(
                       future: _categoriesFuture,
                       builder: (context, snapshot) {
                         final categories = snapshot.data ?? [];
                         return DropdownButtonFormField<String>(
-                          initialValue: _selectedCategory,
+                          value: null,  // no initial selection — user must pick
                           decoration: AppTextFormField.buildDecoration(context, label: 'Service Category'),
                           items: categories.map((c) => DropdownMenuItem(
-                            value: c.label,
+                            value: c.id, // store the category ID string as value
                             child: Text(c.label),
                           )).toList(),
-                          onChanged: (val) => setState(() => _selectedCategory = val),
+                          onChanged: (val) {
+                            if (val == null) return;
+                            // Find the matching category to store both id and label
+                            final cat = categories.firstWhere(
+                              (c) => c.id == val,
+                              orElse: () => categories.first,
+                            );
+                            setState(() {
+                              _selectedCategory = cat.label; // for display
+                              _selectedCategoryId = int.tryParse(cat.id); // for API
+                            });
+                          },
                           validator: (val) => val == null ? 'Required' : null,
                           dropdownColor: colorScheme.surface,
                           borderRadius: BorderRadius.circular(12),

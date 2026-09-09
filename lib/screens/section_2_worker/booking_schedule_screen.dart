@@ -42,12 +42,17 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   void _loadBookings() {
+    // GET /api/bookings — no status filter; load all and filter client-side by tab.
+    // The API supports ?status= but returning all at once avoids 5 separate requests.
     _bookingsFuture = context.read<BookingProvider>().getBookings();
   }
 
   Future<void> _handleResponse(String bookingId, bool accept) async {
     final bookingProvider = context.read<BookingProvider>();
-    final result = await bookingProvider.respondToBooking(bookingId: bookingId, accept: accept);
+    // Use dedicated accept/decline routes (wired in C1)
+    final result = accept
+        ? await bookingProvider.acceptBooking(bookingId: bookingId)
+        : await bookingProvider.declineBooking(bookingId: bookingId);
     if (mounted) {
       final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,13 +99,16 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                     children: [
                       Row(
                         children: [
-                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundImage: NetworkImage(AppConstants.getPhotoUrl(request.clientPhotoUrl)),
+                          ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Client Name', style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+                                Text(request.clientName ?? 'Client', style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
                                 const SizedBox(height: 4),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -333,13 +341,13 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           children: [
             Row(
               children: [
-                const CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
+                CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(booking.clientPhotoUrl))),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                      Text(booking.clientName ?? 'Client', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
@@ -356,7 +364,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
             const SizedBox(height: 16),
             _buildInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(booking.date), '${AppFormatters.date(booking.date)} • ${booking.time}'),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.barangay})', '~1.5 km away'),
+            _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.barangay})', ''),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -393,13 +401,13 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
         children: [
           Row(
             children: [
-              const CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
+              CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(booking.clientPhotoUrl))),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                    Text(booking.clientName ?? 'Client', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
@@ -418,7 +426,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           const SizedBox(height: 16),
           _buildInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(booking.date), '${AppFormatters.date(booking.date)} • ${booking.time}'),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.barangay})', '~1.5 km away'),
+          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.barangay})', ''),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -462,7 +470,8 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
-                  onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'),
+                  // Chat: booking.id is the thread identifier (matches /api/messages/{bookingId})
+                  onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
                   icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
                 ),
               ),

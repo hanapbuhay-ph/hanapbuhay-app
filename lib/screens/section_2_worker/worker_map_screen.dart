@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../core/constants/app_constants.dart';
 import '../../providers/booking_provider.dart';
-import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
-import '../../data/models/worker_model.dart';
 import '../../widgets/maps/live_tracking_map.dart';
 
 /// W9: Worker Map Screen
@@ -25,9 +23,11 @@ class WorkerMapScreen extends StatefulWidget {
 class _WorkerMapScreenState extends State<WorkerMapScreen> {
   final GlobalKey<LiveTrackingMapState> _mapKey = GlobalKey<LiveTrackingMapState>();
   Booking? _booking;
-  Worker? _worker;
   bool _isLoading = true;
   bool _isTracking = false;
+  // Coordinates loaded from GET /api/bookings/{id}/tracking
+  LatLng? _clientBarangayCoords;
+  LatLng? _workerBarangayCoords;
 
   @override
   void initState() {
@@ -37,42 +37,85 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
 
   Future<void> _loadData() async {
     final bookingProvider = context.read<BookingProvider>();
-    final workerProvider = context.read<WorkerProvider>();
+
     final booking = await bookingProvider.getBookingById(widget.bookingId);
-    if (booking != null) {
-      final worker = await workerProvider.getWorkerById(AppConstants.mockWorkerId);
-      if (mounted) {
-        setState(() {
-          _booking = booking;
-          _worker = worker;
-          _isLoading = false;
-        });
+
+    // GET /api/bookings/{id}/tracking — returns barangay coords + tracking flags.
+    // Note: current location is WebSocket-only; REST only provides barangay center coords.
+    final trackingStatus = await bookingProvider.getTrackingStatus(widget.bookingId);
+
+    if (mounted) {
+      // Parse client barangay coords from tracking status response
+      LatLng? clientCoords;
+      LatLng? workerCoords;
+      if (trackingStatus != null) {
+        final cb = trackingStatus['client_barangay'] as Map<String, dynamic>?;
+        final wb = trackingStatus['worker_barangay'] as Map<String, dynamic>?;
+        if (cb != null) {
+          final lat = double.tryParse(cb['latitude']?.toString() ?? '');
+          final lng = double.tryParse(cb['longitude']?.toString() ?? '');
+          if (lat != null && lng != null) clientCoords = LatLng(lat, lng);
+        }
+        if (wb != null) {
+          final lat = double.tryParse(wb['latitude']?.toString() ?? '');
+          final lng = double.tryParse(wb['longitude']?.toString() ?? '');
+          if (lat != null && lng != null) workerCoords = LatLng(lat, lng);
+        }
+        // Sync local tracking state with backend flag
+        _isTracking = trackingStatus['is_worker_tracking'] == true;
       }
+
+      // Fall back to booking's own barangay coords if tracking status unavailable
+      if (clientCoords == null && booking != null) {
+        clientCoords = booking.clientBarangayCoordinates;
+      }
+      // Worker coords: prefer tracking API, then auth provider's barangay from GET /api/user
+      // (AuthProvider does not store barangay coordinates, so we use the booking's worker barangay)
+      if (workerCoords == null && booking != null) {
+        workerCoords = booking.barangayCoordinates; // worker barangay from booking response
+      }
+
+      setState(() {
+        _booking = booking;
+        _clientBarangayCoords = clientCoords ?? const LatLng(9.9575, 124.3517);
+        _workerBarangayCoords = workerCoords ?? const LatLng(9.9312, 124.3121);
+        _isLoading = false;
+      });
     }
   }
 
   Future<void> _handleOnMyWay() async {
     final colorScheme = Theme.of(context).colorScheme;
-    // In production: POST /api/bookings/{id}/tracking/start body: { role: "worker" }
-    setState(() => _isTracking = true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Sharing your location with the client'),
-        backgroundColor: colorScheme.primary,
-      ),
-    );
+    // POST /api/bookings/{id}/tracking/start — only works when booking status = active
+    final result = await context.read<BookingProvider>().startTracking(bookingId: widget.bookingId);
+    if (!mounted) return;
+    if (result.success) {
+      setState(() => _isTracking = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: const Text('Sharing your location with the client'), backgroundColor: colorScheme.primary),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
+      );
+    }
   }
 
   Future<void> _handleArrived() async {
     final colorScheme = Theme.of(context).colorScheme;
-    // In production: POST /api/bookings/{id}/tracking/stop body: { role: "worker" }
-    setState(() => _isTracking = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Tracking stopped'),
-        backgroundColor: colorScheme.primary,
-      ),
-    );
+    // POST /api/bookings/{id}/tracking/stop
+    final result = await context.read<BookingProvider>().stopTracking(bookingId: widget.bookingId);
+    if (!mounted) return;
+    if (result.success) {
+      setState(() => _isTracking = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: const Text('Tracking stopped'), backgroundColor: colorScheme.primary),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
+      );
+    }
   }
 
   @override
@@ -80,14 +123,14 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (_booking == null || _worker == null) {
+    if (_booking == null) {
       return const Scaffold(body: Center(child: Text('Booking not found')));
     }
 
-    final worker = _worker!;
-    // Worker's barangay = green pin (own), client's barangay = blue pin
-    final workerLoc = worker.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
-    const clientLoc = LatLng(9.9575, 124.3517);
+    // Worker's barangay = green pin (own), client's barangay = blue pin.
+    // Note: these are barangay center coordinates, not live GPS — WebSocket only for live.
+    final workerLoc = _workerBarangayCoords ?? const LatLng(9.9312, 124.3121);
+    final clientLoc = _clientBarangayCoords ?? const LatLng(9.9575, 124.3517);
 
     return Scaffold(
       body: Stack(
@@ -165,6 +208,10 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final booking = _booking!;
 
+    // Use real client data from booking response (Fix 4 — getPhotoUrl for all photo URLs)
+    final clientName = booking.clientName ?? 'Client';
+    final clientPhoto = AppConstants.getPhotoUrl(booking.clientPhotoUrl);
+
     return Container(
       padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).padding.bottom + 24),
       decoration: BoxDecoration(
@@ -177,7 +224,6 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
           Container(
             width: 40,
             height: 4,
@@ -187,13 +233,11 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
-          // Client info row
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 22,
-                backgroundImage: NetworkImage(AppConstants.mockClientAvatar),
+                backgroundImage: NetworkImage(clientPhoto),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -201,29 +245,24 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Client',
-                      style: AppTypography.labelLarge.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
-                      ),
+                      clientName,
+                      style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
                     ),
                     Text(
-                      '#${booking.id} · ${booking.category}',
+                      '${booking.bookingCode} · ${booking.category}',
                       style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
               ),
+              // Chat uses booking.id as conversation ID (matches /api/messages/{bookingId})
               IconButton(
                 onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
                 icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
-          // Tracking status
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -240,10 +279,7 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
                   const SizedBox(width: 8),
                   Text(
                     'Sharing your location',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700),
                   ),
                 ] else ...[
                   Icon(Icons.location_off_outlined, size: 14, color: colorScheme.onSurfaceVariant),
@@ -256,10 +292,7 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 16),
-
-          // Action button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

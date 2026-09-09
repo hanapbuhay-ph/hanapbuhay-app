@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
-import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
 
 class ReceivedReviewsScreen extends StatefulWidget {
@@ -25,9 +24,23 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
   }
 
   Future<void> _loadData() async {
+    final authProvider = context.read<AuthProvider>();
     final workerProvider = context.read<WorkerProvider>();
-    // For demo/mock, assuming current worker is 'w1'
-    final worker = await workerProvider.getWorkerById(AppConstants.mockWorkerId);
+
+    // Use workerProfileId from AuthProvider (populated by GET /api/user → worker_profile.id).
+    // GET /api/workers/{workerProfileId} returns: average_rating, total_reviews, reviews[]
+    // Each review: rated_by_name, score, comment, created_at (parsed by WorkerReview.fromJson)
+    String? profileId = authProvider.workerProfileId;
+    if (profileId == null) {
+      await authProvider.refreshProfile();
+      profileId = authProvider.workerProfileId;
+    }
+
+    Worker? worker;
+    if (profileId != null) {
+      worker = await workerProvider.getWorkerById(profileId);
+    }
+
     if (mounted) {
       setState(() {
         _worker = worker;
@@ -197,6 +210,8 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
             style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface, height: 1.5),
           ),
           const SizedBox(height: 16),
+          // Note: WorkerReview.id is the rating record ID, not a booking ID.
+          // Display formatted date instead of attempting to show a booking code.
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -204,11 +219,11 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              'Re: Booking #${Booking.formatBookingCode(review.id, review.date)}',
+              'Reviewed on ${review.date.day}/${review.date.month}/${review.date.year}',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),

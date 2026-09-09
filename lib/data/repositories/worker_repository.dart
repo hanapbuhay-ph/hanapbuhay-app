@@ -105,17 +105,34 @@ abstract class WorkerRepository {
     CategoryWorkerFilters filters = const CategoryWorkerFilters(),
   });
 
+  /// GET /api/worker/posts — fetch the authenticated worker's own active posts.
+  /// Pass [includeInactive] = true to also include deactivated posts.
+  Future<List<JobPost>> getWorkerPosts({bool includeInactive = false});
+
+  /// POST /api/worker/verification/submit — multipart upload of verification docs.
+  /// Required: government_id, barangay_certificate, selfie_with_id (image files, max 5MB each)
+  /// Optional: skill_certificate (image file, max 5MB)
+  /// Returns 422 if status is already pending or approved.
+  Future<AuthResult> submitVerificationDocuments({
+    required String govIdPath,
+    required String brgyCertPath,
+    required String selfiePath,
+    String? skillCertPath,
+  });
+
+  /// GET /api/worker/verification/status — returns current verification state.
+  /// Response fields: verification_status, trust_tier, remarks (NOT verification_remarks), documents[]
+  Future<Map<String, dynamic>?> getVerificationStatus();
+
+  /// POST /api/worker/profile — update only availability_status.
+  /// Returns updated worker_profile data on success.
+  Future<AuthResult> updateAvailability(String availabilityStatus);
+
   Future<List<Worker>> getTopRatedWorkers();
   Future<List<Worker>> getRecentlyViewedWorkers();
   Future<List<ServiceCategory>> getCategories();
   Future<Worker?> getWorkerById(String id);
   Future<JobPostListing?> getJobPostDetail(String postId);
-  Future<AuthResult> submitVerificationDocuments({
-    required String workerId,
-    required String govIdPath,
-    required String brgyCertPath,
-    required String selfiePath,
-  });
   Future<AuthResult> updateProfile({
     required String workerId,
     required List<String> categories,

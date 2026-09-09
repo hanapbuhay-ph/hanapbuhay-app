@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/utils/formatters.dart';
@@ -8,6 +9,7 @@ import '../../providers/booking_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
+import '../../data/models/auth_result_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
 import '../../widgets/maps/live_tracking_map.dart';
@@ -58,8 +60,19 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Future<void> _updateStatus(BookingStatus newStatus) async {
     setState(() => _isLoading = true);
     final bookingProvider = context.read<BookingProvider>();
-    final result = await bookingProvider.updateBookingStatus(bookingId: widget.bookingId, status: newStatus);
-    
+    final AuthResult result;
+
+    if (newStatus == BookingStatus.active) {
+      // POST /api/bookings/{id}/start — sets started_at on the booking.
+      // Do NOT use startTracking() here — that is the location-sharing endpoint.
+      result = await bookingProvider.startBooking(bookingId: widget.bookingId);
+    } else if (newStatus == BookingStatus.completed) {
+      // POST /api/bookings/{id}/complete
+      result = await bookingProvider.completeBooking(bookingId: widget.bookingId);
+    } else {
+      result = await bookingProvider.updateBookingStatus(bookingId: widget.bookingId, status: newStatus);
+    }
+
     if (mounted) {
       if (result.success) {
         await _loadData();
@@ -140,6 +153,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Widget _buildClientCard() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final booking = _booking!;
+
+    // Use real client data from GET /api/bookings/{id} response.
+    // Booking.fromJson parses clientName + clientPhotoUrl from the API.
+    final clientName = booking.clientName ?? 'Client';
+    final clientPhoto = AppConstants.getPhotoUrl(booking.clientPhotoUrl);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -157,24 +176,23 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
-            radius: 24, 
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client123'),
+          CircleAvatar(
+            radius: 24,
+            backgroundImage: NetworkImage(clientPhoto),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Maria Santos', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                Text(clientName, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                 Text('Client', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ),
           IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
-            },
+            // Use booking.id as the chat thread identifier (matches /api/messages/{bookingId})
+            onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
             icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
             style: IconButton.styleFrom(
               backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
@@ -189,7 +207,11 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Widget _buildMapSection(Booking booking, Worker worker) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    const clientLoc = LatLng(9.9575, 124.3517);
+
+    // Use real client barangay coordinates from GET /api/bookings/{id} response.
+    // GET /api/bookings/{id}/tracking returns barangay coords (not live location).
+    // Fallback to a default Trinidad coord if not yet available.
+    final clientLoc = booking.clientBarangayCoordinates ?? const LatLng(9.9575, 124.3517);
     final workerLoc = worker.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
 
     return Container(
@@ -214,7 +236,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             right: 12,
             child: FloatingActionButton.small(
               heroTag: 'view_map_worker',
-              onPressed: () => Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${booking.id}/tracking'),
+              // Navigate to WorkerMapScreen (not the client LiveTrackingScreen)
+              onPressed: () => Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}'),
               backgroundColor: colorScheme.surface,
               child: Icon(Icons.fullscreen, color: colorScheme.onSurfaceVariant),
             ),
@@ -243,7 +266,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                           style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
                         ),
                         Text(
-                          _isTracking ? 'Estimated arrival: 10 mins' : 'Please proceed with the service',
+                          _isTracking ? 'Sharing location with client' : 'Please proceed with the service',
                           style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
                         ),
                       ],
@@ -251,14 +274,18 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   ),
                   if (_isTracking)
                     ElevatedButton(
-                      onPressed: () => setState(() => _isTracking = false),
+                      // POST /api/bookings/{id}/tracking/stop — stop location sharing
+                      onPressed: () async {
+                        await context.read<BookingProvider>().stopTracking(bookingId: widget.bookingId);
+                        if (mounted) setState(() => _isTracking = false);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colorScheme.primary,
                         foregroundColor: colorScheme.onPrimary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('I\'ve Arrived', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: const Text("I've Arrived", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     ),
                 ],
               ),
