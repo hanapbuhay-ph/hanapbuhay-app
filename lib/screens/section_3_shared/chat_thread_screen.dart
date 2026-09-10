@@ -72,9 +72,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final msgText = text?.trim();
     _messageController.clear();
 
-    // Mock send
     final chatProvider = context.read<ChatProvider>();
-    await chatProvider.sendMessage(widget.conversationId, 'current_user', text: msgText, imageUrl: imageUrl);
+    await chatProvider.sendMessage(widget.conversationId, text: msgText, imageUrl: imageUrl);
     
     // Refresh local list
     final updated = await chatProvider.getMessages(widget.conversationId);
@@ -205,7 +204,13 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 _navigateToProfile();
                 break;
               case 'report_user':
-                Navigator.pushNamed(context, '${AppRouter.fileReport}/${_conversation!.bookingId ?? 'placeholder'}');
+                if (_conversation!.bookingId != null) {
+                  Navigator.pushNamed(context, '${AppRouter.fileReport}/${_conversation!.bookingId}');
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Reporting is only available for booking-related conversations.')),
+                  );
+                }
                 break;
               case 'clear_chat':
                 _confirmClearChat();

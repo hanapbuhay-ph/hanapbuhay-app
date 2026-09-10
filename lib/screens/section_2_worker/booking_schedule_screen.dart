@@ -23,7 +23,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   late Future<List<Booking>> _bookingsFuture;
   final List<BookingStatus> _tabs = [
     BookingStatus.pending,
-    BookingStatus.upcoming,
+    BookingStatus.accepted,
     BookingStatus.active,
     BookingStatus.completed,
     BookingStatus.cancelled,
@@ -221,7 +221,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   String _getStatusLabel(BookingStatus status) {
     switch (status) {
       case BookingStatus.pending: return 'Requests';
-      case BookingStatus.upcoming: return 'Upcoming';
+      case BookingStatus.accepted: return 'Upcoming';
       case BookingStatus.active: return 'Ongoing';
       case BookingStatus.completed: return 'Completed';
       case BookingStatus.cancelled: return 'Cancelled';
@@ -302,7 +302,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   Color _getStatusColor(BookingStatus status, ColorScheme colorScheme) {
     switch (status) {
       case BookingStatus.pending: return colorScheme.primary;
-      case BookingStatus.upcoming: return Colors.amber.shade700;
+      case BookingStatus.accepted: return Colors.amber.shade700;
       case BookingStatus.active: return Colors.blue;
       case BookingStatus.completed: return Colors.grey.shade600;
       case BookingStatus.cancelled: return colorScheme.error;
@@ -454,8 +454,8 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                 child: ElevatedButton(
                   onPressed: () => Navigator.pushNamed(context, '${AppRouter.jobDetail}/${booking.id}'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: booking.status == BookingStatus.upcoming ? colorScheme.primary : colorScheme.surfaceContainerHighest,
-                    foregroundColor: booking.status == BookingStatus.upcoming ? colorScheme.onPrimary : colorScheme.onSurface,
+                    backgroundColor: booking.status == BookingStatus.accepted ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+                    foregroundColor: booking.status == BookingStatus.accepted ? colorScheme.onPrimary : colorScheme.onSurface,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -489,7 +489,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
     String label = _getStatusLabel(status);
     
     switch (status) {
-      case BookingStatus.upcoming: 
+      case BookingStatus.accepted: 
         color = Colors.amber;
         label = 'Scheduled';
         break;

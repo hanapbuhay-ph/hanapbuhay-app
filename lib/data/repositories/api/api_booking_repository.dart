@@ -313,4 +313,26 @@ class ApiBookingRepository implements BookingRepository {
         return AuthResult.failure(message: 'No mapping for status: ${status.name}');
     }
   }
+
+  @override
+  Future<AuthResult> rescheduleBooking({
+    required String bookingId,
+    required DateTime scheduledAt,
+  }) async {
+    final res = await ApiClient.post(
+      '/bookings/$bookingId/reschedule',
+      body: {'scheduled_at' : scheduledAt.toIso8601String()},
+      requiresAuth: true,
+    );
+    if (res['success'] == true) {
+      return AuthResult.success(
+        message: res['message'] ?? 'Booking rescheduled.',
+        data: res['data'],
+      );
+    }
+    return AuthResult.failure(
+      message: res['message'] ?? 'Failed to reschedule booking.',
+      errors: res['errors'] is Map ? res['errors'] as Map<String, dynamic> : null,
+    );
+  }
 }

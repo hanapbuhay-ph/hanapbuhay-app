@@ -76,17 +76,44 @@ class ApiNotificationRepository implements NotificationRepository {
 
   @override
   Future<NotificationPreferences> getPreferences() async {
-    // Note: This endpoint is not in 07_API_ENDPOINTS.md
-    // Return default preferences for now
-    // TODO: Add backend endpoint GET /api/user/notification-preferences
-    return NotificationPreferences();
+    try {
+      final res = await ApiClient.get('/user/notification-preferences', requiresAuth: true);
+
+      if (res['success'] != true || res['data'] == null) {
+        return NotificationPreferences();
+      }
+
+      final data = res['data'] as Map<String, dynamic>;
+
+      return NotificationPreferences(
+        bookingUpdates: data['booking_updates'] ?? true,
+        messages: data['messages'] ?? true,
+        promotions: data['promotions'] ?? false,
+        pushEnabled: data['push'] ?? true,
+        emailEnabled: data['email'] ?? true,
+      );
+    } catch (e) {
+      return NotificationPreferences();
+    }
   }
 
   @override
   Future<void> updatePreferences(NotificationPreferences preferences) async {
-    // Note: This endpoint is not in 07_API_ENDPOINTS.md
-    // TODO: Add backend endpoint POST /api/user/notification-preferences
-    print('[ApiNotificationRepository] updatePreferences: Backend endpoint not yet available');
+    try {
+      await ApiClient.post(
+        '/user/notification-preferences',
+        requiresAuth: true,
+        body: {
+          'booking_updates': preferences.bookingUpdates,
+          'messages': preferences.messages,
+          'promotions': preferences.promotions,
+          'push': preferences.pushEnabled,
+          'email': preferences.emailEnabled,
+        },
+      );
+    } catch (e) {
+      throw Exception('Failed to update notification preferences: $e');
+    }
   }
 
   /// Parse notification from API response

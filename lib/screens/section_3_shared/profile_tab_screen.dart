@@ -31,7 +31,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     final authProvider = context.read<AuthProvider>();
     if (authProvider.userRole == 'worker') {
       final workerProvider = context.read<WorkerProvider>();
-      final worker = await workerProvider.getWorkerById(AppConstants.mockWorkerId);
+      final profileId = authProvider.workerProfileId ?? authProvider.userId;
+      if (profileId == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+      final worker = await workerProvider.getWorkerById(profileId);
       if (mounted) {
         setState(() {
           _workerData = worker;

@@ -145,4 +145,13 @@ class BookingProvider extends ChangeNotifier {
     notifyListeners();
     return result;
   }
+
+  Future<AuthResult> rescheduleBooking({
+    required String bookingId,
+    required DateTime scheduledAt,
+  }) async {
+    final result = await _repository.rescheduleBooking(bookingId: bookingId, scheduledAt: scheduledAt);
+    notifyListeners();
+    return result;
+  }
 }

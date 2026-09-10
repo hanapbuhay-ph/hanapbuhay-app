@@ -367,7 +367,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         ),
         TextButton(
           onPressed: () {
-            if (_booking!.status == BookingStatus.upcoming) {
+            if (_booking!.status == BookingStatus.accepted) {
               _updateStatus(BookingStatus.active);
             }
           },
@@ -449,7 +449,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildConditionalAction(Booking booking) {
-    if (booking.status == BookingStatus.upcoming) {
+    if (booking.status == BookingStatus.accepted) {
       return PrimaryButton(
         label: 'Start Traveling',
         onPressed: () => _updateStatus(BookingStatus.active),

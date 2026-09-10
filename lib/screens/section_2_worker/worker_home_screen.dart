@@ -120,13 +120,13 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                     children: [
                       Row(
                         children: [
-                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
-                          const SizedBox(width: 14),
+                          CircleAvatar(radius: 28, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(request.clientPhotoUrl))),
+                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Client Name', style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+                                Text(request.clientName ?? 'Client', style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
                                 const SizedBox(height: 4),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -767,13 +767,13 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
         children: [
           Row(
             children: [
-              const CircleAvatar(radius: 24, backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client')),
+              CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(request.clientPhotoUrl))),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                    Text(request.clientName ?? 'Client', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),

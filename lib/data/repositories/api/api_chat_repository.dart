@@ -61,7 +61,7 @@ class ApiChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> sendMessage(String conversationId, String senderId, {String? text, String? imageUrl}) async {
+  Future<void> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
     try {
       // API: POST /api/messages/{bookingId}
       // Always uses multipart/form-data

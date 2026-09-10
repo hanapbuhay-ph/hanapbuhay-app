@@ -10,8 +10,8 @@ class ChatProvider extends ChangeNotifier {
   Future<List<Conversation>> getConversations() => _repository.getConversations();
   Future<List<Message>> getMessages(String conversationId) => _repository.getMessages(conversationId);
   
-  Future<void> sendMessage(String conversationId, String senderId, {String? text, String? imageUrl}) async {
-    await _repository.sendMessage(conversationId, senderId, text: text, imageUrl: imageUrl);
+  Future<void> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
+    await _repository.sendMessage(conversationId, senderId: senderId, text: text, imageUrl: imageUrl);
     notifyListeners();
   }
 

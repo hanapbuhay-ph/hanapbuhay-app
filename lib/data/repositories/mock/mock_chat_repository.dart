@@ -98,12 +98,12 @@ class MockChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> sendMessage(String conversationId, String senderId, {String? text, String? imageUrl}) async {
+  Future<void> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
     await Future.delayed(const Duration(milliseconds: 200));
     final newMessage = Message(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       conversationId: conversationId,
-      senderId: senderId,
+      senderId: senderId ?? 'current_user',
       text: text,
       imageUrl: imageUrl,
       timestamp: DateTime.now(),

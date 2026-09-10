@@ -20,7 +20,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   late TabController _tabController;
   late Future<List<Booking>> _bookingsFuture;
   final List<BookingStatus> _tabs = [
-    BookingStatus.upcoming,
+    BookingStatus.pending,
+    BookingStatus.accepted,
     BookingStatus.active,
     BookingStatus.completed,
     BookingStatus.cancelled,
@@ -46,7 +47,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
 
   String _getStatusLabel(BookingStatus status) {
     switch (status) {
-      case BookingStatus.upcoming: return 'Upcoming';
+      case BookingStatus.pending: return 'Requests';
+      case BookingStatus.accepted: return 'Upcoming';
       case BookingStatus.active: return 'Ongoing';
       case BookingStatus.completed: return 'Completed';
       case BookingStatus.cancelled: return 'Cancelled';
@@ -56,20 +58,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
 
   // Map a tab status to a set of underlying API statuses per the B3.2 spec.
   bool _matchesTab(BookingStatus tab, Booking booking) {
-    switch (tab) {
-      case BookingStatus.upcoming:
-        return booking.status == BookingStatus.pending ||
-            booking.status == BookingStatus.accepted;
-      case BookingStatus.active:
-        return booking.status == BookingStatus.active;
-      case BookingStatus.completed:
-        return booking.status == BookingStatus.completed;
-      case BookingStatus.cancelled:
-        return booking.status == BookingStatus.cancelled ||
-            booking.status == BookingStatus.declined;
-      default:
-        return false;
-    }
+    return booking.status == tab;
   }
 
   @override
@@ -158,9 +147,9 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
 
   Color _getStatusColor(BookingStatus status, ColorScheme colorScheme) {
     switch (status) {
-      case BookingStatus.pending: return colorScheme.primary;
-      case BookingStatus.upcoming: return Colors.amber.shade700;
-      case BookingStatus.active: return Colors.blue;
+      case BookingStatus.pending: return Colors.orange;
+      case BookingStatus.accepted: return Colors.amber.shade700;
+      case BookingStatus.active: return colorScheme.primary;
       case BookingStatus.completed: return Colors.grey.shade600;
       case BookingStatus.cancelled: return colorScheme.error;
       default: return Colors.grey;
@@ -265,9 +254,10 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     final colorScheme = theme.colorScheme;
     Color color;
     switch (status) {
-      case BookingStatus.upcoming: color = Colors.amber; break;
+      case BookingStatus.pending: color = Colors.orange; break;
+      case BookingStatus.accepted: color = Colors.amber; break;
       case BookingStatus.active: color = colorScheme.primary; break;
-      case BookingStatus.completed: color = colorScheme.onSurfaceVariant; break;
+      case BookingStatus.completed: color = Colors.grey.shade600; break;
       case BookingStatus.cancelled: color = colorScheme.error; break;
       default: color = Colors.grey;
     }
@@ -459,13 +449,35 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     if (pickedDate != null && mounted) {
       final pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.now(),
+        initialTime: TimeOfDay.fromDateTime(booking.date),
       );
       
       if (pickedTime != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking rescheduled successfully! (Mock)')),
+        final scheduledAt = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
         );
+
+        final result = await context.read<BookingProvider>().rescheduleBooking(
+          bookingId: booking.id,
+          scheduledAt: scheduledAt,
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: result.success ? null : Theme.of(context).colorScheme.error,
+            ),
+          );
+          if (result.success) {
+            _loadBookings();
+            setState(() {});
+          }
+        }
       }
     }
   }

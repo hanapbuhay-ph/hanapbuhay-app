@@ -361,6 +361,35 @@ class MockBookingRepository implements BookingRepository {
   }
 
   @override
+  Future<AuthResult> rescheduleBooking({
+    required String bookingId,
+    required DateTime scheduledAt,
+  }) async {
+    await Future.delayed(const Duration(seconds: 1));
+    final index = _mockBookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      final old = _mockBookings[index];
+      final timeStr = '${scheduledAt.hour.toString().padLeft(2, '0')}:${scheduledAt.minute.toString().padLeft(2, '0')}';
+      _mockBookings[index] = Booking(
+        id: old.id,
+        workerId: old.workerId,
+        clientId: old.clientId,
+        category: old.category,
+        date: scheduledAt,
+        time: timeStr,
+        barangay: old.barangay,
+        barangayCoordinates: old.barangayCoordinates,
+        notes: old.notes,
+        status: old.status,
+        timeline: old.timeline,
+        isRated: old.isRated,
+        isClientRated: old.isClientRated,
+      );
+    }
+    return AuthResult.success(message: 'Booking rescheduled.');
+  }
+
+  @override
   Future<Map<String, dynamic>?> getTrackingStatus(String bookingId) async {
     await Future.delayed(const Duration(milliseconds: 500));
     return const {

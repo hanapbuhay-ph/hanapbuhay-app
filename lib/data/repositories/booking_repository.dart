@@ -66,4 +66,9 @@ abstract class BookingRepository {
     required String bookingId,
     required BookingStatus status,
   });
+
+  Future<AuthResult> rescheduleBooking({
+    required String bookingId,
+    required DateTime scheduledAt,
+  });
 }
