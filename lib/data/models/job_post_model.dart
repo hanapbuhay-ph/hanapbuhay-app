@@ -1,4 +1,5 @@
 import 'worker_model.dart';
+export 'service_category_model.dart';
 
 enum RateType {
   perHour,

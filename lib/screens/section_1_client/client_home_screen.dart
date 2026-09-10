@@ -1,16 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/repositories/worker_repository.dart';
-import '../../data/models/worker_model.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/barangay_model.dart';
-import '../../data/models/trust_tier.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/layout/responsive_content.dart';
+import '../../widgets/cards/job_post_card.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   const ClientHomeScreen({super.key});
@@ -165,222 +163,6 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     );
   }
 
-  Widget _buildWorkerCard(JobPostListing listing) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final worker = listing.worker;
-    final post = listing.post;
-
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '${AppRouter.clientPostDetail}/${post.id}'),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top row: avatar + name + trust badge
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}'),
-                  child: CircleAvatar(radius: 26, backgroundImage: NetworkImage(worker.avatarUrl)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}'),
-                        child: Text(
-                          worker.name,
-                          style: AppTypography.labelLarge.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        post.category,
-                        style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
-                      ),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on_outlined, size: 12, color: colorScheme.onSurfaceVariant),
-                          const SizedBox(width: 3),
-                          Expanded(
-                            child: Text(
-                              worker.barangay,
-                              style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                _buildTrustBadge(worker, colorScheme),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (post.images.isNotEmpty || post.imageUrls.isNotEmpty) ...[
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: CachedNetworkImage(
-                      imageUrl: post.thumbnailUrl ?? post.previewImageUrl ?? post.imageUrls.first,
-                      width: double.infinity,
-                      height: 180,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        height: 180,
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        height: 180,
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Center(child: Icon(Icons.image_outlined)),
-                      ),
-                    ),
-                  ),
-                  if ((post.images.isNotEmpty ? post.images.length : post.imageUrls.length) > 1)
-                    Positioned(
-                      right: 10,
-                      top: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${post.images.isNotEmpty ? post.images.length : post.imageUrls.length} photos',
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 10),
-            ],
-            // Post title
-            Text(
-              post.title,
-              style: AppTypography.labelLarge.copyWith(
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-                fontSize: 14,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            // Description preview
-            Text(
-              post.description,
-              style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 10),
-            // Bottom row: distance + rate + availability dot
-            Row(
-              children: [
-                Icon(Icons.near_me_outlined, size: 13, color: colorScheme.onSurfaceVariant),
-                const SizedBox(width: 3),
-                Expanded(
-                  child: Text(
-                    worker.distance,
-                    style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  'From ₱${post.startingRate.toInt()}${post.rateType.shortLabel}',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: worker.isAvailable ? colorScheme.primary : Colors.orange,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrustBadge(Worker worker, ColorScheme colorScheme) {
-    final tier = worker.trustTier;
-    final Color color;
-    final String label;
-    final IconData icon;
-
-    switch (tier) {
-      case TrustTier.trusted:
-        color = Colors.blue;
-        label = 'Trusted';
-        icon = Icons.star;
-        break;
-      case TrustTier.verified:
-        color = colorScheme.primary;
-        label = 'Verified';
-        icon = Icons.shield;
-        break;
-      default:
-        color = Colors.orange;
-        label = 'Unverified';
-        icon = Icons.warning_amber_rounded;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 11, color: color),
-          const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildQuickFilters() {
     final workerProvider = context.watch<WorkerProvider>();
     final colorScheme = Theme.of(context).colorScheme;
@@ -450,7 +232,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.only(top: 8),
           itemCount: listings.length,
-          itemBuilder: (context, index) => _buildWorkerCard(listings[index]),
+          itemBuilder: (context, index) => JobPostCard(listing: listings[index]),
         );
       },
     );
@@ -538,21 +320,21 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                   FutureBuilder<List<ServiceCategory>>(
                     future: workerProvider.getCategories(),
                     builder: (context, snapshot) {
-                      final categories = (snapshot.data ?? []).map((c) => c.label).toList();
+                      final categories = snapshot.data ?? [];
                       return Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: categories.map((cat) {
-                          final isSelected = _selectedCategories.contains(cat);
+                          final isSelected = _selectedCategories.contains(cat.id);
                           return FilterChip(
-                            label: Text(cat),
+                            label: Text(cat.label),
                             selected: isSelected,
                             onSelected: (val) {
                               setState(() {
                                 if (val) {
-                                  _selectedCategories.add(cat);
+                                  _selectedCategories.add(cat.id);
                                 } else {
-                                  _selectedCategories.remove(cat);
+                                  _selectedCategories.remove(cat.id);
                                 }
                               });
                             },
@@ -579,7 +361,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                     ),
                     hint: const Text('All Barangays'),
                     items: Barangay.trinidadBarangays.map((b) => DropdownMenuItem(
-                      value: b.name,
+                      value: b.id,
                       child: Text(b.name),
                     )).toList(),
                     onChanged: (val) => setState(() => _selectedBarangay = val),

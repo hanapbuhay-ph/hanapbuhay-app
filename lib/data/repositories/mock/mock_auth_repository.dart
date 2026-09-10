@@ -135,12 +135,18 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AuthResult> resendOtp(String email) async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    return AuthResult.success(message: 'Verification code resent to your email.');
+  }
+
+  @override
   Future<AuthResult> changePassword({
-    required String currentPassword,
+    String? currentPassword,
     required String newPassword,
   }) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    if (currentPassword == 'password123') {
+    if (currentPassword == null || currentPassword == 'password123') {
       return AuthResult.success(message: 'Password changed successfully');
     }
     return AuthResult.failure(message: 'Incorrect current password');

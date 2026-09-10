@@ -147,11 +147,27 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
     if (booking.status == BookingStatus.active &&
         booking.startedAt != null) {
-      return SizedBox(
+      // Only the worker can mark a job as complete via the backend.
+      // The client sees a read-only status message here.
+      return Container(
         width: double.infinity,
-        child: PrimaryButton(
-          label: 'Confirm Job Completed',
-          onPressed: () => _handleComplete(booking),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, color: colorScheme.primary, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Job is in progress. The worker will mark it as completed when done.',
+                style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurface),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -168,7 +184,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       );
     }
 
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 
   Future<void> _handleCancel(Booking booking) async {
@@ -207,34 +223,6 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     if (reason == null || !mounted) return;
 
     final result = await context.read<BookingProvider>().cancelBooking(bookingId: booking.id, reason: reason);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
-      setState(() {
-        _isLoading = true;
-      });
-      _loadData();
-    }
-  }
-
-  Future<void> _handleComplete(Booking booking) async {
-    final theme = Theme.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Job Completion'),
-        content: const Text('Did the worker finish the job? This will mark the booking as completed.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Yes'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-
-    final result = await context.read<BookingProvider>().completeBooking(bookingId: booking.id);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
       setState(() {

@@ -42,7 +42,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       final isGoogle = authProvider.isGoogleLinked;
       
       final result = await authProvider.changePassword(
-        currentPassword: isGoogle ? 'password123' : _currentPasswordController.text, // Mock current pass if Google
+        currentPassword: isGoogle ? null : _currentPasswordController.text,
         newPassword: _newPasswordController.text,
       );
 

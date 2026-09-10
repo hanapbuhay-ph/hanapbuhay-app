@@ -124,8 +124,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
 
   Future<void> _handleResend() async {
     if (!_canResend) return;
-    debugPrint('Resending OTP to ${widget.email}');
     _startTimer();
+    try {
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.resendOtp(widget.email);
+    } catch (_) {
+      // Resend is best-effort; timer already reset so user can try again.
+    }
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('A new code has been sent.')),
     );

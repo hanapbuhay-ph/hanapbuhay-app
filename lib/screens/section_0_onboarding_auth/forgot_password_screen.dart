@@ -30,6 +30,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   String? _errorMessage;
+  String? _resetToken; // received from verify-OTP response, required by reset-password
 
   // Timer for OTP
   Timer? _timer;
@@ -125,6 +126,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
       final authProvider = context.read<AuthProvider>();
       final result = await authProvider.verifyForgotPasswordOtp(_identifierController.text.trim(), _otp);
       if (result.success) {
+        // Backend returns { data: { reset_token: '...' } } — must be forwarded to reset step.
+        _resetToken = result.data?['reset_token']?.toString();
         setState(() => _currentStep = ForgotPasswordStep.resetPassword);
       } else {
         _handleOtpError(result.message);
@@ -166,7 +169,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
 
     try {
       final authProvider = context.read<AuthProvider>();
-      final result = await authProvider.resetPassword(_identifierController.text.trim(), pass);
+      final result = await authProvider.resetPasswordWithToken(
+        email: _identifierController.text.trim(),
+        resetToken: _resetToken ?? '',
+        newPassword: pass,
+      );
       if (result.success) {
         setState(() => _currentStep = ForgotPasswordStep.success);
       } else {

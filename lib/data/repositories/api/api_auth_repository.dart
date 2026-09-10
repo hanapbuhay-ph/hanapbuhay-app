@@ -31,6 +31,7 @@ class ApiAuthRepository implements AuthRepository {
     return _toResult(res);
   }
 
+  @override
   Future<AuthResult> resendOtp(String email) async {
     final res = await ApiClient.post('/auth/email/resend-otp', body: {'email': email});
     return _toResult(res);
@@ -81,7 +82,7 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthResult> changePassword({required String currentPassword, required String newPassword}) async {
+  Future<AuthResult> changePassword({String? currentPassword, required String newPassword}) async {
     final res = await ApiClient.post('/user/password', body: {'current_password': currentPassword, 'password': newPassword, 'password_confirmation': newPassword}, requiresAuth: true);
     return _toResult(res);
   }

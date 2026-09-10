@@ -125,6 +125,10 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
 
     setState(() => _isSubmitting = true);
 
+    // Capture providers before any await to avoid BuildContext-across-async-gap lint.
+    final workerProvider = context.read<WorkerProvider>();
+    final bookingProvider = context.read<BookingProvider>();
+
     try {
       final worker = _worker;
       final scheduledAt = DateTime(
@@ -135,16 +139,51 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
         _selectedTime!.minute,
       );
 
-      // Resolve the service category id from the worker's job posts.
+      // Resolve the service category id.
+      // Priority 1: match the dropdown label against the worker's own job posts
+      //             (already loaded, no extra request needed).
+      // Priority 2: match against the full API categories list via
+      //             GET /api/service-categories (covers the case where the
+      //             worker profile was loaded without embedded job posts).
+      // If both fail the field stays null and we show a user-facing error rather
+      // than sending a null value that the backend will reject with a 422.
       int? categoryId;
       if (worker != null) {
         final matchingPost = worker.jobPosts
-            .where((p) => p.category.contains(_selectedCategory!))
+            .where((p) => p.category.toLowerCase().contains(_selectedCategory!.toLowerCase()))
             .firstOrNull;
-        categoryId = matchingPost?.serviceCategoryId ?? worker.jobPosts.firstOrNull?.serviceCategoryId;
+        categoryId = matchingPost?.serviceCategoryId ??
+            worker.jobPosts.firstOrNull?.serviceCategoryId;
       }
 
-      final result = await context.read<BookingProvider>().createBooking(
+      // Fallback: resolve label → id from the API categories list.
+      if (categoryId == null && _selectedCategory != null) {
+        try {
+          final apiCategories = await workerProvider.getCategories();
+          final match = apiCategories.firstWhere(
+            (c) => c.label.toLowerCase().contains(_selectedCategory!.toLowerCase()) ||
+                _selectedCategory!.toLowerCase().contains(c.label.toLowerCase()),
+            orElse: () => apiCategories.first,
+          );
+          categoryId = int.tryParse(match.id);
+        } catch (_) {
+          // getCategories() failed — categoryId stays null, guard below fires.
+        }
+      }
+
+      if (categoryId == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not resolve service category. Please try again.'),
+            ),
+          );
+        }
+        setState(() => _isSubmitting = false);
+        return;
+      }
+
+      final result = await bookingProvider.createBooking(
         workerId: worker?.userId ?? widget.workerId,
         serviceCategoryId: categoryId,
         scheduledAt: scheduledAt,

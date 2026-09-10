@@ -4,6 +4,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
+import '../../data/models/service_category_model.dart';
 import '../../widgets/navigation/app_bottom_nav.dart';
 import '../../widgets/layout/responsive_grid.dart';
 
@@ -99,7 +100,7 @@ class _CategoryCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.pushNamed(
         context,
-        '${AppRouter.categoryResults}/${category.label}?name=${Uri.encodeComponent(category.label)}',
+        '${AppRouter.categoryResults}/${category.id}?name=${Uri.encodeComponent(category.label)}',
       ),
       child: Container(
         padding: const EdgeInsets.all(20),

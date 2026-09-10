@@ -187,14 +187,25 @@ class ApiWorkerRepository implements WorkerRepository {
 
   @override
   Future<List<Worker>> getRecentlyViewedWorkers() {
-    // GET /api/workers/recent
-    throw UnimplementedError();
+    // No backend endpoint exists for recently-viewed workers.
+    // Return empty list so callers degrade gracefully.
+    return Future.value([]);
   }
 
   @override
-  Future<List<Worker>> getTopRatedWorkers() {
-    // GET /api/workers?sort=rating
-    throw UnimplementedError();
+  Future<List<Worker>> getTopRatedWorkers() async {
+    // GET /api/workers — returns all approved workers sorted by rating on
+    // the backend. The worker search screen then applies local filtering.
+    final res = await ApiClient.get('/workers', requiresAuth: true);
+    if (res['success'] != true) {
+      print('[ApiWorkerRepository] getTopRatedWorkers error: ${res['message']}');
+      return [];
+    }
+    final rawWorkers = res['data']?['workers'] as List<dynamic>? ?? [];
+    return rawWorkers
+        .whereType<Map<String, dynamic>>()
+        .map((item) => Worker.fromJson(item))
+        .toList();
   }
 
   @override

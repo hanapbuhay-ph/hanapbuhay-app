@@ -364,6 +364,10 @@ class AuthProvider extends ChangeNotifier {
     return result;
   }
 
+  Future<AuthResult> resendOtp(String email) async {
+    return await _authRepository.resendOtp(email);
+  }
+
   Future<AuthResult> forgotPassword(String identifier) async {
     return await _authRepository.forgotPassword(identifier);
   }
@@ -376,7 +380,26 @@ class AuthProvider extends ChangeNotifier {
     return await _authRepository.resetPassword(identifier, newPassword);
   }
 
-  Future<AuthResult> changePassword({required String currentPassword, required String newPassword}) async {
+  /// Resets password using the token returned by verifyForgotPasswordOtp.
+  /// Sends { email, reset_token, password, password_confirmation } — the full
+  /// contract required by the backend's ResetPasswordRequest.
+  Future<AuthResult> resetPasswordWithToken({
+    required String email,
+    required String resetToken,
+    required String newPassword,
+  }) async {
+    if (_authRepository is ApiAuthRepository) {
+      return await (_authRepository as ApiAuthRepository).resetPasswordWithToken(
+        email: email,
+        resetToken: resetToken,
+        newPassword: newPassword,
+      );
+    }
+    // Fallback for mock: delegate to the base resetPassword method.
+    return await _authRepository.resetPassword(email, newPassword);
+  }
+
+  Future<AuthResult> changePassword({String? currentPassword, required String newPassword}) async {
     final result = await _authRepository.changePassword(currentPassword: currentPassword, newPassword: newPassword);
     if (result.success && _signInMethod == 'google') {
       final prefs = await SharedPreferences.getInstance();

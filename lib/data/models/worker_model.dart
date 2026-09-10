@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -218,16 +217,4 @@ class WorkerReview {
       date: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
     );
   }
-}
-
-class ServiceCategory {
-  final String id;
-  final String label;
-  final IconData icon;
-
-  ServiceCategory({
-    required this.id,
-    required this.label,
-    required this.icon,
-  });
 }

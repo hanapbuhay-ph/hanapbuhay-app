@@ -453,21 +453,21 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                   FutureBuilder<List<ServiceCategory>>(
                     future: workerProvider.getCategories(),
                     builder: (context, snapshot) {
-                      final categories = (snapshot.data ?? []).map((c) => c.label).toList();
+                      final categories = snapshot.data ?? [];
                       return Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: categories.map((cat) {
-                          final isSelected = _selectedCategories.contains(cat);
+                          final isSelected = _selectedCategories.contains(cat.id);
                           return FilterChip(
-                            label: Text(cat),
+                            label: Text(cat.label),
                             selected: isSelected,
                             onSelected: (val) {
                               setState(() {
                                 if (val) {
-                                  _selectedCategories.add(cat);
+                                  _selectedCategories.add(cat.id);
                                 } else {
-                                  _selectedCategories.remove(cat);
+                                  _selectedCategories.remove(cat.id);
                                 }
                               });
                             },
@@ -494,7 +494,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                     ),
                     hint: const Text('All Barangays'),
                     items: Barangay.trinidadBarangays.map((b) => DropdownMenuItem(
-                      value: b.name,
+                      value: b.id,
                       child: Text(b.name),
                     )).toList(),
                     onChanged: (val) => setState(() => _selectedBarangay = val),

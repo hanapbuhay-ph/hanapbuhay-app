@@ -23,8 +23,10 @@ abstract class AuthRepository {
 
   Future<AuthResult> resetPassword(String identifier, String newPassword);
 
+  Future<AuthResult> resendOtp(String email);
+
   Future<AuthResult> changePassword({
-    required String currentPassword,
+    String? currentPassword,
     required String newPassword,
   });
 
