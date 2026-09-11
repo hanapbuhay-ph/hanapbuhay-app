@@ -166,6 +166,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         bgColor = const Color(0xFFFFDDB5).withValues(alpha: 0.2);
         break;
       case NotificationType.verificationApproved:
+      case NotificationType.verificationResubmissionRequired:
         icon = Icons.verified_user;
         color = colorScheme.primary;
         bgColor = colorScheme.primary.withValues(alpha: 0.1);
@@ -254,12 +255,13 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         Navigator.pushNamed(context, '${AppRouter.chatThread}/${notification.relatedId}');
         break;
       case NotificationType.verificationApproved:
+      case NotificationType.verificationResubmissionRequired:
         Navigator.pushNamed(context, AppRouter.verificationStatus);
         break;
       case NotificationType.newRatingReceived:
         final role = context.read<AuthProvider>().userRole;
         if (role == 'worker') {
-           Navigator.pushNamed(context, AppRouter.bookingSchedule);
+           Navigator.pushNamed(context, AppRouter.receivedReviews);
         } else {
            Navigator.pushNamed(context, AppRouter.bookingHistory);
         }

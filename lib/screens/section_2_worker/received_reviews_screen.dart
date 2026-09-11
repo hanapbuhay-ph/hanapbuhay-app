@@ -16,6 +16,7 @@ class ReceivedReviewsScreen extends StatefulWidget {
 class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
   Worker? _worker;
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -24,16 +25,17 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
   }
 
   Future<void> _loadData() async {
+    if (mounted) setState(() { _isLoading = true; _errorMessage = null; });
     final authProvider = context.read<AuthProvider>();
     final workerProvider = context.read<WorkerProvider>();
 
     // Use workerProfileId from AuthProvider (populated by GET /api/user → worker_profile.id).
     // GET /api/workers/{workerProfileId} returns: average_rating, total_reviews, reviews[]
     // Each review: rated_by_name, score, comment, created_at (parsed by WorkerReview.fromJson)
-    String? profileId = authProvider.workerProfileId;
+    String? profileId = authProvider.workerProfileId ?? authProvider.userId;
     if (profileId == null) {
       await authProvider.refreshProfile();
-      profileId = authProvider.workerProfileId;
+      profileId = authProvider.workerProfileId ?? authProvider.userId;
     }
 
     Worker? worker;
@@ -45,6 +47,7 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
       setState(() {
         _worker = worker;
         _isLoading = false;
+        if (worker == null) _errorMessage = 'Unable to load your reviews.';
       });
     }
   }
@@ -64,10 +67,21 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
     if (_worker == null) {
       return Scaffold(
         backgroundColor: colorScheme.surface,
-        body: const Column(
+        body: Column(
           children: [
             AppHeader(title: 'My Reviews'),
-            Expanded(child: Center(child: Text('Profile not found'))),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_errorMessage ?? 'Unable to load your reviews.'),
+                    const SizedBox(height: 16),
+                    OutlinedButton(onPressed: _loadData, child: const Text('Try Again')),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -139,8 +153,13 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
+              final threshold = index + 1;
               return Icon(
-                index < worker.rating.floor() ? Icons.star : Icons.star_border,
+                worker.rating >= threshold
+                    ? Icons.star
+                    : worker.rating >= threshold - 0.5
+                        ? Icons.star_half
+                        : Icons.star_border,
                 color: Colors.amber,
                 size: 28,
               );
@@ -206,7 +225,7 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            review.comment,
+            review.comment.trim().isEmpty ? 'No written comment.' : review.comment,
             style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface, height: 1.5),
           ),
           const SizedBox(height: 16),
@@ -219,7 +238,8 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              'Reviewed on ${review.date.day}/${review.date.month}/${review.date.year}',
+                'Reviewed on ${review.date.day}/${review.date.month}/${review.date.year}'
+                  '${review.bookingId == null ? '' : ' • Booking #${review.bookingId}'}',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,

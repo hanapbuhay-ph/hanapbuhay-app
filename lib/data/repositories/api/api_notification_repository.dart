@@ -210,8 +210,13 @@ class ApiNotificationRepository implements NotificationRepository {
       case 'verification_approved':
       case 'verificationapproved':
         return NotificationType.verificationApproved;
+      case 'verification_resubmission_required':
+      case 'verificationresubmissionrequired':
+        return NotificationType.verificationResubmissionRequired;
       case 'new_rating_received':
       case 'newratingreceived':
+      case 'new_rating':
+      case 'newrating':
       case 'rating':
         return NotificationType.newRatingReceived;
       default:

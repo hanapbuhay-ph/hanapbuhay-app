@@ -44,13 +44,23 @@ class ApiWorkerRepository implements WorkerRepository {
         if (skillCertPath != null) 'skill_certificate': [skillCertPath]
     };
     final res = await ApiClient.postMultipart('/worker/verification/submit', fields: {}, files: f, requiresAuth: true);
-    return res['success'] == true ? AuthResult.success(message: res['message']) : AuthResult.failure(message: res['message'] ?? 'Failed');
+    return res['success'] == true
+      ? AuthResult.success(message: res['message'])
+      : AuthResult.failure(
+        message: res['message'] ?? 'Failed',
+        errors: res['errors'] is Map
+          ? (res['errors'] as Map).map((key, value) => MapEntry(key.toString(), value))
+          : null,
+        );
   }
 
   @override
   Future<Map<String, dynamic>?> getVerificationStatus() async {
     final res = await ApiClient.get('/worker/verification/status', requiresAuth: true);
-    return res['success'] == true ? res['data'] : null;
+    if (res['success'] != true) {
+      throw Exception(res['message']?.toString() ?? 'Unable to load verification status.');
+    }
+    return res['data'] as Map<String, dynamic>?;
   }
 
   @override

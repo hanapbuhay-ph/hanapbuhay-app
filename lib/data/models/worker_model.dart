@@ -187,6 +187,7 @@ class Worker {
 
 class WorkerReview {
   final String id;
+  final String? bookingId;
   final String reviewerName;
   final String reviewerAvatar;
   final double rating;
@@ -195,6 +196,7 @@ class WorkerReview {
 
   WorkerReview({
     required this.id,
+    this.bookingId,
     required this.reviewerName,
     required this.reviewerAvatar,
     required this.rating,
@@ -205,6 +207,7 @@ class WorkerReview {
   factory WorkerReview.fromJson(Map<String, dynamic> json) {
     return WorkerReview(
       id: json['id']?.toString() ?? '',
+      bookingId: json['booking_id']?.toString(),
       reviewerName: json['rated_by_name']?.toString() ?? '',
       reviewerAvatar: AppConstants.getPhotoUrl(
         json['reviewer_avatar_url']?.toString() ??

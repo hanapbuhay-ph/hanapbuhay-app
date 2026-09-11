@@ -48,6 +48,29 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             );
           }
 
+          if (snapshot.hasError) {
+            return Column(
+              children: [
+                const AppHeader(title: 'Verification Status'),
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Unable to load verification status.'),
+                          const SizedBox(height: 16),
+                          OutlinedButton(onPressed: () => setState(() => _loadStatus()), child: const Text('Try Again')),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
           final data = snapshot.data;
           final status = data?['verification_status']?.toString() ?? 'not_started';
           final remarks = data?['remarks']?.toString(); // backend key is "remarks", not "verification_remarks"
@@ -86,6 +109,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         return _buildPendingState(documents);
       case 'rejected':
         return _buildRejectedState(remarks, documents);
+      case 'resubmission_required':
+        return _buildResubmissionState(remarks, documents);
       default:
         // not_started / unknown
         return _buildNotStartedState();
@@ -105,15 +130,16 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
     };
 
     // If we have real document data, render from it
-    final rows = documents.isNotEmpty
-        ? documents.map<Map<String, dynamic>>((d) {
-            final type = d['type']?.toString() ?? '';
-            final docStatus = d['status']?.toString() ?? 'pending';
-            return {'label': staticLabels[type] ?? type, 'status': docStatus};
-          }).toList()
-        : staticLabels.entries
-            .map((e) => {'label': e.value, 'status': 'not_started'})
-            .toList();
+    final documentStatuses = <String, String>{
+      for (final d in documents)
+        if (d is Map && d['type'] != null) d['type'].toString(): d['status']?.toString() ?? 'pending',
+    };
+    final rows = staticLabels.entries
+        .map((entry) => {
+              'label': entry.value,
+              'status': documentStatuses[entry.key] ?? 'not_started',
+            })
+        .toList();
 
     IconData iconFor(String s) {
       switch (s) {
@@ -428,6 +454,32 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         ),
         const SizedBox(height: 16),
         _buildSupportButton(),
+      ],
+    );
+  }
+
+  Widget _buildResubmissionState(String? remarks, List<dynamic> documents) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        Icon(Icons.edit_note, size: 80, color: Colors.orange.shade700),
+        const SizedBox(height: 24),
+        Text('Changes Requested', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+        const SizedBox(height: 12),
+        Text('Please review the administrator remarks and resubmit your documents.', textAlign: TextAlign.center, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+        const SizedBox(height: 24),
+        if (remarks?.isNotEmpty == true)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+            child: Text(remarks!, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
+          ),
+        const SizedBox(height: 24),
+        _buildDocumentStatusList(documents),
+        const SizedBox(height: 32),
+        PrimaryButton(label: 'Resubmit Documents', onPressed: () => Navigator.pushNamed(context, AppRouter.verificationDocuments)),
       ],
     );
   }
