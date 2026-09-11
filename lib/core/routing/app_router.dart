@@ -212,8 +212,7 @@ class AppRouter {
           if (parts.length > 3 && parts[3] == 'tracking') {
             return MaterialPageRoute(builder: (_) => LiveTrackingScreen(bookingId: id));
           }
-          final autoTrack = uri.queryParameters['track'] == 'true';
-          return MaterialPageRoute(builder: (_) => BookingDetailScreen(bookingId: id, autoTrack: autoTrack));
+          return MaterialPageRoute(builder: (_) => BookingDetailScreen(bookingId: id));
         }
         if (path.startsWith(jobDetail)) {
           final id = path.split('/').last;

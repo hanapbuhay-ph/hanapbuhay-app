@@ -31,7 +31,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Booking? _booking;
   Worker? _worker;
   bool _isLoading = true;
-  bool _isTracking = false;
 
   @override
   void initState() {
@@ -50,8 +49,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           _booking = booking;
           _worker = worker;
           _isLoading = false;
-          // Conceptually, if status is 'active' (en route), we show the map
-          _isTracking = booking.status == BookingStatus.active;
         });
       }
     }
@@ -225,8 +222,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
               LiveTrackingMap(
                 clientLocation: clientLoc,
                 workerLocation: workerLoc,
-                isTracking: _isTracking,
-                onArrival: () {},
               ),
               Positioned(
                 top: 10,
@@ -248,12 +243,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: _isTracking
+              color: (booking.isWorkerTracking ?? false)
                   ? colorScheme.primary.withValues(alpha: 0.08)
                   : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _isTracking
+                color: (booking.isWorkerTracking ?? false)
                     ? colorScheme.primary.withValues(alpha: 0.3)
                     : colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
@@ -261,9 +256,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             child: Row(
               children: [
                 Icon(
-                  _isTracking ? Icons.location_on : Icons.location_off_outlined,
+                  (booking.isWorkerTracking ?? false) ? Icons.location_on : Icons.location_off_outlined,
                   size: 18,
-                  color: _isTracking ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  color: (booking.isWorkerTracking ?? false) ? colorScheme.primary : colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -271,14 +266,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _isTracking ? 'Traveling to client' : 'Location sharing off',
+                        (booking.isWorkerTracking ?? false) ? 'Traveling to client' : 'Location sharing off',
                         style: AppTypography.labelSmall.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: _isTracking ? colorScheme.primary : colorScheme.onSurface,
+                          color: (booking.isWorkerTracking ?? false) ? colorScheme.primary : colorScheme.onSurface,
                         ),
                       ),
                       Text(
-                        _isTracking
+                        (booking.isWorkerTracking ?? false)
                             ? 'Client can see your location'
                             : 'Tap to open map and start sharing',
                         style: AppTypography.bodySmall.copyWith(

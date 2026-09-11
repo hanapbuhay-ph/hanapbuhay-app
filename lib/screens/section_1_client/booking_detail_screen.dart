@@ -15,12 +15,9 @@ import '../../widgets/maps/live_tracking_map.dart';
 
 class BookingDetailScreen extends StatefulWidget {
   final String bookingId;
-  final bool autoTrack;
-
   const BookingDetailScreen({
     super.key,
     required this.bookingId,
-    this.autoTrack = false,
   });
 
   @override
@@ -30,13 +27,11 @@ class BookingDetailScreen extends StatefulWidget {
 class _BookingDetailScreenState extends State<BookingDetailScreen> {
   Booking? _booking;
   bool _isLoading = true;
-  bool _isTracking = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
-    _isTracking = widget.autoTrack;
   }
 
   Future<void> _loadData() async {
@@ -70,7 +65,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     }
 
     final booking = _booking!;
-    final showMap = booking.status == BookingStatus.accepted || booking.status == BookingStatus.active;
+    final showMap = booking.status == BookingStatus.active;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -264,7 +259,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           ),
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
+              Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}');
             },
             icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
             style: IconButton.styleFrom(
@@ -297,11 +292,10 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           LiveTrackingMap(
             clientLocation: clientLoc,
             workerLocation: workerLoc,
-            isTracking: _isTracking,
-            onArrival: () => setState(() => _isTracking = false),
+            liveWorkerLocation: (booking.isWorkerTracking ?? false) ? workerLoc : null,
           ),
-          
-          // Map Overlays
+
+          // Zoom button
           Positioned(
             top: 12,
             right: 12,
@@ -313,12 +307,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             ),
           ),
 
+          // Read-only status banner
           Positioned(
             bottom: 12,
             left: 12,
             right: 12,
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
@@ -326,33 +321,18 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               ),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _isTracking ? 'Worker is en route' : 'Booking Confirmed',
-                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
-                        ),
-                        Text(
-                          _isTracking ? 'Arriving in ~10 mins' : 'Worker will arrive on schedule',
-                          style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
-                        ),
-                      ],
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: (booking.isWorkerTracking ?? false) ? colorScheme.primary : colorScheme.outlineVariant,
+                      shape: BoxShape.circle,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () => setState(() => _isTracking = !_isTracking),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isTracking ? colorScheme.errorContainer : colorScheme.primary,
-                      foregroundColor: _isTracking ? colorScheme.error : colorScheme.onPrimary,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: Text(_isTracking ? 'I\'ve Arrived' : 'I\'m on my way', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 10),
+                  Text(
+                    (booking.isWorkerTracking ?? false) ? 'Worker is en route' : 'Waiting for worker to start',
+                    style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
                   ),
                 ],
               ),

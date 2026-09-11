@@ -55,8 +55,11 @@ dependencies:
   # Maps (Section 2 — live tracking, not needed yet)
   google_maps_flutter: ^2.5.0
 
-  # Real-time (Section 2 — live tracking, not needed yet)
+  # Real-time (live tracking)
   pusher_channels_flutter: ^2.0.0
+
+  # GPS (live tracking)
+  geolocator: ^13.0.1
 
   # Image picker (document upload)
   image_picker: ^1.0.4

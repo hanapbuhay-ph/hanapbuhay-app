@@ -34,6 +34,12 @@ class AppConstants {
     'General Repairs',
   ];
 
+  // Soketi / Pusher config — must match .env PUSHER_* values
+  static const String pusherKey = 'hanapbuhay-key';
+  static const String pusherHost = '127.0.0.1';
+  static const int pusherPort = 6001;
+  static const String pusherCluster = 'mt1';
+
   static const int otpLength = 6;
   static const int otpExpiryMinutes = 10;
 

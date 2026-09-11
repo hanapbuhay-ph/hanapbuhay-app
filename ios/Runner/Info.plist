@@ -47,6 +47,10 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>HanapBuhay needs your location to share it with the other party during a booking.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>HanapBuhay needs your location to share it with the other party during a booking.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
