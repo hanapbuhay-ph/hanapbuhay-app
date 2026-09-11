@@ -107,7 +107,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => RegistrationAccountScreen(role: role));
       case verifyEmail:
         final email = uri.queryParameters['email'] ?? '';
-        return MaterialPageRoute(builder: (_) => EmailVerificationScreen(email: email));
+        final isLoginChallenge = uri.queryParameters['login'] == 'true';
+        return MaterialPageRoute(builder: (_) => EmailVerificationScreen(email: email, isLoginChallenge: isLoginChallenge));
       case completeProfile:
         final role = uri.queryParameters['role'] ?? '';
         return MaterialPageRoute(builder: (_) => CompleteProfileScreen(role: role));

@@ -100,7 +100,7 @@ class ApiNotificationRepository implements NotificationRepository {
   @override
   Future<void> updatePreferences(NotificationPreferences preferences) async {
     try {
-      await ApiClient.post(
+      final res = await ApiClient.post(
         '/user/notification-preferences',
         requiresAuth: true,
         body: {
@@ -111,7 +111,13 @@ class ApiNotificationRepository implements NotificationRepository {
           'email': preferences.emailEnabled,
         },
       );
+      if (res['success'] != true) {
+        throw Exception(res['message']?.toString() ?? 'Failed to update notification preferences.');
+      }
     } catch (e) {
+      if (e is Exception && e.toString().contains('Failed to update notification preferences.')) {
+        rethrow;
+      }
       throw Exception('Failed to update notification preferences: $e');
     }
   }
@@ -170,12 +176,33 @@ class ApiNotificationRepository implements NotificationRepository {
       case 'booking_accepted':
       case 'bookingaccepted':
         return NotificationType.bookingAccepted;
+      case 'booking_declined':
+      case 'bookingdeclined':
+        return NotificationType.bookingDeclined;
+      case 'booking_cancelled':
+      case 'bookingcancelled':
+        return NotificationType.bookingCancelled;
+      case 'booking_started':
+      case 'bookingstarted':
+        return NotificationType.bookingStarted;
+      case 'booking_today':
+      case 'bookingtoday':
+        return NotificationType.bookingToday;
+      case 'booking_rescheduled':
+      case 'bookingrescheduled':
+        return NotificationType.bookingRescheduled;
       case 'booking_updated':
       case 'bookingupdated':
         return NotificationType.bookingUpdated;
       case 'booking_completed':
       case 'bookingcompleted':
         return NotificationType.bookingCompleted;
+      case 'tracking_started':
+      case 'trackingstarted':
+        return NotificationType.trackingStarted;
+      case 'tracking_stopped':
+      case 'trackingstopped':
+        return NotificationType.trackingStopped;
       case 'new_chat_message':
       case 'newchatmessage':
       case 'message':

@@ -32,20 +32,41 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AuthResult> verifyLoginOtp(String email, String otp, {String? deviceName}) async {
+    final res = await ApiClient.post('/auth/login/verify-otp', body: {
+      'email': email,
+      'code': otp,
+      if (deviceName != null && deviceName.isNotEmpty) 'device_name': deviceName,
+    });
+    return _toResult(res);
+  }
+
+  @override
+  Future<AuthResult> resendLoginOtp(String email) async {
+    final res = await ApiClient.post('/auth/login/resend-otp', body: {'email': email});
+    return _toResult(res);
+  }
+
+  @override
   Future<AuthResult> resendOtp(String email) async {
     final res = await ApiClient.post('/auth/email/resend-otp', body: {'email': email});
     return _toResult(res);
   }
 
   @override
-  Future<AuthResult> login(String email, String password) async {
-    final res = await ApiClient.post('/auth/login', body: {'email': email, 'password': password});
+  Future<AuthResult> login(String email, String password, {String? deviceName}) async {
+    final res = await ApiClient.post('/auth/login', body: {
+      'email': email,
+      'password': password,
+      if (deviceName != null && deviceName.isNotEmpty) 'device_name': deviceName,
+    });
     return _toResult(res);
   }
 
-  Future<AuthResult> googleAuth({required String googleToken, String? role}) async {
+  Future<AuthResult> googleAuth({required String googleToken, String? role, String? deviceName}) async {
     final body = <String, dynamic>{'google_token': googleToken};
     if (role != null) body['role'] = role;
+    if (deviceName != null && deviceName.isNotEmpty) body['device_name'] = deviceName;
     final res = await ApiClient.post('/auth/google', body: body);
     return _toResult(res);
   }
@@ -96,6 +117,40 @@ class ApiAuthRepository implements AuthRepository {
     final isNewFile = avatarPath != null && !avatarPath.startsWith('http');
     final files = isNewFile ? <String, List<String>>{'profile_photo': [avatarPath!]} : null;
     final res = await ApiClient.postMultipart('/user/profile', fields: fields, files: files, requiresAuth: true);
+    return _toResult(res);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getSessions() async {
+    final res = await ApiClient.get('/user/sessions', requiresAuth: true);
+    if (res['success'] != true || res['data'] is! List) return [];
+    return (res['data'] as List)
+        .whereType<Map>()
+        .map((item) => item.map((key, value) => MapEntry(key.toString(), value)))
+        .toList();
+  }
+
+  @override
+  Future<AuthResult> revokeSession(String sessionId) async {
+    final res = await ApiClient.delete('/user/sessions/$sessionId', requiresAuth: true);
+    return _toResult(res);
+  }
+
+  @override
+  Future<AuthResult> revokeAllSessions() async {
+    final res = await ApiClient.post('/user/sessions/revoke-all', requiresAuth: true);
+    return _toResult(res);
+  }
+
+  @override
+  Future<bool> getTwoFactorEnabled() async {
+    final res = await ApiClient.get('/user/two-factor', requiresAuth: true);
+    return res['success'] == true && res['data']?['enabled'] == true;
+  }
+
+  @override
+  Future<AuthResult> updateTwoFactorEnabled(bool enabled) async {
+    final res = await ApiClient.post('/user/two-factor', requiresAuth: true, body: {'enabled': enabled});
     return _toResult(res);
   }
 }

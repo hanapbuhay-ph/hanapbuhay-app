@@ -15,7 +15,11 @@ abstract class AuthRepository {
 
   Future<AuthResult> verifyOtp(String email, String otp);
 
-  Future<AuthResult> login(String email, String password);
+  Future<AuthResult> verifyLoginOtp(String email, String otp, {String? deviceName});
+
+  Future<AuthResult> resendLoginOtp(String email);
+
+  Future<AuthResult> login(String email, String password, {String? deviceName});
 
   Future<AuthResult> forgotPassword(String identifier);
 
@@ -36,4 +40,14 @@ abstract class AuthRepository {
     int? barangayId,
     String? avatarPath,
   });
+
+  Future<List<Map<String, dynamic>>> getSessions();
+
+  Future<AuthResult> revokeSession(String sessionId);
+
+  Future<AuthResult> revokeAllSessions();
+
+  Future<bool> getTwoFactorEnabled();
+
+  Future<AuthResult> updateTwoFactorEnabled(bool enabled);
 }

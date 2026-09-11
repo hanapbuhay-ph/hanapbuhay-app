@@ -1,9 +1,115 @@
+import 'dart:convert';
+
 import '../core/api/api_client.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../core/routing/app_router.dart';
 
 /// FCM Token Registration Service
 /// Handles device token registration with backend for push notifications
 class FcmService {
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
+  static String? _pendingNotificationPayload;
+  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+    'hanapbuhay_notifications',
+    'HanapBuhay notifications',
+    description: 'Booking, tracking, and account notifications.',
+    importance: Importance.high,
+  );
+
+  static Future<void> initializeNotifications() async {
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const settings = InitializationSettings(android: android);
+
+    await _localNotifications.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (response) {
+        _openNotificationTarget(response.payload);
+      },
+    );
+
+    final androidPlugin = _localNotifications.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.createNotificationChannel(_channel);
+    await androidPlugin?.requestNotificationsPermission();
+
+    FirebaseMessaging.onMessage.listen(_showForegroundNotification);
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      _openNotificationTarget(jsonEncode(message.data));
+    });
+
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      _openNotificationTarget(jsonEncode(initialMessage.data));
+    }
+  }
+
+  static Future<void> _showForegroundNotification(RemoteMessage message) async {
+    final notification = message.notification;
+    final title = notification?.title ?? message.data['title']?.toString();
+    final body = notification?.body ?? message.data['body']?.toString();
+    if (title == null || body == null) return;
+
+    await _localNotifications.show(
+      message.hashCode,
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channel.id,
+          _channel.name,
+          channelDescription: _channel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
+      payload: jsonEncode(message.data),
+    );
+  }
+
+  static Future<void> _openNotificationTarget(String? payload) async {
+    if (payload == null || payload.isEmpty) return;
+
+    Map<String, dynamic> data;
+    try {
+      data = Map<String, dynamic>.from(jsonDecode(payload) as Map);
+    } catch (_) {
+      return;
+    }
+
+    final bookingId = data['booking_id']?.toString();
+    final conversationId = data['conversation_id']?.toString();
+    if (bookingId == null && conversationId == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString('user_role');
+    final navigator = ApiClient.navigatorKey.currentState;
+    if (navigator == null) {
+      _pendingNotificationPayload = payload;
+      return;
+    }
+
+    if (conversationId != null && conversationId.isNotEmpty) {
+      navigator.pushNamed('${AppRouter.chatThread}/$conversationId');
+      return;
+    }
+
+    if (bookingId == null || bookingId.isEmpty) return;
+    final route = role == 'worker' ? AppRouter.jobDetail : AppRouter.bookingDetail;
+    navigator.pushNamed('$route/$bookingId');
+  }
+
+  static Future<void> flushPendingNotification() async {
+    final payload = _pendingNotificationPayload;
+    _pendingNotificationPayload = null;
+    if (payload != null) {
+      await _openNotificationTarget(payload);
+    }
+  }
+
   /// Register FCM device token with backend
   /// Endpoint: POST /api/user/fcm-token (also aliased as POST /api/notifications/register-device)
   /// Backend requires: fcm_token (string) and device_type (android|ios|web)

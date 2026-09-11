@@ -12,10 +12,12 @@ import 'providers/theme_provider.dart';
 import 'services/service_locator.dart';
 import 'core/routing/app_router.dart';
 import 'core/api/api_client.dart';
+import 'services/fcm_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await FcmService.initializeNotifications();
   runApp(
     MultiProvider(
       providers: [
@@ -30,6 +32,9 @@ void main() async {
       child: const HanapBuhayApp(),
     ),
   );
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    FcmService.flushPendingNotification();
+  });
 }
 
 class HanapBuhayApp extends StatelessWidget {

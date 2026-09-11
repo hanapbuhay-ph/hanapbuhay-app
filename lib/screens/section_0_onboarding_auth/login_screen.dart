@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (result.data?['requiresOtp'] == true) {
           Navigator.pushNamed(
             context, 
-            '${AppRouter.verifyEmail}?email=${_identifierController.text.trim()}',
+            '${AppRouter.verifyEmail}?email=${_identifierController.text.trim()}&login=true',
           );
         } else {
           Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
@@ -81,6 +81,15 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       if (result.success) {
         final d = result.data ?? {};
+        if (d['requiresOtp'] == true) {
+          final user = d['user'] is Map ? (d['user'] as Map) : null;
+          final email = user?['email']?.toString() ?? '';
+          Navigator.pushNamed(
+            context,
+            '${AppRouter.verifyEmail}?email=${Uri.encodeComponent(email)}&login=true',
+          );
+          return;
+        }
         final isNew = d['is_new_user'] == true || d['needs_profile_completion'] == true || d['isNewUser'] == true;
         // Also treat missing role/barangay as incomplete even if flag absent (defensive)
         final user = d['user'] is Map ? (d['user'] as Map) : null;

@@ -15,6 +15,7 @@ class NotificationPreferencesScreen extends StatefulWidget {
 class _NotificationPreferencesScreenState extends State<NotificationPreferencesScreen> {
   NotificationPreferences? _prefs;
   bool _isLoading = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -32,9 +33,27 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
     }
   }
 
-  void _updatePreference(NotificationPreferences newPrefs) {
-    setState(() => _prefs = newPrefs);
-    context.read<NotificationProvider>().updatePreferences(newPrefs);
+  Future<void> _updatePreference(NotificationPreferences newPrefs) async {
+    final previousPrefs = _prefs!;
+    setState(() {
+      _prefs = newPrefs;
+      _isSaving = true;
+    });
+
+    try {
+      await context.read<NotificationProvider>().updatePreferences(newPrefs);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _prefs = previousPrefs);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Unable to save notification preferences.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -50,7 +69,9 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: Column(
+      body: IgnorePointer(
+        ignoring: _isSaving,
+        child: Column(
         children: [
           const AppHeader(title: 'Notification Preferences'),
           Expanded(
@@ -67,6 +88,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
             ),
           ),
         ],
+        ),
       ),
     );
   }

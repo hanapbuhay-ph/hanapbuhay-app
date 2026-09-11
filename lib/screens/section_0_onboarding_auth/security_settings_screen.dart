@@ -35,9 +35,17 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     );
 
     if (confirmed == true && mounted) {
-      await context.read<AuthProvider>().logout();
-      if (mounted) {
+      final result = await context.read<AuthProvider>().revokeAllSessions();
+      if (!mounted) return;
+      if (result.success) {
+        await context.read<AuthProvider>().logout();
+      }
+      if (mounted && result.success) {
         Navigator.pushNamedAndRemoveUntil(context, AppRouter.login, (route) => false);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.message), backgroundColor: theme.colorScheme.error),
+        );
       }
     }
   }
@@ -61,6 +69,12 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<AuthProvider>().loadTwoFactorPreference();
   }
 
   @override
@@ -145,7 +159,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                                 value: authProvider.twoFactorEnabled,
                                 activeTrackColor: colorScheme.primary.withValues(alpha: 0.5),
                                 activeThumbColor: colorScheme.primary,
-                                onChanged: (val) => authProvider.toggleTwoFactor(val),
+                                onChanged: (val) async {
+                                  final updated = await authProvider.updateTwoFactorPreference(val);
+                                  if (!updated && mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Unable to update two-factor authentication.')),
+                                    );
+                                  }
+                                },
                               ),
                             ],
                           ),

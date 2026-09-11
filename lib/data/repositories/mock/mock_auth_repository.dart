@@ -84,7 +84,17 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthResult> login(String email, String password) async {
+  Future<AuthResult> verifyLoginOtp(String email, String otp, {String? deviceName}) async {
+    return login(email, 'mock_password', deviceName: deviceName);
+  }
+
+  @override
+  Future<AuthResult> resendLoginOtp(String email) async {
+    return AuthResult.success(message: 'A new verification code has been sent.');
+  }
+
+  @override
+  Future<AuthResult> login(String email, String password, {String? deviceName}) async {
     await Future.delayed(const Duration(milliseconds: 800));
     
     final userData = _mockUsers[email.toLowerCase()] ?? {
@@ -161,5 +171,30 @@ class MockAuthRepository implements AuthRepository {
   }) async {
     await Future.delayed(const Duration(seconds: 1));
     return AuthResult.success(message: 'Profile updated successfully!');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getSessions() async {
+    return [
+      {'id': 'mock-current', 'device': 'This device', 'last_used_at': DateTime.now().toIso8601String(), 'is_current': true},
+    ];
+  }
+
+  @override
+  Future<AuthResult> revokeSession(String sessionId) async {
+    return AuthResult.success(message: 'Session revoked.');
+  }
+
+  @override
+  Future<AuthResult> revokeAllSessions() async {
+    return AuthResult.success(message: 'All sessions revoked.');
+  }
+
+  @override
+  Future<bool> getTwoFactorEnabled() async => true;
+
+  @override
+  Future<AuthResult> updateTwoFactorEnabled(bool enabled) async {
+    return AuthResult.success(message: 'Two-factor preference updated.');
   }
 }

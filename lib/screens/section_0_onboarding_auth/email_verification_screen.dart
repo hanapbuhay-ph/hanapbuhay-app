@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -12,10 +13,12 @@ import '../../widgets/buttons/primary_button.dart';
 /// Users enter a 6-digit OTP sent to their email to complete registration.
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
+  final bool isLoginChallenge;
 
   const EmailVerificationScreen({
     super.key,
     required this.email,
+    this.isLoginChallenge = false,
   });
 
   @override
@@ -93,14 +96,24 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
 
     try {
       final authProvider = context.read<AuthProvider>();
-      final result = await authProvider.verifyOtp(widget.email, _otp);
+        final result = widget.isLoginChallenge
+          ? await authProvider.verifyLoginOtp(widget.email, _otp)
+          : await authProvider.verifyOtp(widget.email, _otp);
 
       if (!mounted) return;
 
       if (result.success) {
         if (!mounted) return;
-        
-        Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
+        if (widget.isLoginChallenge) {
+          final user = result.data?['user'];
+          final hasRole = user is Map && user['role'] != null && user['role'].toString().isNotEmpty && user['role'].toString() != 'null';
+          Navigator.pushReplacementNamed(
+            context,
+            hasRole ? authProvider.getHomeRoute() : AppRouter.completeProfile,
+          );
+        } else {
+          Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
+        }
       } else {
         _handleError(result.message);
       }
@@ -127,7 +140,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
     _startTimer();
     try {
       final authProvider = context.read<AuthProvider>();
-      await authProvider.resendOtp(widget.email);
+      final result = widget.isLoginChallenge
+          ? await authProvider.resendLoginOtp(widget.email)
+          : await authProvider.resendOtp(widget.email);
+      if (!result.success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+        return;
+      }
     } catch (_) {
       // Resend is best-effort; timer already reset so user can try again.
     }
@@ -172,7 +191,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                   const SizedBox(height: 32),
                   
                   Text(
-                    'Verify your email',
+                    widget.isLoginChallenge ? 'Verify your login' : 'Verify your email',
                     textAlign: TextAlign.center,
                     style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface),
                   ),
@@ -184,7 +203,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                     text: TextSpan(
                       style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                       children: [
-                        const TextSpan(text: 'We sent a verification code to your email address\n'),
+                        TextSpan(
+                          text: widget.isLoginChallenge
+                              ? 'We sent a verification code to\n'
+                              : 'We sent a verification code to your email address\n',
+                        ),
                         TextSpan(
                           text: widget.email,
                           style: AppTypography.labelLarge.copyWith(

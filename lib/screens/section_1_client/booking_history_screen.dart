@@ -71,6 +71,14 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
           booking.date.month == today.month &&
           booking.date.day == today.day;
     }
+    if (tab == BookingStatus.accepted) {
+      // Keep today's accepted bookings in the Today tab only.
+      final today = DateTime.now();
+      final isToday = booking.date.year == today.year &&
+          booking.date.month == today.month &&
+          booking.date.day == today.day;
+      return booking.status == BookingStatus.accepted && !isToday;
+    }
     return booking.status == (tab as BookingStatus);
   }
 

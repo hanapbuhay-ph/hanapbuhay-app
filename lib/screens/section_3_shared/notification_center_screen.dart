@@ -148,7 +148,14 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
     switch (notification.type) {
       case NotificationType.bookingAccepted:
+      case NotificationType.bookingDeclined:
+      case NotificationType.bookingCancelled:
+      case NotificationType.bookingStarted:
+      case NotificationType.bookingToday:
+      case NotificationType.bookingRescheduled:
       case NotificationType.bookingUpdated:
+      case NotificationType.trackingStarted:
+      case NotificationType.trackingStopped:
         icon = Icons.work;
         color = colorScheme.primary;
         bgColor = colorScheme.primary.withValues(alpha: 0.1);
@@ -224,9 +231,19 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
     switch (notification.type) {
       case NotificationType.bookingAccepted:
+      case NotificationType.bookingDeclined:
+      case NotificationType.bookingCancelled:
+      case NotificationType.bookingStarted:
+      case NotificationType.bookingToday:
+      case NotificationType.bookingRescheduled:
       case NotificationType.bookingUpdated:
       case NotificationType.bookingCompleted:
+      case NotificationType.trackingStarted:
+      case NotificationType.trackingStopped:
         final role = context.read<AuthProvider>().userRole;
+        if (notification.relatedId == null || notification.relatedId!.isEmpty) {
+          break;
+        }
         if (role == 'worker') {
           Navigator.pushNamed(context, '${AppRouter.jobDetail}/${notification.relatedId}');
         } else {

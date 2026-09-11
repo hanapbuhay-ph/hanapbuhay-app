@@ -5,6 +5,7 @@ import '../data/models/auth_result_model.dart';
 import '../services/secure_storage_service.dart';
 import '../services/google_auth_service.dart';
 import '../services/fcm_service.dart';
+import '../services/device_info_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
 import '../core/api/api_client.dart'; // ignore: unused_import - used in logout()
@@ -169,7 +170,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<AuthResult> login(String email, String password) async {
-    final result = await _authRepository.login(email, password);
+    final deviceName = await DeviceInfoService.displayName();
+    final result = await _authRepository.login(email, password, deviceName: deviceName);
     if (result.success) {
       final userData = result.data?['user'] as Map<String, dynamic>?;
       final token = result.data?['token']?.toString() ?? '';
@@ -240,6 +242,24 @@ class AuthProvider extends ChangeNotifier {
     return result;
   }
 
+  Future<AuthResult> verifyLoginOtp(String email, String otp) async {
+    final deviceName = await DeviceInfoService.displayName();
+    final result = await _authRepository.verifyLoginOtp(email, otp, deviceName: deviceName);
+    if (result.success) {
+      final userData = result.data?['user'] as Map<String, dynamic>?;
+      final token = result.data?['token']?.toString() ?? '';
+      if (token.isNotEmpty) {
+        final bar = userData?['barangay'];
+        final barIdRaw = bar is Map ? bar['id'] : null;
+        final barId = barIdRaw is int ? barIdRaw : int.tryParse(barIdRaw?.toString() ?? '');
+        await setAuthenticated(token, userData?['role']?.toString() ?? 'client', id: userData?['id']?.toString(), email: userData?['email']?.toString() ?? email, name: userData?['name']?.toString(), mobile: userData?['mobile_number']?.toString(), barangay: bar is Map ? bar['name']?.toString() : bar?.toString(), barangayId: barId, avatar: userData?['profile_photo_url']?.toString(), method: userData?['is_google_account'] == true ? 'google' : 'email');
+      }
+    }
+    return result;
+  }
+
+  Future<AuthResult> resendLoginOtp(String email) => _authRepository.resendLoginOtp(email);
+
   Future<AuthResult> googleLogin({String? roleForNewUser, bool forceAccountPicker = true}) async {
     final account = await GoogleAuthService().signIn(forceAccountPicker: forceAccountPicker);
     if (account == null) return AuthResult.failure(message: 'Google sign-in cancelled.');
@@ -248,7 +268,12 @@ class AuthProvider extends ChangeNotifier {
     if (idToken == null || idToken.isEmpty) return AuthResult.failure(message: 'Failed to get Google ID token.');
     AuthResult result;
     if (_authRepository is ApiAuthRepository) {
-      result = await (_authRepository as ApiAuthRepository).googleAuth(googleToken: idToken, role: roleForNewUser);
+      final deviceName = await DeviceInfoService.displayName();
+      result = await (_authRepository as ApiAuthRepository).googleAuth(
+        googleToken: idToken,
+        role: roleForNewUser,
+        deviceName: deviceName,
+      );
     } else {
       result = AuthResult.success(message: 'Google sign-in (mock)', data: {'token': 'mock_google_token', 'is_new_user': true, 'user': {'email': account.email, 'name': account.displayName ?? account.email}});
     }
@@ -410,6 +435,30 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
     return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getSessions() => _authRepository.getSessions();
+
+  Future<AuthResult> revokeSession(String sessionId) => _authRepository.revokeSession(sessionId);
+
+  Future<AuthResult> revokeAllSessions() => _authRepository.revokeAllSessions();
+
+  Future<void> loadTwoFactorPreference() async {
+    _twoFactorEnabled = await _authRepository.getTwoFactorEnabled();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('2fa_enabled', _twoFactorEnabled);
+    notifyListeners();
+  }
+
+  Future<bool> updateTwoFactorPreference(bool enabled) async {
+    final result = await _authRepository.updateTwoFactorEnabled(enabled);
+    if (result.success) {
+      _twoFactorEnabled = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('2fa_enabled', enabled);
+      notifyListeners();
+    }
+    return result.success;
   }
 
   Future<void> updateLocalProfile({required String name, required String mobile, int? barangayId, String? barangayName, String? avatar}) async {
