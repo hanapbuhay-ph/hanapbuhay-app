@@ -1,4 +1,5 @@
 import '../core/api/api_client.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 /// FCM Token Registration Service
 /// Handles device token registration with backend for push notifications
@@ -51,36 +52,25 @@ class FcmService {
   /// This should be called after successful login
   static Future<void> initializeAndRegister() async {
     try {
-      // Note: Actual Firebase FCM initialization requires firebase_messaging package
-      // For now, this is a placeholder that shows the integration point
-      
-      // TODO: Uncomment when Firebase is configured
-      // final FirebaseMessaging messaging = FirebaseMessaging.instance;
-      // 
-      // // Request permission (iOS)
-      // final settings = await messaging.requestPermission(
-      //   alert: true,
-      //   badge: true,
-      //   sound: true,
-      // );
-      // 
-      // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      //   print('[FcmService] User granted permission');
-      //   
-      //   // Get FCM token
-      //   final token = await messaging.getToken();
-      //   if (token != null) {
-      //     await registerToken(token);
-      //   }
-      //   
-      //   // Listen for token refresh
-      //   messaging.onTokenRefresh.listen((newToken) {
-      //     registerToken(newToken);
-      //   });
-      // }
+      final messaging = FirebaseMessaging.instance;
 
-      print('[FcmService] initializeAndRegister: Firebase FCM not yet configured');
-      print('[FcmService] TODO: Add firebase_messaging package and configure Firebase');
+      final settings = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        final token = await messaging.getToken();
+        if (token != null) {
+          await registerToken(token);
+        }
+
+        messaging.onTokenRefresh.listen((newToken) {
+          registerToken(newToken);
+        });
+      }
     } catch (e) {
       print('[FcmService] initializeAndRegister error: $e');
     }

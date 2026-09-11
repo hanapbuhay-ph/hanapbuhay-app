@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:http/http.dart' as http;
 import '../core/constants/app_constants.dart';
@@ -48,7 +49,7 @@ class PusherService {
         // Soketi validates this against Laravel's /broadcasting/auth endpoint.
         final token = await storage.getToken();
         final response = await http.post(
-          Uri.parse('${AppConstants.apiBaseUrl}/broadcasting/auth'),
+          Uri.parse('${AppConstants.apiBaseUrl.replaceAll('/api', '')}/broadcasting/auth'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -65,26 +66,36 @@ class PusherService {
 
   Future<void> subscribe(String bookingId) async {
     await init();
+    // Re-init if connection was previously torn down
+    if (!_initialized) await init();
 
     await _pusher.subscribe(
       channelName: 'private-booking.$bookingId',
       onEvent: (event) {
+        // Debug: log raw event name to confirm exact string from Soketi
+        debugPrint('[PusherService] event: ${event.eventName} | data: ${event.data}');
+
         final data = event.data is String
             ? jsonDecode(event.data as String) as Map<String, dynamic>
             : event.data as Map<String, dynamic>;
 
-        if (event.eventName == 'App\\Events\\LocationUpdated') {
+        // Match both backslash and dot-notation variants defensively
+        final name = event.eventName;
+        if (name == 'App\\Events\\LocationUpdated' ||
+            name == 'App.Events.LocationUpdated') {
           onLocation?.call(LocationEvent(
             role: data['role'] as String,
             latitude: (data['latitude'] as num).toDouble(),
             longitude: (data['longitude'] as num).toDouble(),
           ));
-        } else if (event.eventName == 'App\\Events\\LocationTrackingStarted') {
+        } else if (name == 'App\\Events\\LocationTrackingStarted' ||
+            name == 'App.Events.LocationTrackingStarted') {
           onTrackingState?.call(TrackingStateEvent(
             role: data['role'] as String,
             started: true,
           ));
-        } else if (event.eventName == 'App\\Events\\LocationTrackingStopped') {
+        } else if (name == 'App\\Events\\LocationTrackingStopped' ||
+            name == 'App.Events.LocationTrackingStopped') {
           onTrackingState?.call(TrackingStateEvent(
             role: data['role'] as String,
             started: false,
@@ -96,5 +107,6 @@ class PusherService {
 
   Future<void> unsubscribe(String bookingId) async {
     await _pusher.unsubscribe(channelName: 'private-booking.$bookingId');
+    _initialized = false;
   }
 }

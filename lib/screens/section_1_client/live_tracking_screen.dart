@@ -72,7 +72,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
         _isLoading = false;
       });
       // Subscribe to Pusher for the worker's live location
-      await _trackingService.subscribeToOtherParty();
+      await _trackingService.subscribeToOtherParty(myRole: 'client');
     }
   }
 

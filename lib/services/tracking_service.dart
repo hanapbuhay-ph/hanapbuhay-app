@@ -34,7 +34,7 @@ class TrackingService {
   StreamSubscription<Position>? _positionSub;
   static const _locationSettings = LocationSettings(
     accuracy: LocationAccuracy.high,
-    distanceFilter: 10, // meters — only emit when moved 10m
+    distanceFilter: 0, // TODO: restore to 10 before production
   );
 
   /// Request GPS permission. Returns true if granted.
@@ -90,15 +90,17 @@ class TrackingService {
   }
 
   /// Subscribe to Pusher to receive the other party's live location.
-  Future<void> subscribeToOtherParty() async {
+  /// [myRole] must be 'client' or 'worker' — events from own role are ignored.
+  Future<void> subscribeToOtherParty({required String myRole}) async {
     final pusher = PusherService.instance;
 
     pusher.onLocation = (event) {
-      // Only react to the OTHER party's updates
+      if (event.role == myRole) return; // ignore own GPS echoes
       onOtherLocation?.call(LatLng(event.latitude, event.longitude));
     };
 
     pusher.onTrackingState = (event) {
+      if (event.role == myRole) return; // ignore own start/stop echoes
       onOtherTrackingState?.call(event.started);
     };
 

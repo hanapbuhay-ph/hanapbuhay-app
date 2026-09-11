@@ -96,7 +96,7 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
         _isLoading = false;
       });
 
-      await _trackingService.subscribeToOtherParty();
+      await _trackingService.subscribeToOtherParty(myRole: 'worker');
     }
   }
 

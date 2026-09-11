@@ -4,6 +4,7 @@ import '../data/repositories/api/api_auth_repository.dart';
 import '../data/models/auth_result_model.dart';
 import '../services/secure_storage_service.dart';
 import '../services/google_auth_service.dart';
+import '../services/fcm_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
 import '../core/api/api_client.dart'; // ignore: unused_import - used in logout()
@@ -354,6 +355,7 @@ class AuthProvider extends ChangeNotifier {
 
     _isAuthenticated = true;
     notifyListeners();
+    FcmService.initializeAndRegister();
   }
 
   Future<AuthResult> updateProfile({required String name, required String mobileNumber, int? barangayId, String? barangayName, String? avatarPath}) async {
