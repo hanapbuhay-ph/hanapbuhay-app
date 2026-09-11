@@ -103,14 +103,10 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
 
   Future<void> _handleArrived() async {
     final colorScheme = Theme.of(context).colorScheme;
-    // POST /api/bookings/{id}/tracking/stop
     final result = await context.read<BookingProvider>().stopTracking(bookingId: widget.bookingId);
     if (!mounted) return;
     if (result.success) {
-      setState(() => _isTracking = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Tracking stopped'), backgroundColor: colorScheme.primary),
-      );
+      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),

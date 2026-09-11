@@ -202,6 +202,10 @@ class AppRouter {
           final postId = uri.queryParameters['postId'];
           return MaterialPageRoute(builder: (_) => SendBookingRequestScreen(workerId: id, postId: postId));
         }
+        if (path.startsWith(liveTracking)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => LiveTrackingScreen(bookingId: id));
+        }
         if (path.startsWith(bookingDetail)) {
           final parts = path.split('/');
           final id = parts[2];

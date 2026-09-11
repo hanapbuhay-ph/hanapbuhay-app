@@ -19,9 +19,12 @@ class BookingHistoryScreen extends StatefulWidget {
 class _BookingHistoryScreenState extends State<BookingHistoryScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   late Future<List<Booking>> _bookingsFuture;
-  final List<BookingStatus> _tabs = [
+  // 'today' is a virtual status — filtered client-side from accepted bookings
+  static const String _todayTab = 'today';
+  final List<dynamic> _tabs = [
     BookingStatus.pending,
     BookingStatus.accepted,
+    _todayTab,
     BookingStatus.active,
     BookingStatus.completed,
     BookingStatus.cancelled,
@@ -45,8 +48,9 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     super.dispose();
   }
 
-  String _getStatusLabel(BookingStatus status) {
-    switch (status) {
+  String _getTabLabel(dynamic tab) {
+    if (tab == _todayTab) return 'Today';
+    switch (tab as BookingStatus) {
       case BookingStatus.pending: return 'Requests';
       case BookingStatus.accepted: return 'Upcoming';
       case BookingStatus.active: return 'Ongoing';
@@ -56,9 +60,17 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     }
   }
 
-  // Map a tab status to a set of underlying API statuses per the B3.2 spec.
-  bool _matchesTab(BookingStatus tab, Booking booking) {
-    return booking.status == tab;
+  String _getStatusLabel(BookingStatus status) => _getTabLabel(status);
+
+  bool _matchesTab(dynamic tab, Booking booking) {
+    if (tab == _todayTab) {
+      final today = DateTime.now();
+      return booking.status == BookingStatus.accepted &&
+          booking.date.year == today.year &&
+          booking.date.month == today.month &&
+          booking.date.day == today.day;
+    }
+    return booking.status == (tab as BookingStatus);
   }
 
   @override
@@ -111,12 +123,12 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                         Expanded(
                           child: TabBarView(
                             controller: _tabController,
-                            children: _tabs.map((status) {
+                            children: _tabs.map((tab) {
                               final filteredList = allBookings
-                                  .where((b) => _matchesTab(status, b))
+                                  .where((b) => _matchesTab(tab, b))
                                   .toList();
                               if (filteredList.isEmpty) {
-                                return _buildEmptyState(status);
+                                return _buildEmptyState(tab);
                               }
                               return RefreshIndicator(
                                 onRefresh: () async {
@@ -127,7 +139,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                                   physics: const BouncingScrollPhysics(),
                                   itemCount: filteredList.length,
-                                  itemBuilder: (context, index) => _buildBookingCard(filteredList[index]),
+                                  itemBuilder: (context, index) => _buildBookingCard(filteredList[index], isToday: tab == _todayTab),
                                 ),
                               );
                             }).toList(),
@@ -145,8 +157,9 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     );
   }
 
-  Color _getStatusColor(BookingStatus status, ColorScheme colorScheme) {
-    switch (status) {
+  Color _getStatusColor(dynamic tab, ColorScheme colorScheme) {
+    if (tab == _todayTab) return Colors.green.shade600;
+    switch (tab as BookingStatus) {
       case BookingStatus.pending: return Colors.orange;
       case BookingStatus.accepted: return Colors.amber.shade700;
       case BookingStatus.active: return colorScheme.primary;
@@ -157,17 +170,17 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
   }
 
   Widget _buildFilterChips(List<Booking> allBookings) {
-    return StatusFilterChips<BookingStatus>(
+    return StatusFilterChips<dynamic>(
       items: _tabs,
       selectedIndex: _tabController.index,
       onSelected: (index) => setState(() => _tabController.animateTo(index)),
-      labelBuilder: _getStatusLabel,
-      countBuilder: (status) => allBookings.where((booking) => _matchesTab(status, booking)).length,
-      colorBuilder: (status, colorScheme) => _getStatusColor(status, colorScheme),
+      labelBuilder: _getTabLabel,
+      countBuilder: (tab) => allBookings.where((b) => _matchesTab(tab, b)).length,
+      colorBuilder: (tab, colorScheme) => _getStatusColor(tab, colorScheme),
     );
   }
 
-  Widget _buildBookingCard(Booking booking) {
+  Widget _buildBookingCard(Booking booking, {bool isToday = false}) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -243,7 +256,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
                 ),
               ),
               const SizedBox(height: 16),
-              _buildActionButtons(booking),
+              _buildActionButtons(booking, isToday: isToday),
             ],
           ),
     );
@@ -269,9 +282,43 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     );
   }
 
-  Widget _buildActionButtons(Booking booking) {
+  Widget _buildActionButtons(Booking booking, {bool isToday = false}) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    if (isToday) {
+      return Row(
+        children: [
+          Expanded(
+            child: PrimaryButton(
+              label: 'View Details',
+              onPressed: () => _showReviewRequestSheet(booking),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: PrimaryButton(
+              label: 'Start Traveling',
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '${AppRouter.liveTracking}/${booking.id}',
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: colorScheme.outlineVariant),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
+              icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
+            ),
+          ),
+        ],
+      );
+    }
 
     if (booking.status == BookingStatus.active) {
       return Row(
@@ -305,21 +352,20 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
         if (booking.status == BookingStatus.pending ||
         booking.status == BookingStatus.accepted) ...[
           Expanded(
-            child: OutlinedButton(
-              onPressed: () => _handleUpdateStatus(booking, BookingStatus.cancelled),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                side: BorderSide(color: colorScheme.error),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Text('Cancel', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.w700)),
+            child: PrimaryButton(
+              label: 'Review Request',
+              onPressed: () => _showReviewRequestSheet(booking),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: PrimaryButton(
-              label: 'Reschedule',
-              onPressed: () => _showRescheduleDialog(booking),
+          const SizedBox(width: 8),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: colorScheme.outlineVariant),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
+              icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
             ),
           ),
         ] else if (booking.status == BookingStatus.completed && !booking.isRated) ...[
@@ -482,8 +528,169 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
     }
   }
 
-  Widget _buildEmptyState(BookingStatus status) {
+  void _showReviewRequestSheet(Booking booking) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header — worker info
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundImage: NetworkImage(booking.workerPhotoUrl ?? 'https://i.pravatar.cc/150'),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  booking.workerName ?? 'Worker',
+                                  style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    booking.category,
+                                    style: TextStyle(color: colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          _buildStatusPill(booking.status),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                      const SizedBox(height: 20),
+
+                      // Details
+                      Text('Booking Details', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                      const SizedBox(height: 16),
+                      _buildSheetDetailRow(colorScheme, Icons.tag, 'Booking Code', booking.bookingCode),
+                      const SizedBox(height: 14),
+                      _buildSheetDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${AppFormatters.date(booking.date)} • ${booking.time}'),
+                      const SizedBox(height: 14),
+                      _buildSheetDetailRow(colorScheme, Icons.location_on_outlined, 'Location', booking.barangay),
+                      const SizedBox(height: 14),
+                      _buildSheetDetailRow(colorScheme, Icons.build_outlined, 'Service', booking.category),
+                      if (booking.notes.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                        const SizedBox(height: 16),
+                        Text('Your Notes', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            booking.notes,
+                            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface, fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Action buttons — Cancel + Reschedule
+              Padding(
+                padding: EdgeInsets.fromLTRB(24, 12, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _handleUpdateStatus(booking, BookingStatus.cancelled);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: colorScheme.error),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('Cancel', style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: PrimaryButton(
+                        label: 'Reschedule',
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _showRescheduleDialog(booking);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSheetDetailRow(ColorScheme colorScheme, IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: colorScheme.primary),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10)),
+            Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(dynamic tab) {
     final theme = Theme.of(context);
+    final label = _getTabLabel(tab).toLowerCase();
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -491,12 +698,14 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
           Icon(Icons.event_busy_outlined, size: 64, color: theme.colorScheme.outlineVariant),
           const SizedBox(height: 16),
           Text(
-            'No ${_getStatusLabel(status).toLowerCase()} bookings',
+            'No $label bookings',
             style: AppTypography.headlineMedium.copyWith(fontSize: 20, color: theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 8),
           Text(
-            'You don\'t have any ${_getStatusLabel(status).toLowerCase()} service requests at the moment.',
+            tab == _todayTab
+                ? 'No bookings are scheduled for today.'
+                : 'You don\'t have any $label service requests at the moment.',
             textAlign: TextAlign.center,
             style: AppTypography.bodyMedium.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),

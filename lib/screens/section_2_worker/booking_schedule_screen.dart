@@ -21,9 +21,11 @@ class BookingScheduleScreen extends StatefulWidget {
 class _BookingScheduleScreenState extends State<BookingScheduleScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late Future<List<Booking>> _bookingsFuture;
-  final List<BookingStatus> _tabs = [
+  static const String _todayTab = 'today';
+  final List<dynamic> _tabs = [
     BookingStatus.pending,
     BookingStatus.accepted,
+    _todayTab,
     BookingStatus.active,
     BookingStatus.completed,
     BookingStatus.cancelled,
@@ -218,8 +220,9 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
     super.dispose();
   }
 
-  String _getStatusLabel(BookingStatus status) {
-    switch (status) {
+  String _getTabLabel(dynamic tab) {
+    if (tab == _todayTab) return 'Today';
+    switch (tab as BookingStatus) {
       case BookingStatus.pending: return 'Requests';
       case BookingStatus.accepted: return 'Upcoming';
       case BookingStatus.active: return 'Ongoing';
@@ -227,6 +230,26 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
       case BookingStatus.cancelled: return 'Cancelled';
       default: return '';
     }
+  }
+
+  String _getStatusLabel(BookingStatus status) => _getTabLabel(status);
+
+  bool _isToday(Booking booking) {
+    final today = DateTime.now();
+    return booking.date.year == today.year &&
+        booking.date.month == today.month &&
+        booking.date.day == today.day;
+  }
+
+  bool _matchesTab(dynamic tab, Booking booking) {
+    if (tab == _todayTab) {
+      return booking.status == BookingStatus.accepted && _isToday(booking);
+    }
+    if (tab == BookingStatus.accepted) {
+      // Exclude today's bookings — they belong to the Today tab only
+      return booking.status == BookingStatus.accepted && !_isToday(booking);
+    }
+    return booking.status == (tab as BookingStatus);
   }
 
   @override
@@ -271,9 +294,9 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                           Expanded(
                             child: TabBarView(
                               controller: _tabController,
-                              children: _tabs.map((status) {
-                                final filteredList = allBookings.where((b) => b.status == status).toList();
-                                if (filteredList.isEmpty) return _buildEmptyState(status);
+                              children: _tabs.map((tab) {
+                                final filteredList = allBookings.where((b) => _matchesTab(tab, b)).toList();
+                                if (filteredList.isEmpty) return _buildEmptyState(tab);
                                 return RefreshIndicator(
                                   onRefresh: () async => setState(() => _loadBookings()),
                                   color: colorScheme.primary,
@@ -281,7 +304,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                                     physics: const BouncingScrollPhysics(),
                                     itemCount: filteredList.length,
-                                    itemBuilder: (context, index) => _buildJobCard(filteredList[index]),
+                                    itemBuilder: (context, index) => _buildJobCard(filteredList[index], isToday: tab == _todayTab),
                                   ),
                                 );
                               }).toList(),
@@ -299,8 +322,9 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
     );
   }
 
-  Color _getStatusColor(BookingStatus status, ColorScheme colorScheme) {
-    switch (status) {
+  Color _getTabColor(dynamic tab, ColorScheme colorScheme) {
+    if (tab == _todayTab) return Colors.green.shade600;
+    switch (tab as BookingStatus) {
       case BookingStatus.pending: return colorScheme.primary;
       case BookingStatus.accepted: return Colors.amber.shade700;
       case BookingStatus.active: return Colors.blue;
@@ -311,20 +335,20 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
   }
 
   Widget _buildFilterChips(List<Booking> allBookings) {
-    return StatusFilterChips<BookingStatus>(
+    return StatusFilterChips<dynamic>(
       items: _tabs,
       selectedIndex: _tabController.index,
       onSelected: (index) => setState(() => _tabController.animateTo(index)),
-      labelBuilder: _getStatusLabel,
-      countBuilder: (status) => allBookings.where((booking) => booking.status == status).length,
-      colorBuilder: (status, colorScheme) => _getStatusColor(status, colorScheme),
+      labelBuilder: _getTabLabel,
+      countBuilder: (tab) => allBookings.where((b) => _matchesTab(tab, b)).length,
+      colorBuilder: (tab, colorScheme) => _getTabColor(tab, colorScheme),
     );
   }
 
-  Widget _buildJobCard(Booking booking) {
+  Widget _buildJobCard(Booking booking, {bool isToday = false}) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Pending requests use the same card style as upcoming but with a full-width Review Request button
+    // Pending requests
     if (booking.status == BookingStatus.pending) {
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -385,6 +409,95 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
       );
     }
 
+    // Today card — View Details + Start Traveling + Message
+    if (isToday) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.green.shade200),
+          boxShadow: [
+            BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(booking.clientPhotoUrl))),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(booking.clientName ?? 'Client', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                        child: Text('Today', style: TextStyle(color: Colors.green.shade700, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+                StatusBadge(label: booking.time, color: Colors.green.shade600),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), height: 1),
+            const SizedBox(height: 16),
+            _buildInfoRow(Icons.build_outlined, booking.category, ''),
+            const SizedBox(height: 8),
+            _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.clientBarangay ?? booking.barangay})', ''),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '${AppRouter.jobDetail}/${booking.id}'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                      foregroundColor: colorScheme.onSurface,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('View Details', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Start Traveling', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: colorScheme.outlineVariant),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
+                    icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     // All other statuses use the standard job card
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -426,7 +539,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           const SizedBox(height: 16),
           _buildInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(booking.date), '${AppFormatters.date(booking.date)} • ${booking.time}'),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.barangay})', ''),
+          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${booking.clientBarangay ?? booking.barangay})', ''),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -470,7 +583,6 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
-                  // Chat: booking.id is the thread identifier (matches /api/messages/{bookingId})
                   onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
                   icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
                 ),
@@ -516,7 +628,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
     );
   }
 
-  Widget _buildEmptyState(BookingStatus status) {
+  Widget _buildEmptyState(dynamic tab) {
     final theme = Theme.of(context);
     return Center(
       child: Column(
@@ -525,9 +637,11 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           Icon(Icons.inventory_2_outlined, size: 64, color: theme.colorScheme.outlineVariant),
           const SizedBox(height: 16),
           Text(
-            status == BookingStatus.pending
-                ? 'No pending requests.'
-                : 'No more ${_getStatusLabel(status).toLowerCase()} jobs.',
+            tab == _todayTab
+                ? 'No jobs scheduled for today.'
+                : tab == BookingStatus.pending
+                    ? 'No pending requests.'
+                    : 'No more ${_getTabLabel(tab).toLowerCase()} jobs.',
             style: AppTypography.headlineMedium.copyWith(fontSize: 20, color: theme.colorScheme.onSurface),
           ),
         ],
