@@ -290,7 +290,11 @@ class JobPostListing {
   });
 
   factory JobPostListing.fromJson(Map<String, dynamic> json) {
-    final workerData = json['worker'] as Map<String, dynamic>? ?? {};
+    final workerData = <String, dynamic>{
+      ...json['worker'] as Map<String, dynamic>? ?? {},
+      if (json['distance_label'] != null) 'distance_label': json['distance_label'],
+      if (json['distance_km'] != null) 'distance_km': json['distance_km'],
+    };
     final worker = Worker.fromJson(
       workerData,
       fallbackProfileId: json['worker_profile_id']?.toString(),

@@ -135,11 +135,11 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
                               style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
                             ),
                             Text(
-                              '${post.category} · ${worker.barangay}',
+                              post.category,
                               style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                             ),
                             Text(
-                              '~${worker.distance}',
+                              '${worker.barangay} · ${worker.distance}',
                               style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
                             ),
                           ],
