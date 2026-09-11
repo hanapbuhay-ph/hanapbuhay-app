@@ -7,6 +7,7 @@ import '../../core/routing/app_router.dart';
 import '../../core/utils/formatters.dart';
 import '../../widgets/info/compact_info_row.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/chat_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -258,8 +259,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             ),
           ),
           IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}');
+            onPressed: () async {
+              final conversationId = await context.read<ChatProvider>().resolveConversationId(
+                otherUserId: booking.workerId,
+                fallbackBookingId: booking.id,
+              );
+              if (mounted) {
+                Navigator.pushNamed(context, '${AppRouter.chatThread}/$conversationId');
+              }
             },
             icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
             style: IconButton.styleFrom(

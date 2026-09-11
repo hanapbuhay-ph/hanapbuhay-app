@@ -6,6 +6,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/utils/formatters.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/chat_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
@@ -188,8 +189,15 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             ),
           ),
           IconButton(
-            // Use booking.id as the chat thread identifier (matches /api/messages/{bookingId})
-            onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
+            onPressed: () async {
+              final conversationId = await context.read<ChatProvider>().resolveConversationId(
+                otherUserId: booking.clientId,
+                fallbackBookingId: booking.id,
+              );
+              if (mounted) {
+                Navigator.pushNamed(context, '${AppRouter.chatThread}/$conversationId');
+              }
+            },
             icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
             style: IconButton.styleFrom(
               backgroundColor: colorScheme.primary.withValues(alpha: 0.1),

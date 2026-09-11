@@ -124,26 +124,23 @@ class ApiChatRepository implements ChatRepository {
 
       final bookingId = item['booking_id']?.toString();
       final otherParty = item['other_party'];
-      
-      if (bookingId == null || otherParty == null || otherParty is! Map) {
+
+      if (bookingId == null || bookingId.isEmpty) {
         return null;
       }
 
-      final otherUserId = otherParty['id']?.toString();
-      final otherUserName = otherParty['name']?.toString();
-      final otherUserRole = otherParty['role']?.toString();
-      final rawAvatar = otherParty['profile_photo_url']?.toString() ?? otherParty['profile_photo']?.toString() ?? otherParty['avatar']?.toString();
+      final otherPartyMap = otherParty is Map ? otherParty : const <String, dynamic>{};
+      final otherUserId = otherPartyMap['id']?.toString() ?? '';
+      final otherUserName = otherPartyMap['name']?.toString() ?? 'User';
+      final otherUserRole = otherPartyMap['role']?.toString();
+      final rawAvatar = otherPartyMap['profile_photo_url']?.toString() ?? otherPartyMap['profile_photo']?.toString() ?? otherPartyMap['avatar']?.toString();
       final otherUserAvatar = (rawAvatar != null && rawAvatar.isNotEmpty)
           ? AppConstants.getPhotoUrl(rawAvatar)
           : null;
       
-      final lastMessage = item['last_message']?.toString();
+      final lastMessage = item['last_message']?.toString() ?? '';
       final lastMessageTimeStr = item['last_message_at']?.toString();
-      final unreadCount = item['unread_count'] ?? 0;
-
-      if (otherUserId == null || otherUserName == null || lastMessage == null) {
-        return null;
-      }
+      final unreadCount = (item['unread_count'] as num?)?.toInt() ?? 0;
 
       final lastMessageTime = lastMessageTimeStr != null
           ? DateTime.tryParse(lastMessageTimeStr) ?? DateTime.now()

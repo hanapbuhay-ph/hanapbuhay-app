@@ -4,6 +4,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/utils/formatters.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/chat_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/filters/status_filter_chips.dart';
@@ -312,7 +313,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
+              onPressed: () => _openConversation(booking),
               icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
             ),
           ),
@@ -364,7 +365,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
+              onPressed: () => _openConversation(booking),
               icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
             ),
           ),
@@ -407,6 +408,16 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> with Ticker
         ],
       ],
     );
+  }
+
+  Future<void> _openConversation(Booking booking) async {
+    final conversationId = await context.read<ChatProvider>().resolveConversationId(
+      otherUserId: booking.workerId,
+      fallbackBookingId: booking.id,
+    );
+    if (mounted) {
+      Navigator.pushNamed(context, '${AppRouter.chatThread}/$conversationId');
+    }
   }
 
   Future<void> _handleUpdateStatus(Booking booking, BookingStatus newStatus) async {

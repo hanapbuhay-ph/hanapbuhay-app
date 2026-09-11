@@ -7,6 +7,7 @@ import '../../core/utils/formatters.dart';
 import '../../widgets/status/status_badge.dart';
 import '../../widgets/info/compact_info_row.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/chat_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/filters/status_filter_chips.dart';
 import '../../widgets/info/detail_info_row.dart';
@@ -469,7 +470,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                 const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}'),
+                    onPressed: () => _startTraveling(booking),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
                       foregroundColor: Colors.white,
@@ -487,7 +488,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
-                    onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
+                    onPressed: () => _openConversation(booking),
                     icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
                   ),
                 ),
@@ -583,7 +584,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
-                  onPressed: () => Navigator.pushNamed(context, '${AppRouter.chatThread}/${booking.id}'),
+                  onPressed: () => _openConversation(booking),
                   icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant, size: 20),
                 ),
               ),
@@ -592,6 +593,44 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
         ],
       ),
     );
+  }
+
+  Future<void> _openConversation(Booking booking) async {
+    final conversationId = await context.read<ChatProvider>().resolveConversationId(
+      otherUserId: booking.clientId,
+      fallbackBookingId: booking.id,
+    );
+    if (mounted) {
+      Navigator.pushNamed(context, '${AppRouter.chatThread}/$conversationId');
+    }
+  }
+
+  Future<void> _startTraveling(Booking booking) async {
+    if (booking.status == BookingStatus.active) {
+      if (mounted) {
+        Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}');
+      }
+      return;
+    }
+
+    if (booking.status != BookingStatus.accepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This booking is not ready to start.')),
+      );
+      return;
+    }
+
+    final result = await context.read<BookingProvider>().startBooking(bookingId: booking.id);
+    if (!mounted) return;
+
+    if (!result.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message)),
+      );
+      return;
+    }
+
+    Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}');
   }
 
   Widget _buildStatusPill(BookingStatus status) {
