@@ -23,7 +23,7 @@ class ApiWorkerRepository implements WorkerRepository {
     final res = await ApiClient.get('/categories/$c/workers?${_queryString(filters.toQueryParams())}', requiresAuth: true);
     if (res['success'] == true) {
         final d = res['data'] as Map<String, dynamic>? ?? {};
-        final list = (d['workers'] as List<dynamic>? ?? []).map((r) => JobPostListing(worker: Worker.fromJson(r), post: JobPost.fromJson(r['job_post'] ?? {}, defaultWorkerId: r['worker_profile_id']))).toList();
+        final list = (d['workers'] as List<dynamic>? ?? []).map((r) => JobPostListing(worker: Worker.fromJson(r), post: JobPost.fromJson(r['job_post'] ?? {}, defaultWorkerId: r['worker_profile_id']?.toString()))).toList();
         return CategoryWorkerResponse(categoryId: c, listings: list);
     }
     return CategoryWorkerResponse(categoryId: c);
