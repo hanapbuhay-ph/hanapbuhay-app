@@ -361,7 +361,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Location', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10)),
-              Text('Trinidad (${booking.barangay})', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
+              Text('Trinidad (${booking.clientBarangay ?? booking.barangay})', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
             ],
           ),
         ),

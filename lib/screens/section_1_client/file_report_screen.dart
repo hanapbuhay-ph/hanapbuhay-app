@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/report_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -33,12 +35,16 @@ class _FileReportScreenState extends State<FileReportScreen> {
   Map<String, dynamic>? _serverErrors;
   
   Booking? _booking;
-  Worker? _worker;
   bool _isLoadingData = true;
   bool _isSubmitting = false;
 
   String? _selectedReason;
   final List<XFile> _selectedPhotos = [];
+
+  String? _reportedUserId;
+  String? _reportedUserName;
+  String? _reportedUserAvatar;
+  String? _reportedUserSubtitle;
 
   final List<String> _reasons = [
     'No-show',
@@ -72,16 +78,42 @@ class _FileReportScreenState extends State<FileReportScreen> {
   Future<void> _loadData() async {
     final bookingProvider = context.read<BookingProvider>();
     final workerProvider = context.read<WorkerProvider>();
+    final authProvider = context.read<AuthProvider>();
     final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await workerProvider.getWorkerById(booking.workerId);
+      final isClient = authProvider.userRole == 'client';
+
+      Worker? worker;
+      String reportedUserName;
+      String reportedUserAvatar;
+      String reportedUserId;
+      String? reportedUserSubtitle;
+
+      if (isClient) {
+        worker = await workerProvider.getWorkerById(booking.workerId);
+        reportedUserName = worker?.name ?? 'Worker';
+        reportedUserAvatar = AppConstants.getPhotoUrl(worker?.avatarUrl);
+        reportedUserId = booking.workerId;
+        reportedUserSubtitle = worker?.specialty;
+      } else {
+        reportedUserName = booking.clientName ?? 'Client';
+        reportedUserAvatar = AppConstants.getPhotoUrl(booking.clientPhotoUrl);
+        reportedUserId = booking.clientId;
+        reportedUserSubtitle = 'Client';
+      }
+
       if (mounted) {
         setState(() {
           _booking = booking;
-          _worker = worker;
           _isLoadingData = false;
+          _reportedUserId = reportedUserId;
+          _reportedUserName = reportedUserName;
+          _reportedUserAvatar = reportedUserAvatar;
+          _reportedUserSubtitle = reportedUserSubtitle;
         });
       }
+    } else if (mounted) {
+      setState(() => _isLoadingData = false);
     }
   }
 
@@ -125,7 +157,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
     try {
       final result = await context.read<ReportProvider>().submitReport(
         bookingId: widget.bookingId,
-        workerId: _worker!.id,
+        workerId: _reportedUserId!,
         reason: _reasonToApi[_selectedReason!] ?? 'other',
         description: _descriptionController.text.trim(),
         photoPaths: _selectedPhotos.map((p) => p.path).toList(),
@@ -169,7 +201,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
       return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
-    if (_booking == null || _worker == null) {
+    if (_booking == null) {
       return const Scaffold(body: Center(child: Text('Booking details not found')));
     }
 
@@ -188,8 +220,8 @@ class _FileReportScreenState extends State<FileReportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Context Card
-                    _buildContextCard(_booking!, _worker!),
+                     // Context Card
+                    _buildContextCard(_booking!),
                     const SizedBox(height: 32),
 
                     // Reason Dropdown
@@ -265,7 +297,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
     );
   }
 
-  Widget _buildContextCard(Booking booking, Worker worker) {
+  Widget _buildContextCard(Booking booking) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
@@ -285,14 +317,14 @@ class _FileReportScreenState extends State<FileReportScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              CircleAvatar(radius: 24, backgroundImage: NetworkImage(worker.avatarUrl)),
+              CircleAvatar(radius: 24, backgroundImage: NetworkImage(_reportedUserAvatar ?? '')),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(worker.name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
-                    Text(worker.specialty, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                    Text(_reportedUserName ?? '', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
+                    Text(_reportedUserSubtitle ?? '', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ),

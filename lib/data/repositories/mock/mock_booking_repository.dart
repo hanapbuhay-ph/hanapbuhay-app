@@ -15,7 +15,7 @@ class MockBookingRepository implements BookingRepository {
       barangay: 'Poblacion',
       barangayCoordinates: const LatLng(9.9575, 124.3517),
       notes: 'Kitchen sink leak',
-      status: BookingStatus.upcoming,
+      status: BookingStatus.accepted,
       timeline: [
         BookingTimelineStep(label: 'Requested', timestamp: DateTime.now().subtract(const Duration(hours: 2)), isCompleted: true),
         BookingTimelineStep(label: 'Accepted'),
@@ -34,7 +34,7 @@ class MockBookingRepository implements BookingRepository {
       barangay: 'Poblacion',
       barangayCoordinates: const LatLng(9.9575, 124.3517),
       notes: 'Socket replacement',
-      status: BookingStatus.upcoming,
+      status: BookingStatus.accepted,
       timeline: [
         BookingTimelineStep(label: 'Requested', timestamp: DateTime.now().subtract(const Duration(days: 1)), isCompleted: true),
         BookingTimelineStep(label: 'Accepted'),

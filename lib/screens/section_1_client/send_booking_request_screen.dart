@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -62,11 +63,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
           final post = widget.postId == null
               ? null
               : worker.jobPosts.where((item) => item.id == widget.postId).firstOrNull;
-          final match = _categories.firstWhere(
-            (c) => post?.category.contains(c) == true || worker.specialty.contains(c),
-            orElse: () => _categories.first,
-          );
-          _selectedCategory = match;
+          _selectedCategory = post?.category ?? worker.specialty;
         }
       });
     }
@@ -259,16 +256,23 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                     // Service Category
                     Text('Service Required', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedCategory,
-                      decoration: _getInputDecoration('Category'),
-                      items: _categories.map((c) => DropdownMenuItem(
-                        value: c,
-                        child: Text(c, style: AppTypography.bodyMedium),
-                      )).toList(),
-                      onChanged: (val) => setState(() => _selectedCategory = val),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(_selectedCategory ?? 'N/A', style: AppTypography.bodyMedium),
+                          const Spacer(),
+                          Icon(Icons.lock, size: 18, color: colorScheme.onSurfaceVariant),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 24),
+
 
                     // Date & Time Row
                     Row(
@@ -337,7 +341,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                     _buildFieldErrors('scheduled_at'),
                     const SizedBox(height: 24),
 
-                    // Service Location (Architecture Correction: Read-only Barangay)
+                    // Service Location
                     Text('Service Location', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
                     Container(
@@ -355,7 +359,10 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                             children: [
                               Icon(Icons.location_on, size: 18, color: colorScheme.primary),
                               const SizedBox(width: 8),
-                              Text('${AppConstants.defaultBarangay}, ${AppConstants.municipalityName}', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                              Text(
+                                context.read<AuthProvider>().userBarangay ?? 'Not set',
+                                style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 8),

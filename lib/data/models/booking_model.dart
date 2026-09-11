@@ -205,7 +205,6 @@ class BookingTimelineStep {
 
 enum BookingStatus {
   pending,
-  upcoming,
   accepted,
   active,
   completed,

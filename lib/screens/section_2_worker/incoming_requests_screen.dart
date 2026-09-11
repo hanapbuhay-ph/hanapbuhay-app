@@ -249,7 +249,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                       const SizedBox(height: 16),
                       _buildDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${AppFormatters.date(request.date)} • ${request.time}'),
                       const SizedBox(height: 14),
-                          _buildDetailRow(colorScheme, Icons.location_on_outlined, 'Location', '${AppConstants.municipalityName} (${request.barangay})'),
+                          _buildDetailRow(colorScheme, Icons.location_on_outlined, 'Location', '${AppConstants.municipalityName} (${request.clientBarangay ?? request.barangay})'),
                       const SizedBox(height: 14),
                       _buildDetailRow(colorScheme, Icons.build_outlined, 'Service', request.category),
                       if (request.notes.isNotEmpty) ...[
@@ -374,7 +374,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
           const SizedBox(height: 16),
           _buildInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(request.date), '${AppFormatters.date(request.date)} • ${request.time}'),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${request.barangay})', '~1.5 km away'),
+          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${request.clientBarangay ?? request.barangay})', '~1.5 km away'),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
