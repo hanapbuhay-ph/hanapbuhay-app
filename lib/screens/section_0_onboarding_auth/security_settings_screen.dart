@@ -50,27 +50,6 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     }
   }
 
-  void _showLinkedAccountsInfo() {
-    final authProvider = context.read<AuthProvider>();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Linked Accounts'),
-        content: Text(
-          authProvider.isGoogleLinked 
-            ? 'Your account is currently linked with your Google account (${authProvider.userEmail}). This allows you to log in quickly using Google Sign-In.'
-            : 'You are currently using email and password to log in. You can link a Google account during the registration process.'
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   void initState() {
     super.initState();
@@ -131,9 +110,10 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                         
                         // Row 2: Linked Accounts
                         _buildSettingsRow(
-                          title: 'Linked Accounts',
-                          subtitle: authProvider.isGoogleLinked ? 'Google account linked: $linkedEmail' : 'Manage your connected social accounts',
-                          onTap: _showLinkedAccountsInfo,
+                          title: 'Google Sign-In Status',
+                          subtitle: authProvider.isGoogleLinked
+                              ? 'Google account linked: $linkedEmail'
+                              : 'No Google account linked',
                         ),
                         Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
                         
@@ -217,7 +197,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   Widget _buildSettingsRow({
     required String title,
     String? subtitle,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -242,7 +222,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
+            if (onTap != null) Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
           ],
         ),
       ),
