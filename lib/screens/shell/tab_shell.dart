@@ -23,6 +23,7 @@ class TabShell extends StatefulWidget {
 class _TabShellState extends State<TabShell> {
   late int _currentIndex;
   late int _previousIndex;
+  int _profileTabBuildCount = 0;
 
   @override
   void initState() {
@@ -36,6 +37,9 @@ class _TabShellState extends State<TabShell> {
     setState(() {
       _previousIndex = _currentIndex;
       _currentIndex = index;
+      if (index == 4) {
+        _profileTabBuildCount++;
+      }
     });
   }
 
@@ -49,14 +53,14 @@ class _TabShellState extends State<TabShell> {
             const BookingScheduleScreen(),
             const ChatInboxScreen(),
             const NotificationCenterScreen(),
-            const ProfileTabScreen(),
+            ProfileTabScreen(key: ValueKey('profile-tab-$_profileTabBuildCount')),
           ]
         : [
             const ClientHomeScreen(),
             const BookingHistoryScreen(),
             const ChatInboxScreen(),
             const NotificationCenterScreen(),
-            const ProfileTabScreen(),
+            ProfileTabScreen(key: ValueKey('profile-tab-$_profileTabBuildCount')),
           ];
 
     final bool slidingRight = _currentIndex > _previousIndex;
