@@ -86,7 +86,9 @@ class ApiWorkerRepository implements WorkerRepository {
             .map((c) => ServiceCategory(
               id: c['id'].toString(),
               label: c['name'] ?? '',
-              icon: ServiceCategoryIcons.fromKey(c['icon']?.toString()),
+              icon: ServiceCategoryIcons.fromKey(
+                c['icon']?.toString() ?? c['name']?.toString(),
+              ),
             ))
             .toList()
         : [];
