@@ -129,6 +129,7 @@ abstract class WorkerRepository {
   Future<AuthResult> updateAvailability(String availabilityStatus);
 
   Future<List<Worker>> getTopRatedWorkers();
+  Future<List<JobPostListing>> searchWorkers({String? search, String? categoryId});
   Future<List<Worker>> getRecentlyViewedWorkers();
   Future<List<ServiceCategory>> getCategories();
   Future<Worker?> getWorkerById(String id);

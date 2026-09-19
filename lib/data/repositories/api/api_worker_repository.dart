@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/constants/service_category_icons.dart';
 import '../../models/worker_model.dart';
@@ -73,6 +72,45 @@ class ApiWorkerRepository implements WorkerRepository {
   Future<List<Worker>> getTopRatedWorkers() async {
     final res = await ApiClient.get('/workers/top-rated', requiresAuth: true);
     return res['success'] == true ? (res['data'] as List<dynamic>? ?? []).map((w) => Worker.fromJson(w)).toList() : [];
+  }
+
+  @override
+  Future<List<JobPostListing>> searchWorkers({String? search, String? categoryId}) async {
+    final params = <String, String>{
+      if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+      if (categoryId != null) 'category_id': categoryId,
+    };
+    final query = params.isEmpty ? '' : '?${_queryString(params)}';
+    final res = await ApiClient.get('/workers$query', requiresAuth: true);
+    if (res['success'] != true) return [];
+
+    final workers = (res['data']?['workers'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>();
+    return workers.expand((json) {
+      final worker = Worker.fromJson(json);
+      if (worker.jobPosts.isNotEmpty) {
+        return worker.jobPosts.map((post) => JobPostListing(worker: worker, post: post));
+      }
+      final rawCategories = json['categories'] as List<dynamic>? ?? const [];
+      final category = rawCategories.isNotEmpty
+          ? rawCategories.first.toString()
+          : worker.specialty;
+      return [
+        JobPostListing(
+          worker: worker,
+          post: JobPost(
+            id: 'worker-${worker.id}',
+            workerId: worker.id,
+            category: category,
+            title: '$category Services',
+            description: worker.bio,
+            startingRate: worker.hourlyRate,
+            rateType: RateType.perHour,
+            isAvailable: worker.isAvailable,
+          ),
+        ),
+      ];
+    }).toList();
   }
 
   @override

@@ -54,6 +54,30 @@ class MockWorkerRepository implements WorkerRepository {
     );
   }
 
+  @override
+  Future<List<JobPostListing>> searchWorkers({String? search, String? categoryId}) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final query = search?.toLowerCase().trim() ?? '';
+    return _workers
+        .where((worker) => query.isEmpty || worker.name.toLowerCase().contains(query) || worker.specialty.toLowerCase().contains(query) || worker.services.any((service) => service.toLowerCase().contains(query)))
+        .map((worker) {
+          final post = worker.jobPosts.isNotEmpty
+              ? worker.jobPosts.first
+              : JobPost(
+                  id: 'legacy-${worker.id}',
+                  workerId: worker.id,
+                  category: worker.specialty,
+                  title: '${worker.specialty} Services',
+                  description: worker.bio,
+                  startingRate: worker.hourlyRate,
+                  rateType: RateType.perHour,
+                  isAvailable: worker.isAvailable,
+                );
+          return JobPostListing(worker: worker, post: post);
+        })
+        .toList();
+  }
+
   final List<JobPost> _mockJobPosts = [
     JobPost(
       id: 'jp1',

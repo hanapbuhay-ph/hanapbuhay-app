@@ -20,6 +20,8 @@ class ClientHomeScreen extends StatefulWidget {
 
 class _ClientHomeScreenState extends State<ClientHomeScreen> {
   late Future<FeedResponse> _filteredWorkersFuture;
+  late Future<List<ServiceCategory>> _categoriesFuture;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -30,10 +32,12 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   void _loadData() {
     final workerProvider = context.read<WorkerProvider>();
     _filteredWorkersFuture = workerProvider.getFeed();
+    _categoriesFuture = workerProvider.getCategories();
   }
 
   @override
   void dispose() {
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -71,9 +75,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                     _buildSearchBar(),
                     const SizedBox(height: 16),
 
-                    // Quick Filters
-                    _buildQuickFilters(),
-                    const SizedBox(height: 16),
+                    _buildCategorySection(),
+                    const SizedBox(height: 24),
 
                     // Feed header
                     Row(
@@ -131,106 +134,113 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   Widget _buildSearchBar() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final workerProvider = context.watch<WorkerProvider>();
-    final filterCount = workerProvider.activeAdvancedFilterCount;
 
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, AppRouter.browseCategory),
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 16, right: 12),
-              child: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
-            ),
-            Expanded(
-              child: Text(
-                'Search workers...',
-                style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  GestureDetector(
-                    onTap: () => _showAdvancedFilters(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.tune, color: colorScheme.onPrimary, size: 20),
-                    ),
-                  ),
-                  if (filterCount > 0)
-                    Positioned(
-                      right: -4,
-                      top: -4,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: colorScheme.error,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: colorScheme.surface, width: 2),
-                        ),
-                        child: Text(
-                          filterCount.toString(),
-                          style: TextStyle(color: colorScheme.onError, fontSize: 8, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        textInputAction: TextInputAction.search,
+        onSubmitted: (query) {
+          final trimmedQuery = query.trim();
+          if (trimmedQuery.isEmpty) return;
+          Navigator.pushNamed(context, '${AppRouter.workerSearch}?query=${Uri.encodeQueryComponent(trimmedQuery)}');
+        },
+        style: TextStyle(color: colorScheme.onSurface),
+        decoration: InputDecoration(
+          hintText: 'Search worker name or service...',
+          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+          prefixIcon: Icon(Icons.search, color: colorScheme.primary),
+          suffixIcon: IconButton(
+            tooltip: 'Search workers',
+            onPressed: () {
+              final query = _searchController.text.trim();
+              if (query.isNotEmpty) {
+                Navigator.pushNamed(context, '${AppRouter.workerSearch}?query=${Uri.encodeQueryComponent(query)}');
+              }
+            },
+            icon: Icon(Icons.arrow_forward, color: colorScheme.primary),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
   }
 
-  Widget _buildQuickFilters() {
-    final workerProvider = context.watch<WorkerProvider>();
+  Widget _buildCategorySection() {
     final colorScheme = Theme.of(context).colorScheme;
+    return FutureBuilder<List<ServiceCategory>>(
+      future: _categoriesFuture,
+      builder: (context, snapshot) {
+        final categories = snapshot.data ?? const <ServiceCategory>[];
+        if (snapshot.connectionState == ConnectionState.waiting && categories.isEmpty) {
+          return const SizedBox(height: 88, child: Center(child: CircularProgressIndicator()));
+        }
 
-    return Row(
-      children: ['All', 'Verified ✓', 'Unverified'].map((label) {
-          final filterKey = label.replaceAll(' ✓', '');
-          final isSelected = workerProvider.quickFilter == filterKey;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(label),
-              selected: isSelected,
-              onSelected: (val) {
-                if (val) {
-                  workerProvider.setQuickFilter(filterKey);
-                  _loadData();
-                }
-              },
-              selectedColor: colorScheme.primary,
-              labelStyle: TextStyle(
-                color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13,
-              ),
-              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-              showCheckmark: false,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-                side: BorderSide.none,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Categories', style: AppTypography.headlineMedium.copyWith(fontSize: 20, height: 1)),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, AppRouter.browseCategory),
+                  child: Text('View All', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w700)),
+                ),
+              ],
             ),
-          );
-      }).toList(),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 92,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.take(4).length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return _buildCategoryCard(category);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryCard(ServiceCategory category) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 108,
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(
+          context,
+          '${AppRouter.categoryResults}/${category.id}?name=${Uri.encodeComponent(category.label)}',
+        ),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colorScheme.primary.withValues(alpha: 0.18)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(category.icon, color: colorScheme.primary, size: 28),
+              const SizedBox(height: 6),
+              Text(category.label, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w700)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -269,15 +279,6 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         );
       },
     );
-  }
-
-  void _showAdvancedFilters(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const _AdvancedFilterBottomSheet(),
-    ).then((_) => _loadData());
   }
 
 }

@@ -63,6 +63,9 @@ class WorkerProvider extends ChangeNotifier {
   }
 
   Future<List<ServiceCategory>> getCategories() => _repository.getCategories();
+
+  Future<List<JobPostListing>> searchWorkers({String? search, String? categoryId}) =>
+      _repository.searchWorkers(search: search, categoryId: categoryId);
   
   /// GET /api/worker/posts — fetch the authenticated worker's own posts.
   Future<List<JobPost>> getWorkerPosts({bool includeInactive = false}) =>
