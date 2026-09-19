@@ -12,6 +12,7 @@ enum NotificationType {
   newChatMessage,
   verificationApproved,
   newRatingReceived,
+  reportReceived,
   verificationResubmissionRequired,
   system
 }

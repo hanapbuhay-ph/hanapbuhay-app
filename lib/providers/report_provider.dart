@@ -8,7 +8,7 @@ class ReportProvider extends ChangeNotifier {
 
   ReportProvider(this._repository);
 
-  Future<List<Report>> getReports() => _repository.getReports();
+  Future<List<Report>> getReports({String view = 'all'}) => _repository.getReports(view: view);
   
   Future<AuthResult> submitReport({
     required String bookingId,

@@ -219,6 +219,9 @@ class ApiNotificationRepository implements NotificationRepository {
       case 'newrating':
       case 'rating':
         return NotificationType.newRatingReceived;
+      case 'report_received':
+      case 'reportreceived':
+        return NotificationType.reportReceived;
       default:
         return NotificationType.system;
     }

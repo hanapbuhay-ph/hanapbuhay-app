@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/report_provider.dart';
 import '../../data/models/report_model.dart';
@@ -18,6 +17,7 @@ class ReportStatusScreen extends StatefulWidget {
 
 class _ReportStatusScreenState extends State<ReportStatusScreen> {
   late Future<List<Report>> _reportsFuture;
+  String _view = 'submitted';
   final Set<String> _expandedReportIds = {};
 
   @override
@@ -27,7 +27,14 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
   }
 
   void _loadReports() {
-    _reportsFuture = context.read<ReportProvider>().getReports();
+    _reportsFuture = context.read<ReportProvider>().getReports(view: _view);
+  }
+
+  void _setView(String view) {
+    setState(() {
+      _view = view;
+      _loadReports();
+    });
   }
 
   void _toggleExpand(String id) {
@@ -57,10 +64,6 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                 }
 
                 final reports = snapshot.data ?? [];
-                if (reports.isEmpty) {
-                  return _buildEmptyState();
-                }
-
                 return SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   physics: const BouncingScrollPhysics(),
@@ -74,7 +77,19 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                         style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 32),
-                      ...reports.map((report) => _buildReportCard(report)),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(value: 'submitted', label: Text('Submitted'), icon: Icon(Icons.outbox_outlined)),
+                          ButtonSegment(value: 'received', label: Text('Received'), icon: Icon(Icons.inbox_outlined)),
+                        ],
+                        selected: {_view},
+                        onSelectionChanged: (selection) => _setView(selection.first),
+                      ),
+                      const SizedBox(height: 20),
+                      if (reports.isEmpty)
+                        _buildScopedEmptyState()
+                      else
+                        ...reports.map((report) => _buildReportCard(report)),
                     ],
                   ),
                 );
@@ -82,6 +97,29 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScopedEmptyState() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isReceived = _view == 'received';
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 56),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(isReceived ? Icons.inbox_outlined : Icons.outbox_outlined, size: 52, color: colorScheme.outline),
+            const SizedBox(height: 16),
+            Text(isReceived ? 'No Reports Received' : 'No Reports Submitted', style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            Text(
+              isReceived ? 'Reports filed against your account will appear here.' : 'Reports you file will appear here.',
+              textAlign: TextAlign.center,
+              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -435,28 +473,6 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.description_outlined, size: 80, color: AppColors.outlineVariant),
-            const SizedBox(height: 24),
-            Text('No Reports Filed', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 12),
-            const Text(
-              'You haven\'t submitted any issue reports yet. If you encounter any problems with a service, you can report it from the Bookings page.',
-              textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium,
             ),
           ],
         ),

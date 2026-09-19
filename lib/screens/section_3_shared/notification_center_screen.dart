@@ -181,6 +181,11 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         color = Colors.amber;
         bgColor = Colors.amber.withValues(alpha: 0.1);
         break;
+      case NotificationType.reportReceived:
+        icon = Icons.report_problem_outlined;
+        color = colorScheme.error;
+        bgColor = colorScheme.error.withValues(alpha: 0.1);
+        break;
       default:
         icon = Icons.notifications;
         color = colorScheme.primary;
@@ -265,6 +270,9 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         } else {
            Navigator.pushNamed(context, AppRouter.bookingHistory);
         }
+        break;
+      case NotificationType.reportReceived:
+        Navigator.pushNamed(context, AppRouter.reportStatus);
         break;
       default:
         break;

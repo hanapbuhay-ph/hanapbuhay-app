@@ -5,9 +5,9 @@ import '../../models/auth_result_model.dart';
 
 class ApiReportRepository implements ReportRepository {
   @override
-  Future<List<Report>> getReports() async {
+  Future<List<Report>> getReports({String view = 'all'}) async {
     // GET /api/reports
-    final res = await ApiClient.get('/reports', requiresAuth: true);
+    final res = await ApiClient.get('/reports?view=$view', requiresAuth: true);
     if (res['success'] != true) return [];
     final reportsData = res['data']?['reports'] as List<dynamic>? ?? [];
 
