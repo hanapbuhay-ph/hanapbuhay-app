@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../data/models/trust_tier.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -27,6 +28,12 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
 
   void _loadStatus() {
     _statusFuture = context.read<WorkerProvider>().getVerificationStatus();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadStatus();
   }
 
   @override
@@ -73,6 +80,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
 
           final data = snapshot.data;
           final status = data?['verification_status']?.toString() ?? 'not_started';
+          final trustTier = _parseTrustTier(data?['trust_tier']?.toString());
           final remarks = data?['remarks']?.toString(); // backend key is "remarks", not "verification_remarks"
           final documents = data?['documents'] as List<dynamic>? ?? [];
 
@@ -86,7 +94,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                     physics: const AlwaysScrollableScrollPhysics(),
-                    child: _buildStatusContent(status, remarks, documents),
+                    child: _buildStatusContent(status, trustTier, remarks, documents),
                   ),
                 ),
               ),
@@ -97,14 +105,30 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
     );
   }
 
+  TrustTier? _parseTrustTier(String? value) {
+    switch ((value ?? '').toLowerCase()) {
+      case 'trusted':
+        return TrustTier.trusted;
+      case 'verified':
+        return TrustTier.verified;
+      case 'flagged':
+        return TrustTier.flagged;
+      case 'revoked':
+        return TrustTier.revoked;
+      default:
+        return null;
+    }
+  }
+
   Widget _buildStatusContent(
     String status,
+    TrustTier? trustTier,
     String? remarks,
     List<dynamic> documents,
   ) {
     switch (status) {
       case 'approved':
-        return _buildApprovedState(documents);
+        return _buildApprovedState(documents, trustTier);
       case 'pending':
         return _buildPendingState(documents);
       case 'rejected':
@@ -146,6 +170,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         case 'approved': return Icons.check_circle;
         case 'rejected': return Icons.cancel;
         case 'pending': return Icons.schedule;
+        case 'resubmission_required': return Icons.edit_note;
         default: return Icons.remove;
       }
     }
@@ -155,6 +180,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         case 'approved': return colorScheme.primary;
         case 'rejected': return colorScheme.error;
         case 'pending': return Colors.amber;
+        case 'resubmission_required': return Colors.orange;
         default: return colorScheme.onSurfaceVariant;
       }
     }
@@ -164,6 +190,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         case 'approved': return 'Approved';
         case 'rejected': return 'Rejected';
         case 'pending': return 'Under Review';
+        case 'resubmission_required': return 'Needs Update';
         default: return 'Not submitted';
       }
     }
@@ -284,11 +311,12 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
     );
   }
 
-  Widget _buildApprovedState(List<dynamic> documents) {
+  Widget _buildApprovedState(List<dynamic> documents, TrustTier? trustTier) {
     final colorScheme = Theme.of(context).colorScheme;
     final authProvider = context.read<AuthProvider>();
     final name = authProvider.userName ?? 'Worker';
     final avatarUrl = authProvider.userAvatar;
+    final trustInfo = (trustTier ?? TrustTier.verified).info;
 
     return Column(
       children: [
@@ -347,9 +375,15 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                         : null,
                   ),
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    width: 28,
+                    height: 28,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
-                    child: Icon(Icons.verified, color: colorScheme.onPrimary, size: 16),
+                    child: Icon(
+                      Icons.verified_rounded,
+                      color: colorScheme.onPrimary,
+                      size: 18,
+                    ),
                   ),
                 ],
               ),
@@ -359,18 +393,18 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  color: trustInfo.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.shield, size: 14, color: colorScheme.primary),
+                    Icon(trustInfo.icon, size: 14, color: trustInfo.color),
                     const SizedBox(width: 6),
                     Text(
-                      'Trust Tier: Verified',
+                      'Trust Tier: ${trustInfo.label}',
                       style: AppTypography.labelSmall.copyWith(
-                        color: colorScheme.primary,
+                        color: trustInfo.color,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

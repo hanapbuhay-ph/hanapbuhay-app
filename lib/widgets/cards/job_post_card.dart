@@ -48,9 +48,35 @@ class JobPostCard extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Navigator.pushNamed(
                       context, '${AppRouter.workerProfile}/${worker.id}'),
-                  child: CircleAvatar(
-                    radius: 26,
-                    backgroundImage: NetworkImage(worker.avatarUrl),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundImage: NetworkImage(worker.avatarUrl),
+                      ),
+                      if (worker.trustTier == TrustTier.verified ||
+                          worker.trustTier == TrustTier.trusted)
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: colorScheme.surface, width: 2),
+                            ),
+                            child: Icon(
+                              Icons.verified_rounded,
+                              color: colorScheme.onPrimary,
+                              size: 12,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -240,12 +266,12 @@ class _TrustBadge extends StatelessWidget {
       case TrustTier.trusted:
         color = Colors.blue;
         label = 'Trusted';
-        icon = Icons.star;
+        icon = Icons.verified_rounded;
         break;
       case TrustTier.verified:
         color = colorScheme.primary;
         label = 'Verified';
-        icon = Icons.shield;
+        icon = Icons.verified_rounded;
         break;
       default:
         color = Colors.orange;

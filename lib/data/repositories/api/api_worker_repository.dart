@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../core/api/api_client.dart';
+import '../../../core/constants/service_category_icons.dart';
 import '../../models/worker_model.dart';
 import '../worker_repository.dart';
 import '../../models/auth_result_model.dart';
 import '../../models/job_post_model.dart';
-import '../../models/service_category_model.dart';
 
 class ApiWorkerRepository implements WorkerRepository {
   String _queryString(Map<String, String> p) => p.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&');
@@ -81,7 +81,15 @@ class ApiWorkerRepository implements WorkerRepository {
   @override
   Future<List<ServiceCategory>> getCategories() async {
     final res = await ApiClient.get('/service-categories');
-    return res['success'] == true ? (res['data'] as List<dynamic>? ?? []).map((c) => ServiceCategory(id: c['id'].toString(), label: c['name'] ?? '', icon: c['icon'] == 'electrical' ? Icons.electrical_services : Icons.work_outline)).toList() : [];
+    return res['success'] == true
+        ? (res['data'] as List<dynamic>? ?? [])
+            .map((c) => ServiceCategory(
+              id: c['id'].toString(),
+              label: c['name'] ?? '',
+              icon: ServiceCategoryIcons.fromKey(c['icon']?.toString()),
+            ))
+            .toList()
+        : [];
   }
 
   @override

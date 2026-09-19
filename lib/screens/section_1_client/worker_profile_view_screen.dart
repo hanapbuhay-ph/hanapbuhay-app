@@ -119,6 +119,8 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
   Widget _buildProfileHeader(Worker worker) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final trustInfo = worker.trustTier.info;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -138,58 +140,58 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
           Stack(
             alignment: Alignment.center,
             children: [
-              Container(
-                width: 136,
-                height: 136,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      colorScheme.primaryContainer,
-                      colorScheme.secondaryContainer,
-                    ],
-                  ),
-                ),
-              ),
               CircleAvatar(
                 radius: 64,
-                backgroundColor: colorScheme.surface,
+                backgroundColor: colorScheme.surfaceContainerHighest,
                 child: CircleAvatar(
                   radius: 60,
                   backgroundImage: NetworkImage(worker.avatarUrl),
                 ),
               ),
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colorScheme.surface, width: 2),
+                  ),
+                  child: Icon(
+                    Icons.verified_rounded,
+                    color: colorScheme.onPrimary,
+                    size: 18,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                worker.name,
-                style: AppTypography.headlineLarge.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
-              ),
-              const SizedBox(width: 8),
-              Icon(worker.trustTier.info.icon, color: worker.trustTier.info.color, size: 24),
-            ],
+
+          Text(
+            worker.name,
+            style: AppTypography.headlineLarge.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.08),
+              color: trustInfo.color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.shield, color: colorScheme.primary, size: 16),
+                Icon(trustInfo.icon, color: trustInfo.color, size: 16),
                 const SizedBox(width: 6),
                 Text(
-                  'Verified Professional',
-                  style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700),
+                  trustInfo.label,
+                  style: AppTypography.labelSmall.copyWith(color: trustInfo.color, fontWeight: FontWeight.w700),
                 ),
               ],
             ),

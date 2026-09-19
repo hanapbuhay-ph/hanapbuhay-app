@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/api/api_client.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -46,19 +47,10 @@ class _FileReportScreenState extends State<FileReportScreen> {
   String? _reportedUserAvatar;
   String? _reportedUserSubtitle;
 
-  final List<String> _reasons = [
-    'No-show',
-    'Unsatisfactory work',
-    'Misconduct',
-    'Non-payment',
-    'Unsafe Environment',
-    'Abusive Behavior',
-    'False Information',
-    'Other'
-  ];
+  final List<String> _reasons = [];
+  final Map<String, String> _reasonToApi = {};
 
-  // Maps display labels to the backend snake_case `reason` enum (CreateReportRequest).
-  static const Map<String, String> _reasonToApi = {
+  static const Map<String, String> _fallbackReasonMap = {
     'No-show': 'no_show',
     'Unsatisfactory work': 'unsatisfactory_work',
     'Misconduct': 'misconduct',
@@ -72,7 +64,57 @@ class _FileReportScreenState extends State<FileReportScreen> {
   @override
   void initState() {
     super.initState();
+    _loadReportReasons();
     _loadData();
+  }
+
+  Future<void> _loadReportReasons() async {
+    try {
+      final res = await ApiClient.get('/report-reasons', requiresAuth: true);
+      if (res['success'] != true) {
+        _applyFallbackReasons();
+        return;
+      }
+
+      final items = (res['data'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .toList();
+
+      final reasons = <String>[];
+      final reasonMap = <String, String>{};
+
+      for (final item in items) {
+        final label = (item['label'] ?? '').toString();
+        final code = (item['code'] ?? '').toString();
+        if (label.isEmpty || code.isEmpty) continue;
+        reasons.add(label);
+        reasonMap[label] = code;
+      }
+
+      if (mounted) {
+        setState(() {
+          _reasons.clear();
+          _reasons.addAll(reasons);
+          _reasonToApi.clear();
+          _reasonToApi.addAll(reasonMap);
+        });
+      }
+    } catch (_) {
+      _applyFallbackReasons();
+    }
+  }
+
+  void _applyFallbackReasons() {
+    if (!mounted) return;
+
+    setState(() {
+      _reasons
+        ..clear()
+        ..addAll(_fallbackReasonMap.keys);
+      _reasonToApi
+        ..clear()
+        ..addAll(_fallbackReasonMap);
+    });
   }
 
   Future<void> _loadData() async {
