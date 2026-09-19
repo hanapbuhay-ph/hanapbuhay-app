@@ -127,7 +127,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '${report.reason} - ${report.description.split('.').first}',
+                    '${report.reasonLabel} - ${report.description.split('.').first}',
                     style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -168,14 +168,18 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                 children: [
                   Text('Original Report', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
+                  _buildReporter(report),
+                  const SizedBox(height: 20),
+                  _buildReportMeta(report),
+                  const SizedBox(height: 20),
                   Text(
                     report.description,
                     style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.6),
                   ),
                   const SizedBox(height: 24),
                   
-                  if (report.adminRemarks != null) ...[
-                    _buildAdminRemarks(report),
+                  if (report.adminRemarks != null || report.resolutionAction != null) ...[
+                    _buildAdminDecision(report),
                     const SizedBox(height: 24),
                   ],
 
@@ -238,44 +242,102 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
     );
   }
 
-  Widget _buildAdminRemarks(Report report) {
+  Widget _buildReporter(Report report) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isResolved = report.status == ReportStatus.resolved;
-    final color = isResolved ? colorScheme.onSurfaceVariant : colorScheme.primary;
+    final name = report.reporterName ?? 'Client';
+    final photoPath = report.reporterPhotoPath ?? report.reporterPhotoUrl;
+    final photoUrl = photoPath == null
+        ? null
+      : AppConstants.getPhotoUrl(photoPath);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: colorScheme.primaryContainer,
+            backgroundImage: photoUrl == null ? null : NetworkImage(photoUrl),
+            child: photoUrl == null
+                ? Icon(Icons.person_outline, color: colorScheme.onPrimaryContainer)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Reported by', style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 2),
+                Text(name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+          Icon(Icons.person_search_outlined, color: colorScheme.primary),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportMeta(Report report) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        Chip(
+          avatar: Icon(Icons.flag_outlined, size: 16, color: colorScheme.primary),
+          label: Text('Reason: ${report.reasonLabel}'),
+          visualDensity: VisualDensity.compact,
+        ),
+        Chip(
+          avatar: Icon(Icons.confirmation_number_outlined, size: 16, color: colorScheme.primary),
+          label: Text('Booking #${report.bookingId}'),
+          visualDensity: VisualDensity.compact,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdminDecision(Report report) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final decision = report.resolutionAction?.replaceAll('_', ' ');
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
+        color: colorScheme.primary.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border(left: BorderSide(color: color, width: 4)),
+        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(isResolved ? Icons.task_alt : Icons.admin_panel_settings, size: 18, color: color),
+              Icon(Icons.gavel_outlined, size: 19, color: colorScheme.primary),
               const SizedBox(width: 8),
-              Text(
-                isResolved ? 'Resolution Summary' : 'Admin Remarks',
-                style: AppTypography.labelLarge.copyWith(color: color, fontWeight: FontWeight.w800),
-              ),
+              Text('Admin Decision', style: AppTypography.labelLarge.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800)),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            report.adminRemarks!,
-            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.5),
-          ),
-          if (report.updatedAt != null) ...[
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'Updated: ${AppFormatters.date(report.updatedAt!)}',
-                style: AppTypography.labelSmall.copyWith(fontSize: 9, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
-              ),
+          if (decision != null) ...[
+            const SizedBox(height: 10),
+            Text('Action: ${decision[0].toUpperCase()}${decision.substring(1)}', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w700)),
+          ],
+          if (report.adminRemarks != null) ...[
+            const SizedBox(height: 8),
+            Text(report.adminRemarks!, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.5)),
+          ],
+          if (report.resolvedBy != null || report.resolvedAt != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              '${report.resolvedBy == null ? '' : 'Reviewed by ${report.resolvedBy}'}${report.resolvedAt == null ? '' : ' on ${AppFormatters.date(report.resolvedAt!)}'}',
+              style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant),
             ),
           ],
         ],
