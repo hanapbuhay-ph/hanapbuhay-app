@@ -270,6 +270,12 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
 
     return Column(
       children: [
+        Container(
+          width: double.infinity,
+          color: colorScheme.primary,
+          padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+          child: _buildGreeting(firstName),
+        ),
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async {
@@ -279,20 +285,11 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             child: SingleChildScrollView(
               padding: EdgeInsets.zero,
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    color: colorScheme.primary,
-                    padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-                    child: _buildGreeting(firstName),
-                  ),
-                  ResponsiveContent(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+              child: ResponsiveContent(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     const SizedBox(height: 24),
                     _buildAvailabilityCard(),
                     const SizedBox(height: 24),
@@ -302,10 +299,8 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                     const SizedBox(height: 32),
                     _buildIncomingRequestsSection(),
                     const SizedBox(height: 32),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

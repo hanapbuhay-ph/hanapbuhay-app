@@ -47,6 +47,12 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
     return Column(
         children: [
+          Container(
+            width: double.infinity,
+            color: colorScheme.primary,
+            padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+            child: _buildGreeting(firstName),
+          ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
@@ -56,20 +62,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               child: SingleChildScrollView(
                 padding: EdgeInsets.zero,
                 physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      color: colorScheme.primary,
-                      padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-                      child: _buildGreeting(firstName),
-                    ),
-                    ResponsiveContent(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                child: ResponsiveContent(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     const SizedBox(height: 16),
                     _buildSearchBar(),
                     const SizedBox(height: 16),
@@ -95,10 +92,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                     // Vertical feed
                     _buildFeedSection(),
                     const SizedBox(height: 32),
-                        ],
-                      ),
-                    ),
                     ],
+                  ),
                 ),
               ),
             ),
