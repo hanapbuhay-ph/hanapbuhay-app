@@ -2,13 +2,24 @@ import 'package:flutter/material.dart';
 import '../data/repositories/booking_repository.dart';
 import '../data/models/booking_model.dart';
 import '../data/models/auth_result_model.dart';
+import 'dart:async';
 
 class BookingProvider extends ChangeNotifier {
   final BookingRepository _repository;
 
   BookingProvider(this._repository);
 
-  Future<List<Booking>> getBookings({String? status}) => _repository.getBookings(status: status);
+  Future<List<Booking>> getBookings({String? status}) async {
+    final bookings = await _repository.getBookings(status: status);
+    if (status == null || status == 'pending') {
+      _pendingCountController.add(bookings.where((booking) => booking.status == BookingStatus.pending).length);
+    }
+    return bookings;
+  }
+
+  final StreamController<int> _pendingCountController = StreamController<int>.broadcast();
+
+  Stream<int> getPendingCount() => _pendingCountController.stream;
   Future<Booking?> getBookingById(String id) => _repository.getBookingById(id);
   
   Future<AuthResult> createBooking({
@@ -27,6 +38,12 @@ class BookingProvider extends ChangeNotifier {
     );
     notifyListeners();
     return result;
+  }
+
+  @override
+  void dispose() {
+    _pendingCountController.close();
+    super.dispose();
   }
 
   Future<AuthResult> cancelBooking({

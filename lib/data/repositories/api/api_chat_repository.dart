@@ -1,3 +1,4 @@
+import 'dart:async';
 import '../../models/chat_model.dart';
 import '../chat_repository.dart';
 import '../../../core/api/api_client.dart';
@@ -5,6 +6,8 @@ import '../../../core/constants/app_constants.dart';
 
 /// API-connected ChatRepository — Section I of 07_API_ENDPOINTS.md
 class ApiChatRepository implements ChatRepository {
+  final _unreadCountController = StreamController<int>.broadcast();
+
   @override
   Future<List<Conversation>> getConversations() async {
     try {
@@ -25,12 +28,17 @@ class ApiChatRepository implements ChatRepository {
         return _parseConversation(item);
       }).whereType<Conversation>().toList();
 
+      _unreadCountController.add(conversations.where((conversation) => conversation.isUnread).length);
+
       return conversations;
     } catch (e) {
       print('[ApiChatRepository] getConversations error: $e');
       return [];
     }
   }
+
+  @override
+  Stream<int> getUnreadCount() => _unreadCountController.stream;
 
   @override
   Future<List<Message>> getMessages(String conversationId) async {

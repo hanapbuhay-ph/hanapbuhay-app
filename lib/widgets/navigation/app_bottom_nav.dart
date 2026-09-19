@@ -4,6 +4,8 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/chat_provider.dart';
+import '../../providers/booking_provider.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -63,13 +65,13 @@ class AppBottomNav extends StatelessWidget {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(isWorker ? Icons.work_outline : Icons.calendar_today_outlined),
-            activeIcon: Icon(isWorker ? Icons.work : Icons.calendar_today),
+            icon: _bookingIcon(context, colorScheme, isWorker, false),
+            activeIcon: _bookingIcon(context, colorScheme, isWorker, true),
             label: isWorker ? 'Jobs' : 'Bookings',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
+          BottomNavigationBarItem(
+            icon: _messageIcon(context, colorScheme, false),
+            activeIcon: _messageIcon(context, colorScheme, true),
             label: 'Messages',
           ),
           BottomNavigationBarItem(
@@ -110,4 +112,44 @@ class AppBottomNav extends StatelessWidget {
       ),
     );
   }
+
+  Widget _messageIcon(BuildContext context, ColorScheme colorScheme, bool active) {
+    return StreamBuilder<int>(
+      stream: context.read<ChatProvider>().getUnreadCount(),
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(active ? Icons.chat_bubble : Icons.chat_bubble_outline),
+            if (count > 0) Positioned(right: -5, top: -4, child: _countBadge(colorScheme, count)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _bookingIcon(BuildContext context, ColorScheme colorScheme, bool isWorker, bool active) {
+    return StreamBuilder<int>(
+      stream: context.read<BookingProvider>().getPendingCount(),
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(active ? (isWorker ? Icons.work : Icons.calendar_today) : (isWorker ? Icons.work_outline : Icons.calendar_today_outlined)),
+            if (count > 0) Positioned(right: -5, top: -4, child: _countBadge(colorScheme, count)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _countBadge(ColorScheme colorScheme, int count) => Container(
+        constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: colorScheme.error, shape: BoxShape.circle, border: Border.all(color: colorScheme.surface, width: 1.5)),
+        child: Text(count > 9 ? '9+' : '$count', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w800)),
+      );
 }
