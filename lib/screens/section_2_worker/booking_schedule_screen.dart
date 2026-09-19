@@ -263,18 +263,22 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Job Schedule', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Manage your upcoming and past bookings.',
-                        style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
-                      ),
-                    ],
+                Container(
+                  width: double.infinity,
+                  color: colorScheme.primary,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Job Schedule', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onPrimary)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Manage your upcoming and past bookings.',
+                          style: AppTypography.bodySmall.copyWith(color: colorScheme.onPrimary.withValues(alpha: 0.8)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),

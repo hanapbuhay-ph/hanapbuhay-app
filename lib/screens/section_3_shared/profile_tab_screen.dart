@@ -89,18 +89,22 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Profile', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
-                const SizedBox(height: 4),
-                Text(
-                  'Manage your account and preferences.',
-                  style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
-              ],
+          Container(
+            width: double.infinity,
+            color: theme.colorScheme.primary,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Profile', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onPrimary)),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Manage your account and preferences.',
+                    style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onPrimary.withValues(alpha: 0.8)),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../data/repositories/worker_repository.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/barangay_model.dart';
@@ -39,6 +40,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final firstName = authProvider.userName?.split(' ').first ?? authProvider.userEmail?.split('@').first ?? 'Client';
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -53,12 +56,21 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               child: SingleChildScrollView(
                 padding: EdgeInsets.zero,
                 physics: const BouncingScrollPhysics(),
-                child: ResponsiveContent(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                    // Search Bar
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      color: colorScheme.primary,
+                      padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+                      child: _buildGreeting(firstName),
+                    ),
+                    ResponsiveContent(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                    const SizedBox(height: 16),
                     _buildSearchBar(),
                     const SizedBox(height: 16),
 
@@ -83,8 +95,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                     // Vertical feed
                     _buildFeedSection(),
                     const SizedBox(height: 32),
+                        ],
+                      ),
+                    ),
                     ],
-                  ),
                 ),
               ),
             ),
@@ -94,6 +108,30 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   // Header owned by TabShell
+
+  Widget _buildGreeting(String name) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Hi, $name!',
+          style: AppTypography.headlineMedium.copyWith(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onPrimary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Ready to find the right service for you.',
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onPrimary.withValues(alpha: 0.8),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildSearchBar() {
     final theme = Theme.of(context);

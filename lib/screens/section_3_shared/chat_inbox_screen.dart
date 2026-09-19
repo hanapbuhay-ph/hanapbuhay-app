@@ -36,6 +36,32 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            width: double.infinity,
+            color: theme.colorScheme.primary,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Messages',
+                    style: AppTypography.headlineMedium.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Stay connected with clients and workers.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: theme.colorScheme.onPrimary.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           _buildSearchBar(),
           _buildFilterChips(),
           Expanded(

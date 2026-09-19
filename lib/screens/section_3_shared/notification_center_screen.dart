@@ -32,6 +32,35 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
     return Column(
         children: [
+          Container(
+            width: double.infinity,
+            color: theme.colorScheme.primary,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Notifications',
+                      style: AppTypography.headlineMedium.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Stay up to date with your bookings and activity.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: theme.colorScheme.onPrimary.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: FutureBuilder<List<AppNotification>>(
               future: _notificationsFuture,

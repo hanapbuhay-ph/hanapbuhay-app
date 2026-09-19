@@ -266,6 +266,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     final authProvider = context.watch<AuthProvider>();
     final firstName = authProvider.userName?.split(' ').first ?? authProvider.userEmail?.split('@').first ?? 'Worker';
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Column(
       children: [
@@ -278,12 +279,20 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             child: SingleChildScrollView(
               padding: EdgeInsets.zero,
               physics: const BouncingScrollPhysics(),
-              child: ResponsiveContent(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildGreeting(firstName),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: colorScheme.primary,
+                    padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+                    child: _buildGreeting(firstName),
+                  ),
+                  ResponsiveContent(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                     const SizedBox(height: 24),
                     _buildAvailabilityCard(),
                     const SizedBox(height: 24),
@@ -293,8 +302,10 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                     const SizedBox(height: 32),
                     _buildIncomingRequestsSection(),
                     const SizedBox(height: 32),
-                  ],
-                ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -308,9 +319,9 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Hi, $name!', style: AppTypography.headlineMedium.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+        Text('Hi, $name!', style: AppTypography.headlineMedium.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onPrimary)),
         const SizedBox(height: 4),
-        Text('Ready for a great day of work.', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+        Text('Ready for a great day of work.', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onPrimary.withValues(alpha: 0.8))),
       ],
     );
   }

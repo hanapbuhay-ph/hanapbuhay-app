@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/navigation/tab_top_bar.dart';
 import '../../widgets/navigation/app_bottom_nav.dart';
 import '../section_1_client/client_home_screen.dart';
 import '../section_1_client/booking_history_screen.dart';
@@ -69,7 +68,6 @@ class _TabShellState extends State<TabShell> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
-          if (_currentIndex != 4) const TabTopBar(),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 280),
