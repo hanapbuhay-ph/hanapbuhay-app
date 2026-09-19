@@ -25,7 +25,7 @@ class ApiClient {
       final uri = Uri.parse('$_baseUrl$endpoint');
       
       final response = await http.get(uri, headers: headers);
-      return _handleResponse(response);
+      return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
       return _handleError(e);
     }
@@ -47,7 +47,7 @@ class ApiClient {
         body: body != null ? jsonEncode(body) : null,
       );
       
-      return _handleResponse(response);
+      return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
       return _handleError(e);
     }
@@ -89,7 +89,7 @@ class ApiClient {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       
-      return _handleResponse(response);
+      return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
       return _handleError(e);
     }
@@ -111,7 +111,7 @@ class ApiClient {
         body: body != null ? jsonEncode(body) : null,
       );
       
-      return _handleResponse(response);
+      return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
       return _handleError(e);
     }
@@ -127,7 +127,7 @@ class ApiClient {
       final uri = Uri.parse('$_baseUrl$endpoint');
       
       final response = await http.delete(uri, headers: headers);
-      return _handleResponse(response);
+      return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
       return _handleError(e);
     }
@@ -151,10 +151,13 @@ class ApiClient {
   }
 
   /// Handle HTTP response
-  static Map<String, dynamic> _handleResponse(http.Response response) {
+  static Map<String, dynamic> _handleResponse(
+    http.Response response, {
+    required bool requiresAuth,
+  }) {
     // Centralized 401 / session-expiry handling. This is the single place in
     // the app where an expired/invalid auth token triggers a forced re-login.
-    if (response.statusCode == 401) {
+    if (response.statusCode == 401 && requiresAuth) {
       _handleUnauthorized();
     }
     try {

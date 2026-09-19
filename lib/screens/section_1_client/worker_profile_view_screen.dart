@@ -156,13 +156,13 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
                   height: 28,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary,
+                    color: _availabilityColor(worker.availabilityStatus),
                     shape: BoxShape.circle,
                     border: Border.all(color: colorScheme.surface, width: 2),
                   ),
                   child: Icon(
-                    Icons.verified_rounded,
-                    color: colorScheme.onPrimary,
+                    _availabilityIcon(worker.availabilityStatus),
+                    color: Colors.white,
                     size: 18,
                   ),
                 ),
@@ -197,6 +197,23 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
             ),
           ),
           const SizedBox(height: 12),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: _availabilityColor(worker.availabilityStatus).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(_availabilityIcon(worker.availabilityStatus), color: _availabilityColor(worker.availabilityStatus), size: 15),
+                const SizedBox(width: 6),
+                Text(_availabilityLabel(worker.availabilityStatus), style: AppTypography.labelSmall.copyWith(color: _availabilityColor(worker.availabilityStatus), fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           
           Text(
             '⭐ ${worker.rating} · ${worker.reviewCount} reviews · ${worker.completedJobsCount} jobs',
@@ -210,6 +227,39 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
         ],
       ),
     );
+  }
+
+  Color _availabilityColor(WorkerAvailability status) {
+    switch (status) {
+      case WorkerAvailability.available:
+        return Colors.green;
+      case WorkerAvailability.busy:
+        return Colors.orange;
+      case WorkerAvailability.offline:
+        return Colors.grey;
+    }
+  }
+
+  IconData _availabilityIcon(WorkerAvailability status) {
+    switch (status) {
+      case WorkerAvailability.available:
+        return Icons.check_circle;
+      case WorkerAvailability.busy:
+        return Icons.schedule;
+      case WorkerAvailability.offline:
+        return Icons.do_not_disturb_on;
+    }
+  }
+
+  String _availabilityLabel(WorkerAvailability status) {
+    switch (status) {
+      case WorkerAvailability.available:
+        return 'Available';
+      case WorkerAvailability.busy:
+        return 'Busy';
+      case WorkerAvailability.offline:
+        return 'Offline';
+    }
   }
 
   Widget _buildAboutTab(Worker worker) {

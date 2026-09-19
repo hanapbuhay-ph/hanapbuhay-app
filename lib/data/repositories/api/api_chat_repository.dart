@@ -141,6 +141,8 @@ class ApiChatRepository implements ChatRepository {
       final lastMessage = item['last_message']?.toString() ?? '';
       final lastMessageTimeStr = item['last_message_at']?.toString();
       final unreadCount = (item['unread_count'] as num?)?.toInt() ?? 0;
+      final isOnline = otherPartyMap['is_online'] == true;
+      final availabilityStatus = otherPartyMap['availability_status']?.toString();
 
       final lastMessageTime = lastMessageTimeStr != null
           ? DateTime.tryParse(lastMessageTimeStr) ?? DateTime.now()
@@ -156,7 +158,8 @@ class ApiChatRepository implements ChatRepository {
         lastMessageTime: lastMessageTime,
         isUnread: unreadCount > 0,
         bookingId: bookingId,
-        isOnline: false,
+        isOnline: isOnline,
+        availabilityStatus: availabilityStatus,
         isSupport: false,
       );
     } catch (e) {

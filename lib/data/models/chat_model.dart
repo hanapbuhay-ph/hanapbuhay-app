@@ -9,6 +9,7 @@ class Conversation {
   final bool isUnread;
   final String? bookingId;
   final bool isOnline;
+  final String? availabilityStatus;
   final bool isSupport;
 
   Conversation({
@@ -22,6 +23,7 @@ class Conversation {
     this.isUnread = false,
     this.bookingId,
     this.isOnline = false,
+    this.availabilityStatus,
     this.isSupport = false,
   });
 }

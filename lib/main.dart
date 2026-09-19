@@ -13,6 +13,7 @@ import 'services/service_locator.dart';
 import 'core/routing/app_router.dart';
 import 'core/api/api_client.dart';
 import 'services/fcm_service.dart';
+import 'services/presence_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,8 +38,27 @@ void main() async {
   });
 }
 
-class HanapBuhayApp extends StatelessWidget {
+class HanapBuhayApp extends StatefulWidget {
   const HanapBuhayApp({super.key});
+
+  @override
+  State<HanapBuhayApp> createState() => _HanapBuhayAppState();
+}
+
+class _HanapBuhayAppState extends State<HanapBuhayApp> {
+  final _presence = PresenceService();
+
+  @override
+  void initState() {
+    super.initState();
+    _presence.start();
+  }
+
+  @override
+  void dispose() {
+    _presence.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

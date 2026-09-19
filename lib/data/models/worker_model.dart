@@ -175,6 +175,7 @@ class Worker {
       bio: json['bio']?.toString() ?? '',
       isAvailable: json['is_available'] == true ||
           json['availability_status'] == 'available',
+        availabilityStatus: _parseAvailabilityStatus(json['availability_status']?.toString()),
       trustTier: parsedTrustTier,
       completedJobsCount: json['completed_jobs'] is int
           ? json['completed_jobs'] as int
@@ -182,6 +183,17 @@ class Worker {
       jobPosts: posts,
       reviews: reviews,
     );
+  }
+
+  static WorkerAvailability _parseAvailabilityStatus(String? value) {
+    switch (value?.toLowerCase()) {
+      case 'busy':
+        return WorkerAvailability.busy;
+      case 'offline':
+        return WorkerAvailability.offline;
+      default:
+        return WorkerAvailability.available;
+    }
   }
 }
 

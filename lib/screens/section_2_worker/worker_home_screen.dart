@@ -41,6 +41,22 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     _requestsFuture = bookingProvider.getBookings(status: 'pending');
     // GET /api/worker/posts — authenticated worker's own active posts
     _activePostsFuture = workerProvider.getWorkerPosts();
+    _loadAvailabilityStatus(workerProvider);
+  }
+
+  Future<void> _loadAvailabilityStatus(WorkerProvider workerProvider) async {
+    try {
+      final data = await workerProvider.getVerificationStatus();
+      final rawStatus = data?['availability_status']?.toString().toLowerCase();
+      final status = switch (rawStatus) {
+        'busy' => WorkerAvailability.busy,
+        'offline' => WorkerAvailability.offline,
+        _ => WorkerAvailability.available,
+      };
+      if (mounted) setState(() => _currentStatus = status);
+    } catch (_) {
+      // Keep the default until the server status can be loaded.
+    }
   }
 
   /// POST /api/bookings/{id}/accept or /decline via the dedicated routes.

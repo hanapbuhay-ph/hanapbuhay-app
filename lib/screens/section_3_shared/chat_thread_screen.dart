@@ -239,6 +239,17 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                       'Booking #${conv.bookingId}',
                       style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.w600),
                     ),
+                  if (!conv.isSupport)
+                    Text(
+                      conv.otherUserRole.toLowerCase() == 'worker'
+                          ? 'Availability: ${conv.availabilityStatus ?? 'unknown'}'
+                          : (conv.isOnline ? 'Online' : 'Offline'),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: conv.isOnline ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                 ],
               ),
             ),
