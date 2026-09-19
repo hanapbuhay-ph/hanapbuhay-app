@@ -155,9 +155,10 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
             GestureDetector(
               onTap: () {
                 if (conversation.isSupport) return;
-                if (conversation.otherUserRole == 'Client') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Client profiles coming soon!')),
+                if (conversation.otherUserRole.toLowerCase() == 'client') {
+                  Navigator.pushNamed(
+                    context,
+                    '${AppRouter.clientProfile}/${conversation.otherUserId}',
                   );
                 } else {
                   Navigator.pushNamed(context, '${AppRouter.workerProfile}/${conversation.otherUserId}');

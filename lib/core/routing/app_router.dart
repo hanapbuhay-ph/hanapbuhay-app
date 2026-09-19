@@ -29,6 +29,7 @@ import '../../screens/section_2_worker/verification_document_screen.dart';
 import '../../screens/section_2_worker/verification_status_screen.dart';
 import '../../screens/section_2_worker/portfolio_skills_screen.dart';
 import '../../screens/section_2_worker/job_detail_screen.dart';
+import '../../screens/section_2_worker/client_profile_view_screen.dart';
 import '../../screens/section_2_worker/rate_client_screen.dart';
 import '../../screens/section_2_worker/create_job_post_screen.dart';
 import '../../screens/section_2_worker/edit_job_post_screen.dart';
@@ -69,6 +70,7 @@ class AppRouter {
   static const String portfolioSkills = '/portfolio-skills';
   static const String bookingSchedule = '/booking-schedule';
   static const String jobDetail = '/job-detail';
+  static const String clientProfile = '/client-profile';
   static const String rateClient = '/rate-client';
   static const String chatInbox = '/messages';
   static const String chatThread = '/chat';
@@ -218,6 +220,10 @@ class AppRouter {
         if (path.startsWith(jobDetail)) {
           final id = path.split('/').last;
           return MaterialPageRoute(builder: (_) => JobDetailScreen(bookingId: id));
+        }
+        if (path.startsWith(clientProfile)) {
+          final id = path.split('/').last;
+          return MaterialPageRoute(builder: (_) => ClientProfileViewScreen(clientId: id));
         }
         if (path.startsWith(rateReview)) {
           final id = path.split('/').last;

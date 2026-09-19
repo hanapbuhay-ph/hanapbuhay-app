@@ -209,8 +209,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         onTap: () {
           if (conv.isSupport) return;
           if (conv.otherUserRole.toLowerCase() == 'client') {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Client profiles coming soon!')),
+            Navigator.pushNamed(
+              context,
+              '${AppRouter.clientProfile}/${conv.otherUserId}',
             );
           } else {
             Navigator.pushNamed(context, '${AppRouter.workerProfile}/${conv.otherUserId}');
@@ -278,8 +279,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final conv = _conversation!;
     if (conv.isSupport) return;
     if (conv.otherUserRole.toLowerCase() == 'client') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Client profiles coming soon!')),
+      Navigator.pushNamed(
+        context,
+        '${AppRouter.clientProfile}/${conv.otherUserId}',
       );
     } else {
       Navigator.pushNamed(context, '${AppRouter.workerProfile}/${conv.otherUserId}');

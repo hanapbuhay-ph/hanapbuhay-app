@@ -189,6 +189,17 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             ),
           ),
           IconButton(
+            onPressed: () => Navigator.pushNamed(
+              context,
+              '${AppRouter.clientProfile}/${booking.clientId}',
+            ),
+            icon: Icon(Icons.person_outline, color: colorScheme.primary),
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          IconButton(
             onPressed: () async {
               final conversationId = await context.read<ChatProvider>().resolveConversationId(
                 otherUserId: booking.clientId,
