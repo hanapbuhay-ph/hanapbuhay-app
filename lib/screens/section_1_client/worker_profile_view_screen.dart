@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_typography.dart';
-import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/trust_tier.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
-import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/cards/job_post_card.dart';
 
 class WorkerProfileViewScreen extends StatefulWidget {
   final String workerId;
@@ -76,7 +75,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
       backgroundColor: colorScheme.surface,
       body: Column(
         children: [
-          const AppHeader(title: 'HanapBuhay'),
+          const AppHeader(title: 'Profile'),
 
           Expanded(
             child: NestedScrollView(
@@ -152,25 +151,20 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
                   backgroundImage: NetworkImage(worker.avatarUrl),
                 ),
               ),
-              Positioned(
-                right: 8,
-                bottom: 8,
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: _availabilityColor(worker.availabilityStatus),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: colorScheme.surface, width: 2),
-                  ),
-                  child: Icon(
-                    _availabilityIcon(worker.availabilityStatus),
-                    color: Colors.white,
-                    size: 18,
+              if (worker.isOnline)
+                Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: colorScheme.surface, width: 3),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -237,22 +231,48 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
           ),
           const SizedBox(height: 12),
 
-          Text(
-            '⭐ ${worker.rating} · ${worker.reviewCount} reviews · ${worker.completedJobsCount} jobs',
-            style: AppTypography.bodyMedium.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.star_rounded, size: 17, color: colorScheme.primary),
+              const SizedBox(width: 4),
+              Text(
+                '${worker.rating} · ${worker.reviewCount} reviews · ${worker.completedJobsCount} jobs',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
-          Text(
-            '📍 ${worker.barangay} · ~${worker.distance}',
-            style: AppTypography.bodyMedium.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                size: 17,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '${worker.barangay} · ${_formatDistance(worker.distance)}',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  String _formatDistance(String distance) {
+    final normalized = distance.replaceFirst(RegExp(r'^~+'), '');
+    if (normalized.toLowerCase().startsWith('distance unavailable')) {
+      return normalized;
+    }
+    return '~$normalized';
   }
 
   Color _availabilityColor(WorkerAvailability status) {
@@ -503,108 +523,17 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
   }
 
   Widget _buildPostsTab(Worker worker) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     if (worker.jobPosts.isEmpty) {
       return _buildEmptyTab('No active posts yet', Icons.work_outline);
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       itemCount: worker.jobPosts.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
-        final post = worker.jobPosts[index];
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  post.category,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                post.title,
-                style: AppTypography.labelLarge.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                post.description,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(
-                    'From ₱${post.startingRate.toInt()}${post.rateType.shortLabel}',
-                    style: AppTypography.labelLarge.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: post.isAvailable
-                          ? colorScheme.primary
-                          : Colors.grey,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    post.isAvailable ? 'Available' : 'Unavailable',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              PrimaryButton(
-                label: 'Book This Service',
-                onPressed: () => _handleBooking(worker),
-              ),
-            ],
-          ),
+        return JobPostCard(
+          listing: JobPostListing(worker: worker, post: worker.jobPosts[index]),
         );
       },
     );
@@ -622,6 +551,7 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
       separatorBuilder: (_, __) => const SizedBox(height: 20),
       itemBuilder: (context, index) {
         final review = worker.reviews[index];
+        final bookingId = review.bookingId;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -674,24 +604,26 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.3,
+            if (bookingId != null && bookingId.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                'Re: Booking #${Booking.formatBookingCode(review.id, review.date)}',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
+                child: Text(
+                  'Re: Booking #${Booking.formatBookingCode(bookingId, review.date)}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         );
       },
@@ -715,89 +647,6 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
         ],
       ),
     );
-  }
-
-  Future<void> _handleBooking(Worker worker) async {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    // Check if worker is verified or trusted
-    final bool isVerified =
-        worker.trustTier == TrustTier.verified ||
-        worker.trustTier == TrustTier.trusted;
-
-    if (!isVerified) {
-      final bool? proceed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          title: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 28),
-              SizedBox(width: 12),
-              Expanded(child: Text('Not Yet Verified')),
-            ],
-          ),
-          content: const Text(
-            'This worker has not yet completed barangay document verification. '
-            'HanapBuhay cannot fully guarantee their identity at this time.\n\n'
-            'Do you want to proceed with the booking at your own discretion?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Find Verified Worker path
-                context.read<WorkerProvider>().setQuickFilter('Verified');
-                Navigator.pop(context, false); // Return to feed
-              },
-              child: Text(
-                'Find Verified Worker',
-                style: TextStyle(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Book Anyway'),
-            ),
-          ],
-        ),
-      );
-
-      if (proceed == false) {
-        if (mounted) {
-          // If they chose "Find Verified Worker", we already set the filter.
-          // Now we just need to go back to the Home screen.
-          Navigator.popUntil(
-            context,
-            (route) =>
-                route.settings.name == AppRouter.clientHome || route.isFirst,
-          );
-        }
-        return;
-      }
-      if (proceed == null) return; // Dismissed without choice
-    }
-
-    // Proceed to booking form
-    if (mounted) {
-      Navigator.pushNamed(
-        context,
-        '${AppRouter.sendBookingRequest}/${worker.id}',
-      );
-    }
   }
 }
 

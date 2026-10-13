@@ -30,6 +30,7 @@ class Worker {
   final List<String> services;
   final List<String> serviceCategoryIds;
   final bool isAvailable;
+  final bool isOnline;
   final WorkerAvailability availabilityStatus;
   final String responseTime;
   final List<String> portfolioImages;
@@ -61,6 +62,7 @@ class Worker {
     this.services = const [],
     this.serviceCategoryIds = const [],
     this.isAvailable = true,
+    this.isOnline = false,
     this.availabilityStatus = WorkerAvailability.available,
     this.responseTime = '15 mins',
     this.portfolioImages = const [],
@@ -214,6 +216,7 @@ class Worker {
       isAvailable: json['availability_status'] != null
           ? json['availability_status'] == 'available'
           : json['is_available'] == true || json['is_available'] == 1,
+      isOnline: json['is_online'] == true,
       availabilityStatus: _parseAvailabilityStatus(
         json['availability_status']?.toString(),
       ),
