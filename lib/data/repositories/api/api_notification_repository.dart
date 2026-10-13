@@ -102,7 +102,10 @@ class ApiNotificationRepository implements NotificationRepository {
       final res = await ApiClient.get('/user/notification-preferences', requiresAuth: true);
 
       if (res['success'] != true || res['data'] == null) {
-        return NotificationPreferences();
+        throw Exception(
+          res['message']?.toString() ??
+              'Failed to load notification preferences.',
+        );
       }
 
       final data = res['data'] as Map<String, dynamic>;
@@ -115,7 +118,7 @@ class ApiNotificationRepository implements NotificationRepository {
         emailEnabled: data['email'] ?? true,
       );
     } catch (e) {
-      return NotificationPreferences();
+      throw Exception('Failed to load notification preferences: $e');
     }
   }
 
@@ -214,6 +217,8 @@ class ApiNotificationRepository implements NotificationRepository {
       case 'booking_rescheduled':
       case 'bookingrescheduled':
         return NotificationType.bookingRescheduled;
+      case 'booking_created':
+      case 'bookingcreated':
       case 'booking_updated':
       case 'bookingupdated':
         return NotificationType.bookingUpdated;

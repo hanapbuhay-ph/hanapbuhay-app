@@ -16,6 +16,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
   NotificationPreferences? _prefs;
   bool _isLoading = true;
   bool _isSaving = false;
+  String? _loadError;
 
   @override
   void initState() {
@@ -24,12 +25,23 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
   }
 
   Future<void> _loadPreferences() async {
-    final prefs = await context.read<NotificationProvider>().getPreferences();
-    if (mounted) {
-      setState(() {
-        _prefs = prefs;
-        _isLoading = false;
-      });
+    setState(() {
+      _isLoading = true;
+      _loadError = null;
+    });
+    try {
+      final prefs = await context.read<NotificationProvider>().getPreferences();
+      if (mounted) {
+        setState(() => _prefs = prefs);
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _loadError = error.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -63,6 +75,41 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
 
     if (_isLoading) {
       return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
+    }
+
+    if (_loadError != null) {
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: Column(
+          children: [
+            const AppHeader(title: 'Notification Preferences'),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.cloud_off_outlined, color: colorScheme.error, size: 40),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Unable to load notification preferences.',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.bodyLarge.copyWith(color: colorScheme.onSurface),
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        onPressed: _loadPreferences,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     final prefs = _prefs!;
@@ -158,6 +205,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
           _buildToggleRow(
             icon: Icons.mail_outline,
             title: 'Email Notifications',
+            subtitle: 'Receive booking updates by email.',
             value: prefs.emailEnabled,
             onChanged: (val) => _updatePreference(prefs.copyWith(emailEnabled: val)),
           ),
