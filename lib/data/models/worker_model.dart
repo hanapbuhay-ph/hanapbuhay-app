@@ -28,10 +28,12 @@ class Worker {
   // New fields for 1.3
   final String bio;
   final List<String> services;
+  final List<String> serviceCategoryIds;
   final bool isAvailable;
   final WorkerAvailability availabilityStatus;
   final String responseTime;
   final List<String> portfolioImages;
+  final List<String> portfolioPhotoIds;
   final List<WorkerReview> reviews;
 
   // New fields for 2.1
@@ -57,10 +59,12 @@ class Worker {
     required this.distance,
     this.bio = '',
     this.services = const [],
+    this.serviceCategoryIds = const [],
     this.isAvailable = true,
     this.availabilityStatus = WorkerAvailability.available,
     this.responseTime = '15 mins',
     this.portfolioImages = const [],
+    this.portfolioPhotoIds = const [],
     this.reviews = const [],
     this.trustTier,
     this.completedJobsCount = 0,
@@ -160,6 +164,24 @@ class Worker {
           .toList();
     }
 
+    final rawCategories = json['categories'] as List<dynamic>? ?? const [];
+    final services = rawCategories
+        .map(
+          (category) => category is Map
+              ? category['name']?.toString() ?? ''
+              : category.toString(),
+        )
+        .where((name) => name.isNotEmpty)
+        .toList();
+    final serviceCategoryIds = rawCategories
+        .whereType<Map>()
+        .map((category) => category['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toList();
+    final rawPortfolioPhotos =
+        json['portfolio_photos'] as List<dynamic>? ?? const [];
+    final portfolioPhotos = rawPortfolioPhotos.whereType<Map>().toList();
+
     return Worker(
       id: id,
       userId: json['user_id']?.toString(),
@@ -177,6 +199,18 @@ class Worker {
       tags: (json['tags'] is List) ? List<String>.from(json['tags']) : const [],
       distance: distanceLabel,
       bio: json['bio']?.toString() ?? '',
+      services: services,
+      serviceCategoryIds: serviceCategoryIds,
+      portfolioImages: portfolioPhotos
+          .map(
+            (photo) => AppConstants.getPhotoUrl(
+              photo['url']?.toString() ?? photo['file_path']?.toString(),
+            ),
+          )
+          .toList(),
+      portfolioPhotoIds: portfolioPhotos
+          .map((photo) => photo['id']?.toString() ?? '')
+          .toList(),
       isAvailable:
           json['is_available'] == true ||
           json['availability_status'] == 'available',

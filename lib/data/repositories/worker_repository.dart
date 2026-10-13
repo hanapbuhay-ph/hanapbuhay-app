@@ -6,7 +6,8 @@ import '../models/job_post_model.dart';
 class FeedFilters {
   final String? categoryId;
   final String? barangayId;
-  final String? rateType; // hourly, daily, weekly, monthly, per_session, per_project
+  final String?
+  rateType; // hourly, daily, weekly, monthly, per_session, per_project
   final String? verification; // all, verified, unverified
   final String? availability; // all, available
   final int page;
@@ -25,8 +26,10 @@ class FeedFilters {
     if (categoryId != null) params['category_id'] = categoryId!;
     if (barangayId != null) params['barangay_id'] = barangayId!;
     if (rateType != null) params['rate_type'] = rateType!;
-    if (verification != null && verification != 'all') params['verification'] = verification!;
-    if (availability != null && availability != 'all') params['availability'] = availability!;
+    if (verification != null && verification != 'all')
+      params['verification'] = verification!;
+    if (availability != null && availability != 'all')
+      params['availability'] = availability!;
     params['page'] = page.toString();
     return params;
   }
@@ -98,7 +101,7 @@ class CategoryWorkerResponse {
 abstract class WorkerRepository {
   /// GET /api/feed — Client home feed with filters
   Future<FeedResponse> getFeed(FeedFilters filters);
-  
+
   /// GET /api/categories/{categoryId}/workers — Browse by Category (B2.1)
   Future<CategoryWorkerResponse> getCategoryWorkers(
     String categoryId, {
@@ -129,21 +132,28 @@ abstract class WorkerRepository {
   Future<AuthResult> updateAvailability(String availabilityStatus);
 
   Future<List<Worker>> getTopRatedWorkers();
-  Future<List<JobPostListing>> searchWorkers({String? search, String? categoryId});
+  Future<List<JobPostListing>> searchWorkers({
+    String? search,
+    String? categoryId,
+  });
   Future<List<Worker>> getRecentlyViewedWorkers();
   Future<List<ServiceCategory>> getCategories();
   Future<Worker?> getWorkerById(String id);
   Future<JobPostListing?> getJobPostDetail(String postId);
   Future<AuthResult> updateProfile({
     required String workerId,
-    required List<String> categories,
-    required List<String> photoPaths,
+    required List<String> categoryIds,
+    required List<String> newPhotoPaths,
+    required List<String> keepPhotoIds,
     required String bio,
   });
   Future<AuthResult> createJobPost(JobPost post);
   Future<AuthResult> updateJobPost(JobPost post);
   Future<AuthResult> deleteJobPost(String postId);
-  Future<List<JobPostImage>> uploadPostImages(String postId, List<String> filePaths);
+  Future<List<JobPostImage>> uploadPostImages(
+    String postId,
+    List<String> filePaths,
+  );
   Future<AuthResult> deletePostImage(String postId, String imageId);
   Future<AuthResult> reorderPostImages(String postId, List<String> imageIds);
 }
