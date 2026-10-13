@@ -10,6 +10,7 @@ import '../../core/routing/app_router.dart';
 import '../../core/theme/app_typography.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/trust_tier.dart';
+import '../../data/models/worker_model.dart';
 import '../../providers/worker_provider.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/navigation/app_back_button.dart';
@@ -437,10 +438,7 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
                               ? 'Currently Unavailable'
                               : 'Send Booking Request'),
                     onPressed: canBook
-                        ? () => Navigator.pushNamed(
-                            context,
-                            '${AppRouter.sendBookingRequest}/${worker.id}?postId=${post.id}',
-                          )
+                        ? () => _handleBooking(worker, post)
                         : null,
                   ),
                 ),
@@ -449,6 +447,49 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _handleBooking(Worker worker, JobPost post) async {
+    final isVerified =
+        worker.trustTier == TrustTier.verified ||
+        worker.trustTier == TrustTier.trusted;
+
+    if (!isVerified) {
+      final shouldContinue = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.amber),
+              SizedBox(width: 10),
+              Expanded(child: Text('Worker Not Yet Verified')),
+            ],
+          ),
+          content: const Text(
+            'This worker is not currently marked as verified or trusted. '
+            'HanapBuhay cannot fully guarantee their identity or standing. '
+            'You may review this information and decide whether to continue.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Continue to Booking'),
+            ),
+          ],
+        ),
+      );
+      if (shouldContinue != true) return;
+    }
+
+    if (!mounted) return;
+    Navigator.pushNamed(
+      context,
+      '${AppRouter.sendBookingRequest}/${worker.id}?postId=${post.id}',
     );
   }
 

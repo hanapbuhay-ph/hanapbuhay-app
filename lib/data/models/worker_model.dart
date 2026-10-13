@@ -211,9 +211,9 @@ class Worker {
       portfolioPhotoIds: portfolioPhotos
           .map((photo) => photo['id']?.toString() ?? '')
           .toList(),
-      isAvailable:
-          json['is_available'] == true ||
-          json['availability_status'] == 'available',
+      isAvailable: json['availability_status'] != null
+          ? json['availability_status'] == 'available'
+          : json['is_available'] == true || json['is_available'] == 1,
       availabilityStatus: _parseAvailabilityStatus(
         json['availability_status']?.toString(),
       ),

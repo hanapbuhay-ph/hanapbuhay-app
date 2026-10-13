@@ -85,6 +85,11 @@ class _JobPostCardState extends State<JobPostCard> {
     );
     final worker = widget.listing.worker;
     final post = widget.listing.post;
+    final availabilityLabel = switch (worker.availabilityStatus) {
+      WorkerAvailability.offline => 'Offline',
+      WorkerAvailability.busy => 'Busy',
+      WorkerAvailability.available => worker.isAvailable ? 'Available' : 'Busy',
+    };
 
     final hasImages = post.images.isNotEmpty || post.imageUrls.isNotEmpty;
 
@@ -111,9 +116,31 @@ class _JobPostCardState extends State<JobPostCard> {
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        CircleAvatar(
-                          radius: 21,
-                          backgroundImage: NetworkImage(worker.avatarUrl),
+                        ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: worker.avatarUrl,
+                            width: 42,
+                            height: 42,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: colorScheme.surfaceContainerHighest,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.person_outline,
+                                color: colorScheme.onSurfaceVariant,
+                                size: 22,
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: colorScheme.surfaceContainerHighest,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.person_outline,
+                                color: colorScheme.onSurfaceVariant,
+                                size: 22,
+                              ),
+                            ),
+                          ),
                         ),
                         if (worker.trustTier == TrustTier.verified ||
                             worker.trustTier == TrustTier.trusted)
@@ -258,7 +285,7 @@ class _JobPostCardState extends State<JobPostCard> {
                   ),
                   const SizedBox(width: 5),
                   Text(
-                    worker.isAvailable ? 'Available' : 'Busy',
+                    availabilityLabel,
                     style: AppTypography.labelSmall.copyWith(
                       color: worker.isAvailable
                           ? colorScheme.primary
