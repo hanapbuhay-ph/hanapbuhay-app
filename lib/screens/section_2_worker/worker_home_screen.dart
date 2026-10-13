@@ -13,6 +13,7 @@ import '../../data/models/worker_model.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/auth_result_model.dart';
+import '../../widgets/navigation/notification_nav_icon.dart';
 
 class WorkerHomeScreen extends StatefulWidget {
   const WorkerHomeScreen({super.key});
@@ -270,10 +271,11 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
 
     return Column(
       children: [
+        _buildTopBar(authProvider, colorScheme),
         Container(
           width: double.infinity,
-          color: colorScheme.primary,
-          padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+          color: colorScheme.surface,
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
           child: _buildGreeting(firstName),
         ),
         Expanded(
@@ -286,11 +288,10 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
               padding: EdgeInsets.zero,
               physics: const BouncingScrollPhysics(),
               child: ResponsiveContent(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 24),
                     _buildAvailabilityCard(),
                     const SizedBox(height: 24),
                     _buildStatsRow(authProvider),
@@ -309,14 +310,109 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
     );
   }
 
+  Widget _buildTopBar(AuthProvider authProvider, ColorScheme colorScheme) {
+    final avatarUrl = AppConstants.getPhotoUrl(authProvider.userAvatar);
+
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Image.asset(
+                'assets/icon/app_icon.png',
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'HanapBuhay',
+                  style: AppTypography.headlineSmall.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  'Skills today. Better tomorrow.',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            IconButton(
+              tooltip: 'Notifications',
+              onPressed: () => Navigator.pushNamed(
+                context,
+                AppRouter.notificationCenter,
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: colorScheme.surfaceContainerLow,
+                foregroundColor: colorScheme.onSurface,
+                fixedSize: const Size(38, 38),
+                shape: const CircleBorder(),
+              ),
+              icon: const NotificationNavIcon(active: false),
+            ),
+            const SizedBox(width: 6),
+            Semantics(
+              button: true,
+              label: 'Open profile',
+              child: InkWell(
+                onTap: () => Navigator.pushNamed(context, AppRouter.profile),
+                customBorder: const CircleBorder(),
+                child: ClipOval(
+                  child: Image.network(
+                    avatarUrl,
+                    width: 38,
+                    height: 38,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 38,
+                      height: 38,
+                      color: colorScheme.surfaceContainerLow,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.person_outline,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildGreeting(String name) {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Hi, $name!', style: AppTypography.headlineMedium.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onPrimary)),
+        Text('Hi, $name!', style: AppTypography.headlineMedium.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
         const SizedBox(height: 4),
-        Text('Ready for a great day of work.', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onPrimary.withValues(alpha: 0.8))),
+        Text('Ready for a great day of work.', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
       ],
     );
   }
@@ -849,4 +945,3 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   }
 
 }
-

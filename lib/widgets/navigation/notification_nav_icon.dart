@@ -16,24 +16,33 @@ class NotificationNavIcon extends StatelessWidget {
       stream: context.read<NotificationProvider>().getUnreadCount(),
       initialData: 0,
       builder: (context, snapshot) {
-        final hasUnreadNotifications = (snapshot.data ?? 0) > 0;
+        final count = snapshot.data ?? 0;
 
         return Stack(
           clipBehavior: Clip.none,
           children: [
             Icon(active ? Icons.notifications : Icons.notifications_none),
-            if (hasUnreadNotifications)
+            if (count > 0)
               Positioned(
-                right: -3,
-                top: -3,
+                right: -5,
+                top: -4,
                 child: Container(
-                  key: const ValueKey('notification-unread-indicator'),
-                  width: 9,
-                  height: 9,
+                  key: const ValueKey('notification-unread-count'),
+                  constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: colorScheme.error,
                     shape: BoxShape.circle,
                     border: Border.all(color: colorScheme.surface, width: 1.5),
+                  ),
+                  child: Text(
+                    count > 9 ? '9+' : '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),

@@ -33,7 +33,12 @@ class ApiNotificationRepository implements NotificationRepository {
           .where((notification) => !notification.isRead)
           .map((notification) => notification.id)
           .toSet();
-      _publishUnreadCount();
+      final serverUnreadCount = data['unread_count'];
+      _publishUnreadCount(
+        count: serverUnreadCount is num
+            ? serverUnreadCount.toInt()
+            : _unreadNotificationIds.length,
+      );
 
       return notifications;
     } catch (e) {
@@ -91,8 +96,8 @@ class ApiNotificationRepository implements NotificationRepository {
     });
   }
 
-  void _publishUnreadCount() {
-    _unreadCount = _unreadNotificationIds.length;
+  void _publishUnreadCount({int? count}) {
+    _unreadCount = count ?? _unreadNotificationIds.length;
     _unreadCountController.add(_unreadCount);
   }
 

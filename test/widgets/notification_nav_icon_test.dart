@@ -6,7 +6,7 @@ import 'package:hanapbuhayapp/widgets/navigation/notification_nav_icon.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  testWidgets('shows unread indicator for existing unread notifications', (
+  testWidgets('shows unread count for existing unread notifications', (
     tester,
   ) async {
     final provider = NotificationProvider(MockNotificationRepository());
@@ -22,22 +22,24 @@ void main() {
     await tester.pump();
 
     expect(
-      find.byKey(const ValueKey('notification-unread-indicator')),
+      find.byKey(const ValueKey('notification-unread-count')),
       findsOneWidget,
     );
+    expect(find.text('2'), findsOneWidget);
     expect(find.byIcon(Icons.notifications_none), findsOneWidget);
 
     await provider.markAsRead('n1');
     await tester.pump();
     expect(
-      find.byKey(const ValueKey('notification-unread-indicator')),
+      find.byKey(const ValueKey('notification-unread-count')),
       findsOneWidget,
     );
+    expect(find.text('1'), findsOneWidget);
 
     await provider.markAsRead('n2');
     await tester.pump();
     expect(
-      find.byKey(const ValueKey('notification-unread-indicator')),
+      find.byKey(const ValueKey('notification-unread-count')),
       findsNothing,
     );
     await tester.pump(const Duration(milliseconds: 600));
@@ -60,9 +62,10 @@ void main() {
 
     expect(find.byIcon(Icons.notifications), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('notification-unread-indicator')),
+      find.byKey(const ValueKey('notification-unread-count')),
       findsOneWidget,
     );
+    expect(find.text('2'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 600));
   });
 }
