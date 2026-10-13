@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:gal/gal.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import '../../core/routing/app_router.dart';
@@ -8,7 +12,7 @@ import '../../data/models/job_post_model.dart';
 import '../../data/models/trust_tier.dart';
 import '../../providers/worker_provider.dart';
 import '../../widgets/buttons/primary_button.dart';
-import '../../widgets/navigation/app_header.dart';
+import '../../widgets/navigation/app_back_button.dart';
 
 class JobPostDetailScreen extends StatefulWidget {
   final String postId;
@@ -21,6 +25,7 @@ class JobPostDetailScreen extends StatefulWidget {
 
 class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
   late Future<JobPostListing?> _postFuture;
+  int _selectedImageIndex = 0;
 
   @override
   void initState() {
@@ -44,7 +49,7 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
       backgroundColor: colorScheme.surface,
       body: Column(
         children: [
-          const AppHeader(title: 'Service Post'),
+          _buildHeader(colorScheme),
           Expanded(
             child: FutureBuilder<JobPostListing?>(
               future: _postFuture,
@@ -74,6 +79,61 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(ColorScheme colorScheme) {
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Row(
+          children: [
+            const AppBackButton(),
+            const SizedBox(width: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                'assets/icon/app_icon.png',
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'HanapBuhay',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    'Service post',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -126,7 +186,10 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
 
               if (post.images.isNotEmpty || post.imageUrls.isNotEmpty) ...[
                 _buildGallery(post, colorScheme),
-                const SizedBox(height: 20),
+                SizedBox(
+                  height: 4,
+                  child: ColoredBox(color: colorScheme.surfaceContainerHighest),
+                ),
               ],
 
               // Worker Profile Header Link
@@ -135,18 +198,10 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
                   context,
                   '${AppRouter.workerProfile}/${worker.id}',
                 ),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.28,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
                   ),
                   child: Row(
                     children: [
@@ -191,7 +246,6 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
                                   '${worker.rating.toStringAsFixed(1)} · ${worker.completedJobsCount} jobs done',
                                   style: AppTypography.bodySmall.copyWith(
                                     color: colorScheme.onSurfaceVariant,
-                                    fontSize: 10,
                                   ),
                                 ),
                               ],
@@ -219,30 +273,31 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
               ),
 
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Text(
                   post.title,
-                  style: AppTypography.headlineLarge.copyWith(
+                  style: AppTypography.headlineMedium.copyWith(
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
               const SizedBox(height: 8),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   post.description,
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: colorScheme.onSurface,
                     height: 1.5,
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               if (worker.bio.isNotEmpty || worker.specialty.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -271,7 +326,7 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
 
               // Rate & Availability Info
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
                     Expanded(
@@ -297,11 +352,11 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               if (post.images.isEmpty && post.imageUrls.isEmpty)
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
                   padding: const EdgeInsets.symmetric(
                     vertical: 24,
                     horizontal: 16,
@@ -311,9 +366,6 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
                       alpha: 0.3,
                     ),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -340,8 +392,18 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
         // Sticky Bottom Booking Button
         SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
             child: Row(
               children: [
                 Expanded(
@@ -360,7 +422,6 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
                         style: AppTypography.labelLarge.copyWith(
                           color: colorScheme.secondary,
                           fontWeight: FontWeight.w800,
-                          fontSize: 16,
                         ),
                       ),
                     ],
@@ -395,15 +456,24 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
     final urls = post.images.isNotEmpty
         ? post.images.map((image) => image.imageUrl).toList()
         : post.imageUrls;
+    final selectedImageIndex = _selectedImageIndex.clamp(0, urls.length - 1);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: SizedBox(
-            height: 300,
+        SizedBox(
+          width: double.infinity,
+          height: 300,
+          child: InkWell(
+            key: const ValueKey('service-post-open-image'),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) =>
+                    _ServiceImageViewer(imageUrl: urls[selectedImageIndex]),
+              ),
+            ),
             child: CachedNetworkImage(
-              imageUrl: urls.first,
+              key: const ValueKey('service-post-main-image'),
+              imageUrl: urls[selectedImageIndex],
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
                 color: colorScheme.surfaceContainerHighest,
@@ -428,20 +498,36 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
         if (urls.length > 1) ...[
           const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SizedBox(
               height: 64,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: urls.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) => ClipRRect(
+                itemBuilder: (context, index) => InkWell(
+                  key: ValueKey('service-post-thumbnail-$index'),
                   borderRadius: BorderRadius.circular(10),
-                  child: SizedBox(
+                  onTap: () => setState(() => _selectedImageIndex = index),
+                  child: Container(
                     width: 78,
-                    child: CachedNetworkImage(
-                      imageUrl: urls[index],
-                      fit: BoxFit.cover,
+                    height: 64,
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: index == selectedImageIndex
+                            ? colorScheme.primary
+                            : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(7),
+                      child: CachedNetworkImage(
+                        imageUrl: urls[index],
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
@@ -464,9 +550,8 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colorScheme.outlineVariant),
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -558,6 +643,114 @@ class _JobPostDetailScreenState extends State<JobPostDetailScreen> {
               label: const Text('Retry'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ServiceImageViewer extends StatefulWidget {
+  final String imageUrl;
+
+  const _ServiceImageViewer({required this.imageUrl});
+
+  @override
+  State<_ServiceImageViewer> createState() => _ServiceImageViewerState();
+}
+
+class _ServiceImageViewerState extends State<_ServiceImageViewer> {
+  bool _isDownloading = false;
+
+  Future<void> _downloadImage() async {
+    setState(() => _isDownloading = true);
+
+    try {
+      final response = await http
+          .get(Uri.parse(widget.imageUrl))
+          .timeout(const Duration(seconds: 30));
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        _showMessage('Could not download this photo. Please try again.');
+        return;
+      }
+      if (response.bodyBytes.isEmpty) {
+        _showMessage('The photo could not be downloaded. Please try again.');
+        return;
+      }
+
+      var hasGalleryAccess = await Gal.hasAccess();
+      if (!hasGalleryAccess) {
+        hasGalleryAccess = await Gal.requestAccess();
+      }
+      if (!hasGalleryAccess) {
+        _showMessage('Allow photo access to save this image to your gallery.');
+        return;
+      }
+
+      await Gal.putImageBytes(
+        response.bodyBytes,
+        name: 'hanapbuhay_service_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      _showMessage('Photo saved to your gallery.');
+    } on GalException catch (error) {
+      _showMessage(error.type.message);
+    } on http.ClientException {
+      _showMessage('Check your internet connection and try downloading again.');
+    } on TimeoutException {
+      _showMessage('The download timed out. Please try again.');
+    } on FormatException {
+      _showMessage('This photo has an invalid address and could not be saved.');
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: const Text('Photo'),
+        actions: [
+          IconButton(
+            tooltip: 'Download image',
+            onPressed: _isDownloading ? null : _downloadImage,
+            icon: _isDownloading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Icon(Icons.download_outlined),
+          ),
+        ],
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 0.8,
+          maxScale: 4,
+          child: CachedNetworkImage(
+            imageUrl: widget.imageUrl,
+            fit: BoxFit.contain,
+            placeholder: (_, __) =>
+                const CircularProgressIndicator(color: Colors.white),
+            errorWidget: (_, __, ___) => const Icon(
+              Icons.broken_image_outlined,
+              color: Colors.white70,
+              size: 48,
+            ),
+          ),
         ),
       ),
     );

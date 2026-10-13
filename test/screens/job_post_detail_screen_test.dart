@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -8,12 +10,73 @@ import 'package:hanapbuhayapp/providers/worker_provider.dart';
 import 'package:hanapbuhayapp/screens/section_1_client/job_post_detail_screen.dart';
 
 final List<int> _kTransparentImage = <int>[
-  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49,
-  0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06,
-  0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44,
-  0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D,
-  0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42,
-  0x60, 0x82,
+  0x89,
+  0x50,
+  0x4E,
+  0x47,
+  0x0D,
+  0x0A,
+  0x1A,
+  0x0A,
+  0x00,
+  0x00,
+  0x00,
+  0x0D,
+  0x49,
+  0x48,
+  0x44,
+  0x52,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x08,
+  0x06,
+  0x00,
+  0x00,
+  0x00,
+  0x1F,
+  0x15,
+  0xC4,
+  0x89,
+  0x00,
+  0x00,
+  0x00,
+  0x0A,
+  0x49,
+  0x44,
+  0x41,
+  0x54,
+  0x78,
+  0x9C,
+  0x63,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x05,
+  0x00,
+  0x01,
+  0x0D,
+  0x0A,
+  0x2D,
+  0xB4,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x49,
+  0x45,
+  0x4E,
+  0x44,
+  0xAE,
+  0x42,
+  0x60,
+  0x82,
 ];
 
 class _MockHttpOverrides extends HttpOverrides {
@@ -115,21 +178,63 @@ void main() {
     );
   }
 
-  testWidgets('JobPostDetailScreen loads and displays post details for valid post', (tester) async {
-    await tester.pumpWidget(createWidgetUnderTest('jp1'));
-    // Initially shows loading indicator
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  testWidgets(
+    'JobPostDetailScreen loads and displays post details for valid post',
+    (tester) async {
+      await tester.pumpWidget(createWidgetUnderTest('jp1'));
+      // Initially shows loading indicator
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    // Advance time past the mock delay (300ms)
+      // Advance time past the mock delay (300ms)
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Verify title and worker information
+      expect(find.text('Expert Pipe & Leak Repair'), findsOneWidget);
+      expect(find.text('Ricardo Dalisay'), findsOneWidget);
+      expect(find.text('Book This Service'), findsOneWidget);
+    },
+  );
+
+  testWidgets('tapping a photo thumbnail updates the main service photo', (
+    tester,
+  ) async {
+    await tester.pumpWidget(createWidgetUnderTest('jp1'));
     await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify title and worker information
-    expect(find.text('Expert Pipe & Leak Repair'), findsOneWidget);
-    expect(find.text('Ricardo Dalisay'), findsOneWidget);
-    expect(find.text('Book This Service'), findsOneWidget);
+    final mainImageFinder = find.byKey(
+      const ValueKey('service-post-main-image'),
+    );
+    expect(
+      tester.widget<CachedNetworkImage>(mainImageFinder).imageUrl,
+      'https://picsum.photos/seed/plumbing-service-1/800/600',
+    );
+
+    await tester.tap(find.byKey(const ValueKey('service-post-thumbnail-1')));
+    await tester.pump();
+
+    expect(
+      tester.widget<CachedNetworkImage>(mainImageFinder).imageUrl,
+      'https://picsum.photos/seed/plumbing-service-2/800/600',
+    );
   });
 
-  testWidgets('JobPostDetailScreen shows not found state for unknown post', (tester) async {
+  testWidgets('tapping the main photo opens the full-screen viewer', (
+    tester,
+  ) async {
+    await tester.pumpWidget(createWidgetUnderTest('jp1'));
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.byKey(const ValueKey('service-post-open-image')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('Photo'), findsOneWidget);
+    expect(find.byTooltip('Download image'), findsOneWidget);
+  });
+
+  testWidgets('JobPostDetailScreen shows not found state for unknown post', (
+    tester,
+  ) async {
     await tester.pumpWidget(createWidgetUnderTest('unknown_post_id'));
     await tester.pump(const Duration(milliseconds: 500));
 
@@ -137,4 +242,3 @@ void main() {
     expect(find.text('Go Back'), findsOneWidget);
   });
 }
-
