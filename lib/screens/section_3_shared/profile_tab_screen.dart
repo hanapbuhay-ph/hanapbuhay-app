@@ -330,6 +330,16 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             subtitle: 'Update your personal details',
             onTap: () => Navigator.pushNamed(context, AppRouter.editProfile),
           ),
+          if (!isWorker) ...[
+            const Divider(height: 1),
+            _buildOptionRow(
+              icon: Icons.bookmark_border_rounded,
+              title: 'Saved Services',
+              subtitle: 'View the services you bookmarked',
+              onTap: () =>
+                  Navigator.pushNamed(context, AppRouter.savedServices),
+            ),
+          ],
           if (isWorker) ...[
             const Divider(height: 1),
             _buildOptionRow(

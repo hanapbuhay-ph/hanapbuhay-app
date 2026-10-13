@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/worker_provider.dart';
@@ -8,6 +9,7 @@ import 'providers/booking_provider.dart';
 import 'providers/report_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/notification_provider.dart';
+import 'providers/saved_posts_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/service_locator.dart';
 import 'core/routing/app_router.dart';
@@ -25,10 +27,15 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
         ChangeNotifierProvider(create: (_) => WorkerProvider(workerRepository)),
-        ChangeNotifierProvider(create: (_) => BookingProvider(bookingRepository)),
+        ChangeNotifierProvider(
+          create: (_) => BookingProvider(bookingRepository),
+        ),
         ChangeNotifierProvider(create: (_) => ReportProvider(reportRepository)),
         ChangeNotifierProvider(create: (_) => ChatProvider(chatRepository)),
-        ChangeNotifierProvider(create: (_) => NotificationProvider(notificationRepository)),
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(notificationRepository),
+        ),
+        ChangeNotifierProvider(create: (_) => SavedPostsProvider()),
       ],
       child: const HanapBuhayApp(),
     ),

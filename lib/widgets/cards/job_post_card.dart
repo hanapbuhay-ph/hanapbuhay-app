@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/routing/app_router.dart';
 import '../../core/theme/app_typography.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/trust_tier.dart';
 import '../../data/models/worker_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/saved_posts_provider.dart';
 
 /// Shared feed card used on the Client Home screen and Category Results screen.
 ///
@@ -21,11 +24,65 @@ class JobPostCard extends StatefulWidget {
 }
 
 class _JobPostCardState extends State<JobPostCard> {
-  bool _isSaved = false;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedPosts();
+  }
+
+  Future<void> _loadSavedPosts() async {
+    final userId = context.read<AuthProvider>().userId;
+    if (userId == null) return;
+    try {
+      await context.read<SavedPostsProvider>().loadForUser(userId);
+    } catch (error, stackTrace) {
+      debugPrint(
+        '[JobPostCard] Failed to load saved services: $error\n$stackTrace',
+      );
+    }
+  }
+
+  Future<void> _toggleSaved() async {
+    if (_isSaving) return;
+    final userId = context.read<AuthProvider>().userId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign in to save this service.')),
+      );
+      return;
+    }
+
+    final savedPosts = context.read<SavedPostsProvider>();
+    final wasSaved = savedPosts.isSaved(widget.listing.post.id);
+    setState(() => _isSaving = true);
+    try {
+      await savedPosts.toggleSavedPost(userId: userId, listing: widget.listing);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            wasSaved ? 'Removed from saved services.' : 'Service saved.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to update saved service: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isSaved = context.watch<SavedPostsProvider>().isSaved(
+      widget.listing.post.id,
+    );
     final worker = widget.listing.worker;
     final post = widget.listing.post;
 
@@ -226,20 +283,29 @@ class _JobPostCardState extends State<JobPostCard> {
                 children: [
                   Expanded(
                     child: TextButton.icon(
-                      onPressed: () => setState(() => _isSaved = !_isSaved),
-                      icon: Icon(
-                        _isSaved
-                            ? Icons.bookmark_rounded
-                            : Icons.bookmark_border_rounded,
-                        size: 18,
-                        color: _isSaved
-                            ? colorScheme.primary
-                            : colorScheme.onSurfaceVariant,
-                      ),
+                      onPressed: _isSaving ? null : _toggleSaved,
+                      icon: _isSaving
+                          ? SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.primary,
+                              ),
+                            )
+                          : Icon(
+                              isSaved
+                                  ? Icons.bookmark_rounded
+                                  : Icons.bookmark_border_rounded,
+                              size: 18,
+                              color: isSaved
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurfaceVariant,
+                            ),
                       label: Text(
-                        _isSaved ? 'Saved' : 'Save',
+                        isSaved ? 'Saved' : 'Save',
                         style: AppTypography.labelLarge.copyWith(
-                          color: _isSaved
+                          color: isSaved
                               ? colorScheme.primary
                               : colorScheme.onSurfaceVariant,
                         ),

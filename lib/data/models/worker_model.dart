@@ -4,18 +4,9 @@ import '../../core/constants/app_constants.dart';
 import 'job_post_model.dart';
 import 'trust_tier.dart';
 
-enum WorkerAvailability {
-  available,
-  busy,
-  offline
-}
+enum WorkerAvailability { available, busy, offline }
 
-enum VerificationStatus {
-  notStarted,
-  pending,
-  verified,
-  rejected
-}
+enum VerificationStatus { notStarted, pending, verified, rejected }
 
 class Worker {
   final String id;
@@ -76,15 +67,19 @@ class Worker {
     this.jobPosts = const [],
   });
 
-  factory Worker.fromJson(Map<String, dynamic> json, {String? fallbackProfileId}) {
-    final rawProfileId = json['worker_profile_id'] ??
+  factory Worker.fromJson(
+    Map<String, dynamic> json, {
+    String? fallbackProfileId,
+  }) {
+    final rawProfileId =
+        json['worker_profile_id'] ??
         json['id'] ??
         fallbackProfileId ??
         json['user_id'];
     final id = rawProfileId?.toString() ?? '';
     final name = json['name']?.toString() ?? '';
-    final rawAvatar = json['profile_photo_url']?.toString() ??
-        json['avatar_url']?.toString();
+    final rawAvatar =
+        json['profile_photo_url']?.toString() ?? json['avatar_url']?.toString();
     final avatarUrl = AppConstants.getPhotoUrl(rawAvatar);
 
     // Trust tier
@@ -107,7 +102,8 @@ class Worker {
         : (barangayVal?.toString() ?? '');
 
     // Distance
-    final distanceLabel = json['distance_label']?.toString() ??
+    final distanceLabel =
+        json['distance_label']?.toString() ??
         (json['distance_km'] != null
             ? '~${json['distance_km']} km'
             : (json['distance']?.toString() ?? ''));
@@ -116,12 +112,14 @@ class Worker {
     final rating = (json['average_rating'] is num)
         ? (json['average_rating'] as num).toDouble()
         : double.tryParse(json['average_rating']?.toString() ?? '0') ??
-            (json['rating'] is num ? (json['rating'] as num).toDouble() : 0.0);
+              (json['rating'] is num
+                  ? (json['rating'] as num).toDouble()
+                  : 0.0);
 
     final reviewCount = (json['total_reviews'] is int)
         ? json['total_reviews'] as int
         : int.tryParse(json['total_reviews']?.toString() ?? '0') ??
-            (json['review_count'] is int ? json['review_count'] as int : 0);
+              (json['review_count'] is int ? json['review_count'] as int : 0);
 
     // Verification status
     final rawVerif = json['verification_status']?.toString().toLowerCase();
@@ -135,7 +133,8 @@ class Worker {
     }
 
     // Specialty / category
-    final specialty = json['specialty']?.toString() ??
+    final specialty =
+        json['specialty']?.toString() ??
         json['category']?['name']?.toString() ??
         'Worker';
 
@@ -143,7 +142,12 @@ class Worker {
     List<JobPost> posts = [];
     if (json['job_posts'] is List) {
       posts = (json['job_posts'] as List)
-          .map((p) => JobPost.fromJson(p as Map<String, dynamic>, defaultWorkerId: id))
+          .map(
+            (p) => JobPost.fromJson(
+              p as Map<String, dynamic>,
+              defaultWorkerId: id,
+            ),
+          )
           .toList();
     }
 
@@ -173,9 +177,12 @@ class Worker {
       tags: (json['tags'] is List) ? List<String>.from(json['tags']) : const [],
       distance: distanceLabel,
       bio: json['bio']?.toString() ?? '',
-      isAvailable: json['is_available'] == true ||
+      isAvailable:
+          json['is_available'] == true ||
           json['availability_status'] == 'available',
-        availabilityStatus: _parseAvailabilityStatus(json['availability_status']?.toString()),
+      availabilityStatus: _parseAvailabilityStatus(
+        json['availability_status']?.toString(),
+      ),
       trustTier: parsedTrustTier,
       completedJobsCount: json['completed_jobs'] is int
           ? json['completed_jobs'] as int
@@ -183,6 +190,33 @@ class Worker {
       jobPosts: posts,
       reviews: reviews,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'name': name,
+      'profile_photo_url': avatarUrl,
+      'specialty': specialty,
+      'average_rating': rating,
+      'total_reviews': reviewCount,
+      'barangay': barangay,
+      'hourly_rate': hourlyRate,
+      'verification_status': switch (verificationStatus) {
+        VerificationStatus.notStarted => 'not_started',
+        VerificationStatus.pending => 'pending',
+        VerificationStatus.verified => 'verified',
+        VerificationStatus.rejected => 'rejected',
+      },
+      'trust_tier': trustTier?.name,
+      'completed_jobs': completedJobsCount,
+      'tags': tags,
+      'distance_label': distance,
+      'bio': bio,
+      'is_available': isAvailable,
+      'availability_status': availabilityStatus.name,
+    };
   }
 
   static WorkerAvailability _parseAvailabilityStatus(String? value) {
@@ -229,7 +263,9 @@ class WorkerReview {
           ? (json['score'] as num).toDouble()
           : double.tryParse(json['score']?.toString() ?? '0') ?? 0.0,
       comment: json['comment']?.toString() ?? '',
-      date: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
+      date:
+          DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+          DateTime.now(),
     );
   }
 }

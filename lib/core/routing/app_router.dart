@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../screens/section_0_onboarding_auth/splash_screen.dart';
 import '../../screens/section_0_onboarding_auth/onboarding_slides_screen.dart';
 import '../../screens/section_0_onboarding_auth/login_screen.dart';
@@ -25,6 +26,7 @@ import '../../screens/section_2_worker/worker_map_screen.dart';
 import '../../screens/section_1_client/browse_category_screen.dart';
 import '../../screens/section_1_client/category_results_screen.dart';
 import '../../screens/section_1_client/job_post_detail_screen.dart';
+import '../../screens/section_1_client/saved_services_screen.dart';
 import '../../screens/section_2_worker/verification_document_screen.dart';
 import '../../screens/section_2_worker/verification_status_screen.dart';
 import '../../screens/section_2_worker/portfolio_skills_screen.dart';
@@ -90,6 +92,7 @@ class AppRouter {
   static const String browseCategory = '/browse-category';
   static const String categoryResults = '/category-results';
   static const String clientPostDetail = '/client/posts';
+  static const String savedServices = '/saved-services';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final Uri uri = Uri.parse(settings.name ?? '');
@@ -99,57 +102,96 @@ class AppRouter {
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       case onboarding:
-        return MaterialPageRoute(builder: (_) => const OnboardingSlidesScreen());
+        return MaterialPageRoute(
+          builder: (_) => const OnboardingSlidesScreen(),
+        );
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case registerRole:
-        return MaterialPageRoute(builder: (_) => const RegistrationRoleScreen());
+        return MaterialPageRoute(
+          builder: (_) => const RegistrationRoleScreen(),
+        );
       case registerAccount:
         final role = uri.queryParameters['role'] ?? 'client';
-        return MaterialPageRoute(builder: (_) => RegistrationAccountScreen(role: role));
+        return MaterialPageRoute(
+          builder: (_) => RegistrationAccountScreen(role: role),
+        );
       case verifyEmail:
         final email = uri.queryParameters['email'] ?? '';
         final isLoginChallenge = uri.queryParameters['login'] == 'true';
-        return MaterialPageRoute(builder: (_) => EmailVerificationScreen(email: email, isLoginChallenge: isLoginChallenge));
+        return MaterialPageRoute(
+          builder: (_) => EmailVerificationScreen(
+            email: email,
+            isLoginChallenge: isLoginChallenge,
+          ),
+        );
       case completeProfile:
         final role = uri.queryParameters['role'] ?? '';
-        return MaterialPageRoute(builder: (_) => CompleteProfileScreen(role: role));
+        return MaterialPageRoute(
+          builder: (_) => CompleteProfileScreen(role: role),
+        );
       case forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
       case securitySettings:
-        return MaterialPageRoute(builder: (_) => const SecuritySettingsScreen());
+        return MaterialPageRoute(
+          builder: (_) => const SecuritySettingsScreen(),
+        );
       case changePassword:
         return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
       case loginActivity:
         return MaterialPageRoute(builder: (_) => const LoginActivityScreen());
       case termsOfService:
-        return MaterialPageRoute(builder: (_) => const LegalDocumentScreen(type: LegalDocumentType.terms));
+        return MaterialPageRoute(
+          builder: (_) =>
+              const LegalDocumentScreen(type: LegalDocumentType.terms),
+        );
       case privacyPolicy:
-        return MaterialPageRoute(builder: (_) => const LegalDocumentScreen(type: LegalDocumentType.privacy));
+        return MaterialPageRoute(
+          builder: (_) =>
+              const LegalDocumentScreen(type: LegalDocumentType.privacy),
+        );
       case bookingHistory:
-        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 1));
+        return MaterialPageRoute(
+          builder: (_) => const TabShell(initialIndex: 1),
+        );
       case reportStatus:
         return MaterialPageRoute(builder: (_) => const ReportStatusScreen());
       case portfolioSkills:
         return MaterialPageRoute(builder: (_) => const PortfolioSkillsScreen());
       case bookingSchedule:
-        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 1));
+        return MaterialPageRoute(
+          builder: (_) => const TabShell(initialIndex: 1),
+        );
       case chatInbox:
-        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 2));
+        return MaterialPageRoute(
+          builder: (_) => const TabShell(initialIndex: 2),
+        );
       case notificationCenter:
-        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 3));
+        return MaterialPageRoute(
+          builder: (_) => const TabShell(initialIndex: 3),
+        );
       case help:
         return MaterialPageRoute(builder: (_) => const HelpFaqScreen());
       case profile:
-        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 4));
+        return MaterialPageRoute(
+          builder: (_) => const TabShell(initialIndex: 4),
+        );
       case editProfile:
         return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       case notificationPreferences:
-        return MaterialPageRoute(builder: (_) => const NotificationPreferencesScreen());
+        return MaterialPageRoute(
+          builder: (_) => const NotificationPreferencesScreen(),
+        );
       case clientHome:
-        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 0));
+        return MaterialPageRoute(
+          builder: (_) => const TabShell(initialIndex: 0),
+        );
       case workerHome:
-        return MaterialPageRoute(builder: (_) => const TabShell(initialIndex: 0));
+        return MaterialPageRoute(
+          builder: (_) => const TabShell(initialIndex: 0),
+        );
+      case savedServices:
+        return MaterialPageRoute(builder: (_) => const SavedServicesScreen());
       case createJobPost:
         return MaterialPageRoute(builder: (_) => const CreateJobPostScreen());
       case workerSearch:
@@ -164,82 +206,120 @@ class AppRouter {
           ),
         );
       case verificationDocuments:
-        return MaterialPageRoute(builder: (_) => const VerificationDocumentScreen());
+        return MaterialPageRoute(
+          builder: (_) => const VerificationDocumentScreen(),
+        );
       case manageJobPosts:
         return MaterialPageRoute(builder: (_) => const ManagePostsScreen());
       case incomingRequests:
-        return MaterialPageRoute(builder: (_) => const IncomingRequestsScreen());
+        return MaterialPageRoute(
+          builder: (_) => const IncomingRequestsScreen(),
+        );
       case receivedReviews:
         return MaterialPageRoute(builder: (_) => const ReceivedReviewsScreen());
       case browseCategory:
         return MaterialPageRoute(builder: (_) => const BrowseCategoryScreen());
       case verificationStatus:
-        return MaterialPageRoute(builder: (_) => const VerificationStatusScreen());
-      
+        return MaterialPageRoute(
+          builder: (_) => const VerificationStatusScreen(),
+        );
+
       // Dynamic Routes
       default:
         // Handle routes with path parameters
         if (path.startsWith(categoryResults)) {
           final id = path.split('/').last;
           final name = uri.queryParameters['name'] ?? id;
-          return MaterialPageRoute(builder: (_) => CategoryResultsScreen(categoryId: id, categoryName: name));
+          return MaterialPageRoute(
+            builder: (_) =>
+                CategoryResultsScreen(categoryId: id, categoryName: name),
+          );
         }
         if (path.startsWith(clientPostDetail)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => JobPostDetailScreen(postId: id));
+          return MaterialPageRoute(
+            builder: (_) => JobPostDetailScreen(postId: id),
+          );
         }
         if (path.startsWith(workerMap)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => WorkerMapScreen(bookingId: id));
+          return MaterialPageRoute(
+            builder: (_) => WorkerMapScreen(bookingId: id),
+          );
         }
         if (path.startsWith(editJobPost)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => EditJobPostScreen(postId: id));
+          return MaterialPageRoute(
+            builder: (_) => EditJobPostScreen(postId: id),
+          );
         }
         if (path.startsWith(workerProfile)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => WorkerProfileViewScreen(workerId: id));
+          return MaterialPageRoute(
+            builder: (_) => WorkerProfileViewScreen(workerId: id),
+          );
         }
         if (path.startsWith(sendBookingRequest)) {
           final id = path.split('/').last;
           final postId = uri.queryParameters['postId'];
-          return MaterialPageRoute(builder: (_) => SendBookingRequestScreen(workerId: id, postId: postId));
+          return MaterialPageRoute(
+            builder: (_) =>
+                SendBookingRequestScreen(workerId: id, postId: postId),
+          );
         }
         if (path.startsWith(liveTracking)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => LiveTrackingScreen(bookingId: id));
+          return MaterialPageRoute(
+            builder: (_) => LiveTrackingScreen(bookingId: id),
+          );
         }
         if (path.startsWith(bookingDetail)) {
           final parts = path.split('/');
           final id = parts[2];
           if (parts.length > 3 && parts[3] == 'tracking') {
-            return MaterialPageRoute(builder: (_) => LiveTrackingScreen(bookingId: id));
+            return MaterialPageRoute(
+              builder: (_) => LiveTrackingScreen(bookingId: id),
+            );
           }
-          return MaterialPageRoute(builder: (_) => BookingDetailScreen(bookingId: id));
+          return MaterialPageRoute(
+            builder: (_) => BookingDetailScreen(bookingId: id),
+          );
         }
         if (path.startsWith(jobDetail)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => JobDetailScreen(bookingId: id));
+          return MaterialPageRoute(
+            builder: (_) => JobDetailScreen(bookingId: id),
+          );
         }
         if (path.startsWith(clientProfile)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => ClientProfileViewScreen(clientId: id));
+          return MaterialPageRoute(
+            builder: (_) => ClientProfileViewScreen(clientId: id),
+          );
         }
         if (path.startsWith(rateReview)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => RateReviewScreen(bookingId: id));
+          return MaterialPageRoute(
+            builder: (_) => RateReviewScreen(bookingId: id),
+          );
         }
         if (path.startsWith(rateClient)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => RateClientScreen(bookingId: id));
+          return MaterialPageRoute(
+            builder: (_) => RateClientScreen(bookingId: id),
+          );
         }
         if (path.startsWith(fileReport)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => FileReportScreen(bookingId: id));
+          return MaterialPageRoute(
+            builder: (_) => FileReportScreen(bookingId: id),
+          );
         }
         if (path.startsWith(chatThread)) {
           final id = path.split('/').last;
-          return MaterialPageRoute(builder: (_) => ChatThreadScreen(conversationId: id));
+          return MaterialPageRoute(
+            builder: (_) => ChatThreadScreen(conversationId: id),
+          );
         }
 
         return MaterialPageRoute(
