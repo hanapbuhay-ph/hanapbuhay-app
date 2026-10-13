@@ -51,14 +51,15 @@ class MockNotificationRepository implements NotificationRepository {
   ];
 
   final _unreadCountController = StreamController<int>.broadcast();
+  int _unreadCount = 0;
 
   MockNotificationRepository() {
     _updateUnreadCount();
   }
 
   void _updateUnreadCount() {
-    final count = _mockNotifications.where((n) => !n.isRead).length;
-    _unreadCountController.add(count);
+    _unreadCount = _mockNotifications.where((n) => !n.isRead).length;
+    _unreadCountController.add(_unreadCount);
   }
 
   @override
@@ -78,7 +79,14 @@ class MockNotificationRepository implements NotificationRepository {
 
   @override
   Stream<int> getUnreadCount() {
-    return _unreadCountController.stream;
+    return Stream<int>.multi((controller) {
+      final subscription = _unreadCountController.stream.listen(
+        controller.add,
+        onError: controller.addError,
+      );
+      controller.add(_unreadCount);
+      controller.onCancel = subscription.cancel;
+    });
   }
 
   NotificationPreferences _prefs = NotificationPreferences();

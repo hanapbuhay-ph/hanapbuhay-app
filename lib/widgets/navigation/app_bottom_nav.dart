@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/notification_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/booking_provider.dart';
+import 'notification_nav_icon.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -89,36 +89,9 @@ class AppBottomNav extends StatelessWidget {
             activeIcon: _messageIcon(context, colorScheme, true),
             label: 'Messages',
           ),
-          BottomNavigationBarItem(
-            icon: StreamBuilder<int>(
-              stream: context.read<NotificationProvider>().getUnreadCount(),
-              builder: (context, snapshot) {
-                final count = snapshot.data ?? 0;
-                return Stack(
-                  children: [
-                    const Icon(Icons.notifications_none),
-                    if (count > 0)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colorScheme.surface,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                );
-              },
-            ),
-            activeIcon: const Icon(Icons.notifications),
+          const BottomNavigationBarItem(
+            icon: NotificationNavIcon(active: false),
+            activeIcon: NotificationNavIcon(active: true),
             label: 'Alerts',
           ),
           const BottomNavigationBarItem(

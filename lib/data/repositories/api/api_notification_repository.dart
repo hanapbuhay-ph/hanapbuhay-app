@@ -6,12 +6,14 @@ import '../../../core/api/api_client.dart';
 /// API-connected NotificationRepository — Section J of 07_API_ENDPOINTS.md
 class ApiNotificationRepository implements NotificationRepository {
   final _unreadCountController = StreamController<int>.broadcast();
+  Set<String> _unreadNotificationIds = {};
+  int _unreadCount = 0;
 
   @override
   Future<List<AppNotification>> getNotifications() async {
     try {
       final res = await ApiClient.get('/notifications', requiresAuth: true);
-      
+
       if (res['success'] != true) {
         print('[ApiNotificationRepository] getNotifications failed: ${res['message']}');
         return [];
@@ -27,9 +29,11 @@ class ApiNotificationRepository implements NotificationRepository {
         return _parseNotification(item);
       }).whereType<AppNotification>().toList();
 
-      // Update unread count
-      final unreadCount = notifications.where((n) => !n.isRead).length;
-      _unreadCountController.add(unreadCount);
+      _unreadNotificationIds = notifications
+          .where((notification) => !notification.isRead)
+          .map((notification) => notification.id)
+          .toSet();
+      _publishUnreadCount();
 
       return notifications;
     } catch (e) {
@@ -48,6 +52,11 @@ class ApiNotificationRepository implements NotificationRepository {
 
       if (res['success'] != true) {
         print('[ApiNotificationRepository] markAsRead failed: ${res['message']}');
+        return;
+      }
+
+      if (_unreadNotificationIds.remove(notificationId)) {
+        _publishUnreadCount();
       }
     } catch (e) {
       print('[ApiNotificationRepository] markAsRead error: $e');
@@ -62,7 +71,8 @@ class ApiNotificationRepository implements NotificationRepository {
       );
 
       if (res['success'] == true) {
-        _unreadCountController.add(0);
+        _unreadNotificationIds.clear();
+        _publishUnreadCount();
       }
     } catch (e) {
       print('[ApiNotificationRepository] markAllAsRead error: $e');
@@ -71,7 +81,19 @@ class ApiNotificationRepository implements NotificationRepository {
 
   @override
   Stream<int> getUnreadCount() {
-    return _unreadCountController.stream;
+    return Stream<int>.multi((controller) {
+      final subscription = _unreadCountController.stream.listen(
+        controller.add,
+        onError: controller.addError,
+      );
+      controller.add(_unreadCount);
+      controller.onCancel = subscription.cancel;
+    });
+  }
+
+  void _publishUnreadCount() {
+    _unreadCount = _unreadNotificationIds.length;
+    _unreadCountController.add(_unreadCount);
   }
 
   @override
@@ -131,7 +153,7 @@ class ApiNotificationRepository implements NotificationRepository {
       final typeStr = item['type']?.toString();
       final title = item['title']?.toString();
       final body = item['body']?.toString();
-      
+
       // Extract related_id from 'data' object if present
       String? relatedId;
       final dataObj = item['data'];
@@ -143,7 +165,7 @@ class ApiNotificationRepository implements NotificationRepository {
       }
       // Fallback to direct related_id field
       relatedId ??= item['related_id']?.toString();
-      
+
       final isRead = item['is_read'] == true || item['read_at'] != null;
       final createdAtStr = item['created_at']?.toString();
 
