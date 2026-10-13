@@ -37,7 +37,7 @@ class AppColors {
   static const Color success = Color(0xFF006E11);
   static const Color leafBright = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFF59E0B);
-  
+
   static const Color divider = Color(0xFFBECAB6);
   static const Color disabled = Color(0xFFE1E3E2);
 

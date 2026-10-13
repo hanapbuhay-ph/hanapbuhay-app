@@ -14,6 +14,9 @@ enum NotificationType {
   newRatingReceived,
   reportReceived,
   verificationResubmissionRequired,
+  jobPostCreated,
+  jobPostUpdated,
+  jobPostRemoved,
   system
 }
 

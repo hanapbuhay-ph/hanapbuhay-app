@@ -138,6 +138,7 @@ class ApiNotificationRepository implements NotificationRepository {
       if (dataObj is Map) {
         relatedId = dataObj['booking_id']?.toString() ?? 
                     dataObj['conversation_id']?.toString() ??
+                    dataObj['job_post_id']?.toString() ??
                     dataObj['worker_id']?.toString();
       }
       // Fallback to direct related_id field
@@ -222,6 +223,15 @@ class ApiNotificationRepository implements NotificationRepository {
       case 'report_received':
       case 'reportreceived':
         return NotificationType.reportReceived;
+      case 'job_post_created':
+      case 'jobpostcreated':
+        return NotificationType.jobPostCreated;
+      case 'job_post_updated':
+      case 'jobpostupdated':
+        return NotificationType.jobPostUpdated;
+      case 'job_post_removed':
+      case 'jobpostremoved':
+        return NotificationType.jobPostRemoved;
       default:
         return NotificationType.system;
     }

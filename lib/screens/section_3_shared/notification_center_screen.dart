@@ -183,6 +183,9 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       case NotificationType.bookingToday:
       case NotificationType.bookingRescheduled:
       case NotificationType.bookingUpdated:
+      case NotificationType.jobPostCreated:
+      case NotificationType.jobPostUpdated:
+      case NotificationType.jobPostRemoved:
       case NotificationType.trackingStarted:
       case NotificationType.trackingStopped:
         icon = Icons.work;
@@ -284,6 +287,11 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         } else {
           Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${notification.relatedId}');
         }
+        break;
+      case NotificationType.jobPostCreated:
+      case NotificationType.jobPostUpdated:
+      case NotificationType.jobPostRemoved:
+        Navigator.pushNamed(context, AppRouter.manageJobPosts);
         break;
       case NotificationType.newChatMessage:
         Navigator.pushNamed(context, '${AppRouter.chatThread}/${notification.relatedId}');
