@@ -4,7 +4,9 @@ import 'package:hanapbuhayapp/core/theme/app_colors.dart';
 import 'package:hanapbuhayapp/core/theme/app_theme.dart';
 
 void main() {
-  testWidgets('dark theme defines stable material surface tokens', (WidgetTester tester) async {
+  testWidgets('dark theme defines stable material surface tokens', (
+    WidgetTester tester,
+  ) async {
     final theme = AppTheme.darkTheme;
 
     expect(theme.scaffoldBackgroundColor, AppColors.darkBackground);
@@ -12,7 +14,28 @@ void main() {
     expect(theme.colorScheme.surface, AppColors.darkSurfaceContainer);
     expect(theme.cardTheme.color, AppColors.darkSurfaceContainer);
     expect(theme.appBarTheme.backgroundColor, AppColors.darkSurfaceContainer);
-    expect(theme.navigationBarTheme.backgroundColor, AppColors.darkSurfaceContainer);
-    expect(theme.inputDecorationTheme.fillColor, AppColors.darkSurfaceContainer);
+    expect(theme.appBarTheme.foregroundColor, AppColors.darkPrimary);
+    expect(
+      theme.navigationBarTheme.backgroundColor,
+      AppColors.darkSurfaceContainer,
+    );
+    expect(
+      theme.inputDecorationTheme.fillColor,
+      AppColors.darkSurfaceContainer,
+    );
   });
+
+  test(
+    'dark theme uses the app green palette with contrasting dark-mode roles',
+    () {
+      final colorScheme = AppTheme.darkTheme.colorScheme;
+
+      expect(colorScheme.primary, AppColors.primaryContainer);
+      expect(colorScheme.onPrimary, AppColors.onPrimaryContainer);
+      expect(colorScheme.primaryContainer, AppColors.primary);
+      expect(colorScheme.onPrimaryContainer, AppColors.onPrimary);
+      expect(colorScheme.secondary, AppColors.secondaryContainer);
+      expect(colorScheme.secondaryContainer, AppColors.secondary);
+    },
+  );
 }

@@ -239,10 +239,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [
-            colorScheme.primary,
-            Color.lerp(colorScheme.primary, Colors.lightGreen, 0.62)!,
-          ],
+          colors: [colorScheme.primary, colorScheme.primaryContainer],
         ),
       ),
       child: Stack(
