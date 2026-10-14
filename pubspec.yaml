@@ -56,7 +56,8 @@ dependencies:
   google_maps_flutter: ^2.5.0
 
   # Real-time (live tracking)
-  pusher_channels_flutter: ^2.0.0
+  pusher_channels_flutter:
+    path: packages/pusher_channels_flutter
 
   # GPS (live tracking)
   geolocator: ^13.0.1

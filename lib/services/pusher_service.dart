@@ -36,17 +36,22 @@ class PusherService {
 
   Future<void> init() async {
     if (_initialized) return;
-    _initialized = true;
+    if (AppConstants.pusherKey.isEmpty) {
+      throw StateError(
+        'Missing ABLY_PUSHER_KEY. Pass the Ably key name using --dart-define.',
+      );
+    }
 
     final storage = SecureStorageService();
 
     await _pusher.init(
       apiKey: AppConstants.pusherKey,
       cluster: AppConstants.pusherCluster,
-      useTLS: false,
+      useTLS: true,
+      wsHost: AppConstants.pusherHost,
       onAuthorizer: (channelName, socketId, options) async {
         // Authenticate private channels using the stored Sanctum Bearer token.
-        // Soketi validates this against Laravel's /broadcasting/auth endpoint.
+        // Laravel validates this against /broadcasting/auth and signs it for Ably.
         final token = await storage.getToken();
         final response = await http.post(
           Uri.parse('${AppConstants.apiBaseUrl.replaceAll('/api', '')}/broadcasting/auth'),
@@ -61,6 +66,7 @@ class PusherService {
       },
     );
 
+    _initialized = true;
     await _pusher.connect();
   }
 

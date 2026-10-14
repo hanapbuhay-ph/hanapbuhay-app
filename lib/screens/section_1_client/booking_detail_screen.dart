@@ -13,6 +13,7 @@ import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/navigation/app_bottom_nav.dart';
 import '../../widgets/maps/live_tracking_map.dart';
+import '../../services/tracking_service.dart';
 
 class BookingDetailScreen extends StatefulWidget {
   final String bookingId;
@@ -27,6 +28,8 @@ class BookingDetailScreen extends StatefulWidget {
 
 class _BookingDetailScreenState extends State<BookingDetailScreen> {
   Booking? _booking;
+  LatLng? _liveClientLocation;
+  LatLng? _liveWorkerLocation;
   bool _isLoading = true;
 
   @override
@@ -38,10 +41,19 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   Future<void> _loadData() async {
     final bookingProvider = context.read<BookingProvider>();
     final booking = await bookingProvider.getBookingById(widget.bookingId);
+    final tracking = booking == null
+        ? null
+        : await bookingProvider.getTrackingStatus(widget.bookingId);
     if (booking != null) {
       if (mounted) {
         setState(() {
           _booking = booking;
+          _liveClientLocation = TrackingService.locationFromStatus(
+            tracking?['last_client_location'],
+          );
+          _liveWorkerLocation = TrackingService.locationFromStatus(
+            tracking?['last_worker_location'],
+          );
           _isLoading = false;
         });
       }
@@ -299,7 +311,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           LiveTrackingMap(
             clientLocation: clientLoc,
             workerLocation: workerLoc,
-            liveWorkerLocation: (booking.isWorkerTracking ?? false) ? workerLoc : null,
+            liveClientLocation: _liveClientLocation,
+            liveWorkerLocation: _liveWorkerLocation,
           ),
 
           // Zoom button
@@ -332,13 +345,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: (booking.isWorkerTracking ?? false) ? colorScheme.primary : colorScheme.outlineVariant,
+                      color: booking.isWorkerTracking ? colorScheme.primary : colorScheme.outlineVariant,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    (booking.isWorkerTracking ?? false) ? 'Worker is en route' : 'Waiting for worker to start',
+                    booking.isWorkerTracking ? 'Worker is en route' : 'Waiting for worker to start',
                     style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
                   ),
                 ],

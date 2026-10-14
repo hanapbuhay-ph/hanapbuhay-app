@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../providers/booking_provider.dart';
@@ -30,12 +29,21 @@ class TrackingService {
 
   bool _isTraveling = false;
   bool get isTraveling => _isTraveling;
+  bool _locationUpdateErrorReported = false;
 
   StreamSubscription<Position>? _positionSub;
   static const _locationSettings = LocationSettings(
     accuracy: LocationAccuracy.high,
-    distanceFilter: 0, // TODO: restore to 10 before production
+    distanceFilter: 5,
   );
+
+  static LatLng? locationFromStatus(dynamic value) {
+    if (value is! Map) return null;
+    final latitude = double.tryParse(value['latitude']?.toString() ?? '');
+    final longitude = double.tryParse(value['longitude']?.toString() ?? '');
+    if (latitude == null || longitude == null) return null;
+    return LatLng(latitude, longitude);
+  }
 
   /// Request GPS permission. Returns true if granted.
   Future<bool> requestPermission() async {
@@ -49,6 +57,8 @@ class TrackingService {
 
   /// Start traveling: request GPS → call API → begin streaming location.
   Future<void> startTraveling() async {
+    if (_isTraveling) return;
+
     final granted = await requestPermission();
     if (!granted) {
       onMessage?.call('Location permission is required to share your location.', isError: true);
@@ -68,20 +78,79 @@ class TrackingService {
     }
 
     _isTraveling = true;
+    _locationUpdateErrorReported = false;
 
-    // Stream own GPS → send to API every emission (distanceFilter handles throttle)
-    _positionSub = Geolocator.getPositionStream(locationSettings: _locationSettings)
-        .listen((pos) {
-      onOwnLocation?.call(LatLng(pos.latitude, pos.longitude));
-      provider.updateTrackingLocation(
-        bookingId: bookingId,
-        latitude: pos.latitude,
-        longitude: pos.longitude,
-        accuracy: pos.accuracy,
-      );
-    });
-
+    _startLocationUpdates();
     onMessage?.call('Sharing your location.');
+  }
+
+  /// Resume GPS updates when reopening a screen for an already-active trip.
+  Future<void> resumeTraveling() async {
+    if (_isTraveling) return;
+
+    final granted = await requestPermission();
+    if (!granted) {
+      onMessage?.call('Location permission is required to share your location.', isError: true);
+      return;
+    }
+
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      onMessage?.call('Please turn on GPS to share your location.', isError: true);
+      return;
+    }
+
+    _isTraveling = true;
+    _locationUpdateErrorReported = false;
+    _startLocationUpdates();
+    onMessage?.call('Resuming location sharing.');
+  }
+
+  void _startLocationUpdates() {
+    _positionSub = Geolocator.getPositionStream(locationSettings: _locationSettings)
+        .listen(
+          (position) => unawaited(_publishPosition(position)),
+          onError: (Object error) {
+            onMessage?.call('Unable to read GPS location: $error', isError: true);
+          },
+        );
+    unawaited(_publishCurrentPosition());
+  }
+
+  Future<void> _publishCurrentPosition() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: _locationSettings,
+      );
+      await _publishPosition(position);
+    } catch (error) {
+      onMessage?.call('Unable to get your current GPS location: $error', isError: true);
+    }
+  }
+
+  Future<void> _publishPosition(Position position) async {
+    if (!_isTraveling) return;
+
+    onOwnLocation?.call(LatLng(position.latitude, position.longitude));
+    try {
+      final result = await provider.updateTrackingLocation(
+        bookingId: bookingId,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracy: position.accuracy,
+      );
+      if (!result.success && !_locationUpdateErrorReported) {
+        _locationUpdateErrorReported = true;
+        onMessage?.call('Location update failed: ${result.message}', isError: true);
+      } else if (result.success) {
+        _locationUpdateErrorReported = false;
+      }
+    } catch (error) {
+      if (!_locationUpdateErrorReported) {
+        _locationUpdateErrorReported = true;
+        onMessage?.call('Location update failed: $error', isError: true);
+      }
+    }
   }
 
   /// Stop traveling: cancel GPS stream → call stop API.

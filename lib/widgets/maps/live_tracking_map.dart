@@ -27,14 +27,36 @@ class LiveTrackingMap extends StatefulWidget {
 class LiveTrackingMapState extends State<LiveTrackingMap> {
   final Completer<GoogleMapController> _controller = Completer();
 
+  @override
+  void didUpdateWidget(covariant LiveTrackingMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final liveWorkerMoved =
+        widget.liveWorkerLocation != null &&
+        widget.liveWorkerLocation != oldWidget.liveWorkerLocation;
+    final liveClientMoved =
+        widget.liveClientLocation != null &&
+        widget.liveClientLocation != oldWidget.liveClientLocation;
+
+    if (liveWorkerMoved || liveClientMoved) {
+      _animateTo(liveWorkerMoved
+          ? widget.liveWorkerLocation!
+          : widget.liveClientLocation!);
+    }
+  }
+
   void centerMap() async {
-    final controller = await _controller.future;
-    controller.animateCamera(
-      CameraUpdate.newLatLngZoom(
-        widget.liveClientLocation ?? widget.clientLocation,
-        14,
-      ),
+    await _animateTo(
+      widget.liveWorkerLocation ??
+          widget.liveClientLocation ??
+          widget.clientLocation,
     );
+  }
+
+  Future<void> _animateTo(LatLng location) async {
+    if (!_controller.isCompleted) return;
+    final controller = await _controller.future;
+    await controller.animateCamera(CameraUpdate.newLatLngZoom(location, 16));
   }
 
   @override
@@ -58,7 +80,12 @@ class LiveTrackingMapState extends State<LiveTrackingMap> {
     };
 
     return GoogleMap(
-      initialCameraPosition: CameraPosition(target: clientPos, zoom: 14),
+      initialCameraPosition: CameraPosition(
+        target: widget.liveWorkerLocation ??
+            widget.liveClientLocation ??
+            clientPos,
+        zoom: 16,
+      ),
       markers: markers,
       onMapCreated: (c) => _controller.complete(c),
       zoomControlsEnabled: true,

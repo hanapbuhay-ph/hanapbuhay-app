@@ -69,10 +69,20 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
         _booking = booking;
         _isWorkerTraveling = tracking?['is_worker_tracking'] == true;
         _isTraveling = tracking?['is_client_tracking'] == true;
+        _liveClientLocation = TrackingService.locationFromStatus(
+          tracking?['last_client_location'],
+        );
+        _liveWorkerLocation = TrackingService.locationFromStatus(
+          tracking?['last_worker_location'],
+        );
         _isLoading = false;
       });
-      // Subscribe to Pusher for the worker's live location
+      // Subscribe to the other party and resume this user's GPS if tracking
+      // was already active when the screen was opened.
       await _trackingService.subscribeToOtherParty(myRole: 'client');
+      if (_isTraveling) {
+        await _trackingService.resumeTraveling();
+      }
     }
   }
 

@@ -93,10 +93,19 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
         _isClientTraveling = trackingStatus?['is_client_tracking'] == true;
         _clientBarangayCoords = clientCoords ?? _clientBarangayCoords;
         _workerBarangayCoords = workerCoords ?? _workerBarangayCoords;
+        _liveClientLocation = TrackingService.locationFromStatus(
+          trackingStatus?['last_client_location'],
+        );
+        _liveWorkerLocation = TrackingService.locationFromStatus(
+          trackingStatus?['last_worker_location'],
+        );
         _isLoading = false;
       });
 
       await _trackingService.subscribeToOtherParty(myRole: 'worker');
+      if (_isTraveling) {
+        await _trackingService.resumeTraveling();
+      }
     }
   }
 
@@ -118,8 +127,12 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (_booking == null) return const Scaffold(body: Center(child: Text('Booking not found')));
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (_booking == null) {
+      return const Scaffold(body: Center(child: Text('Booking not found')));
+    }
 
     final colorScheme = Theme.of(context).colorScheme;
 

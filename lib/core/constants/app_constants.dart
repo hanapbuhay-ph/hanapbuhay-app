@@ -1,9 +1,5 @@
 class AppConstants {
-  // apiBaseUrl:
-  // - Emulator: 'http://10.0.2.2:8000/api'
-  // - Physical device USB + adb reverse tcp:8000 tcp:8000: 'http://127.0.0.1:8000/api'
-  // - Physical device WiFi (same WiFi as PC): 'http://192.168.1.XX:8000/api'
-  static const String apiBaseUrl = 'http://127.0.0.1:8000/api';
+  static const String apiBaseUrl = 'https://hanapbuhay-api.onrender.com/api';
 
   /// Base URL for the Laravel public `storage/` disk (no trailing slash).
   /// Storage-relative photo paths returned by the API are prepended with this.
@@ -34,10 +30,9 @@ class AppConstants {
     'General Repairs',
   ];
 
-  // Soketi / Pusher config — must match .env PUSHER_* values
-  static const String pusherKey = 'hanapbuhay-key';
-  static const String pusherHost = '127.0.0.1';
-  static const int pusherPort = 6001;
+  // Ably Pusher Adapter key name; pass with --dart-define, never the full secret key.
+  static const String pusherKey = String.fromEnvironment('ABLY_PUSHER_KEY');
+  static const String pusherHost = 'main.pusher.ably.net';
   static const String pusherCluster = 'mt1';
 
   static const int otpLength = 6;
