@@ -344,7 +344,9 @@ class ApiWorkerRepository implements WorkerRepository {
       requiresAuth: true,
     );
     return res['success'] == true
-        ? AuthResult.success(message: res['message'])
+        ? AuthResult.success(
+            message: res['message']?.toString() ?? 'Photo order updated.',
+          )
         : AuthResult.failure(message: res['message']);
   }
 }
