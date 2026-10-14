@@ -67,9 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result.success) {
         if (result.data?['requiresOtp'] == true) {
+          final expiresIn = result.data?['otp_expires_in_seconds'] ?? 300;
           Navigator.pushNamed(
             context,
-            '${AppRouter.verifyEmail}?email=${_identifierController.text.trim()}&login=true',
+            '${AppRouter.verifyEmail}?email=${Uri.encodeComponent(_identifierController.text.trim())}&login=true&expires_in=$expiresIn',
           );
         } else {
           Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
@@ -119,9 +120,10 @@ class _LoginScreenState extends State<LoginScreen> {
         if (d['requiresOtp'] == true) {
           final user = d['user'] is Map ? (d['user'] as Map) : null;
           final email = user?['email']?.toString() ?? '';
+          final expiresIn = d['otp_expires_in_seconds'] ?? 300;
           Navigator.pushNamed(
             context,
-            '${AppRouter.verifyEmail}?email=${Uri.encodeComponent(email)}&login=true',
+            '${AppRouter.verifyEmail}?email=${Uri.encodeComponent(email)}&login=true&expires_in=$expiresIn',
           );
           return;
         }

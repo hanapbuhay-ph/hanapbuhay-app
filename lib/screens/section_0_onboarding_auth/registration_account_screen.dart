@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 import '../../data/models/barangay_model.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
@@ -14,24 +15,22 @@ import '../../widgets/buttons/primary_button.dart';
 class RegistrationAccountScreen extends StatefulWidget {
   final String role;
 
-  const RegistrationAccountScreen({
-    super.key,
-    required this.role,
-  });
+  const RegistrationAccountScreen({super.key, required this.role});
 
   @override
-  State<RegistrationAccountScreen> createState() => _RegistrationAccountScreenState();
+  State<RegistrationAccountScreen> createState() =>
+      _RegistrationAccountScreenState();
 }
 
 class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final _nameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   String? _selectedBarangay;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -39,7 +38,9 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
   bool _isLoading = false;
   Map<String, String> _fieldErrors = {};
 
-  final List<String> _barangays = Barangay.trinidadBarangays.map((barangay) => barangay.name).toList();
+  final List<String> _barangays = Barangay.trinidadBarangays
+      .map((barangay) => barangay.name)
+      .toList();
 
   @override
   void dispose() {
@@ -72,7 +73,11 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
       if (!mounted) return;
 
       if (result.success) {
-        Navigator.pushNamed(context, '${AppRouter.verifyEmail}?email=${_emailController.text.trim()}');
+        final expiresIn = result.data?['otp_expires_in_seconds'] ?? 300;
+        Navigator.pushNamed(
+          context,
+          '${AppRouter.verifyEmail}?email=${Uri.encodeComponent(_emailController.text.trim())}&expires_in=$expiresIn',
+        );
       } else {
         if (result.errors != null) {
           setState(() {
@@ -82,16 +87,22 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
             });
           });
         }
-        
+
         final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: colorScheme.error,
+          ),
         );
       }
     } catch (e) {
       final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: $e'), backgroundColor: colorScheme.error),
+        SnackBar(
+          content: Text('Registration failed: $e'),
+          backgroundColor: colorScheme.error,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -110,7 +121,7 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
         children: [
           const AppHeader(),
 
-           Expanded(
+          Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               physics: const BouncingScrollPhysics(),
@@ -129,16 +140,25 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
 
                     // Role Confirmation Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: colorScheme.primary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
+                        border: Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.1),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.work_outline, size: 16, color: colorScheme.primary),
+                          Icon(
+                            Icons.work_outline,
+                            size: 16,
+                            color: colorScheme.primary,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Signing up as: ${widget.role[0].toUpperCase()}${widget.role.substring(1)}',
@@ -163,14 +183,22 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                     ),
 
                     const SizedBox(height: 32),
-                    Text('Account Details', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
+                    Text(
+                      'Account Details',
+                      style: AppTypography.headlineLarge.copyWith(
+                        fontSize: 28,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'Please provide your details to complete registration.',
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    
+
                     const SizedBox(height: 40),
 
                     // Form Fields
@@ -179,17 +207,19 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                       label: 'Full Name',
                       hint: 'Enter your full name',
                       errorText: _fieldErrors['name'],
-                      validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: 20),
-                    
+
                     _buildTextField(
                       controller: _mobileController,
                       label: 'Philippine Mobile Number',
                       hint: '09171234567',
                       keyboardType: TextInputType.phone,
                       inputFormatters: philippineMobileNumberFormatters,
-                      helperText: 'Enter 11 digits starting with 09, e.g. 09171234567.',
+                      helperText:
+                          'Enter 11 digits starting with 09, e.g. 09171234567.',
                       errorText: _fieldErrors['mobile_number'],
                       validator: validatePhilippineMobileNumber,
                     ),
@@ -198,13 +228,25 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                     // Barangay Dropdown
                     DropdownButtonFormField<String>(
                       initialValue: _selectedBarangay,
-                      decoration: _getInputDecoration('Barangay').copyWith(errorText: _fieldErrors['barangay']),
-                      items: _barangays.map((b) => DropdownMenuItem(
-                        value: b,
-                        child: Text(b, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
-                      )).toList(),
-                      onChanged: (val) => setState(() => _selectedBarangay = val),
-                      validator: (value) => value == null ? 'Please select your barangay' : null,
+                      decoration: _getInputDecoration('Barangay')
+                          .copyWith(errorText: _fieldErrors['barangay']),
+                      items: _barangays
+                          .map(
+                            (b) => DropdownMenuItem(
+                              value: b,
+                              child: Text(
+                                b,
+                                style: AppTypography.bodyMedium.copyWith(
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) =>
+                          setState(() => _selectedBarangay = val),
+                      validator: (value) =>
+                          value == null ? 'Please select your barangay' : null,
                       dropdownColor: colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -218,7 +260,9 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                       errorText: _fieldErrors['email'],
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Required';
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Invalid email format';
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                            .hasMatch(value))
+                          return 'Invalid email format';
                         return null;
                       },
                     ),
@@ -230,8 +274,15 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                       obscureText: _obscurePassword,
                       errorText: _fieldErrors['password'],
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off, size: 20),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          size: 20,
+                        ),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Required';
@@ -247,12 +298,21 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                       obscureText: _obscureConfirmPassword,
                       errorText: _fieldErrors['confirm_password'],
                       suffixIcon: IconButton(
-                        icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off, size: 20),
-                        onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          size: 20,
+                        ),
+                        onPressed: () => setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Required';
-                        if (value != _passwordController.text) return 'Passwords do not match';
+                        if (value != _passwordController.text)
+                          return 'Passwords do not match';
                         return null;
                       },
                     ),
@@ -264,31 +324,51 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          height: 24, width: 24,
+                          height: 24,
+                          width: 24,
                           child: Checkbox(
                             value: _agreeToTerms,
                             activeColor: colorScheme.primary,
-                            onChanged: (val) => setState(() => _agreeToTerms = val ?? false),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                            onChanged: (val) =>
+                                setState(() => _agreeToTerms = val ?? false),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: RichText(
                             text: TextSpan(
-                              style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                               children: [
                                 const TextSpan(text: 'I agree to the '),
                                 TextSpan(
                                   text: 'Terms of Service',
-                                  style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
-                                  recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, AppRouter.termsOfService),
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () => Navigator.pushNamed(
+                                      context,
+                                      AppRouter.termsOfService,
+                                    ),
                                 ),
                                 const TextSpan(text: ' and '),
                                 TextSpan(
                                   text: 'Privacy Policy',
-                                  style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
-                                  recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, AppRouter.privacyPolicy),
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () => Navigator.pushNamed(
+                                      context,
+                                      AppRouter.privacyPolicy,
+                                    ),
                                 ),
                                 const TextSpan(text: '.'),
                               ],
@@ -306,7 +386,12 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
 
           // 3. Fixed Bottom Navigation
           Container(
-            padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              16,
+              24,
+              MediaQuery.of(context).padding.bottom + 24,
+            ),
             decoration: BoxDecoration(
               color: colorScheme.surface,
               boxShadow: [
@@ -316,7 +401,11 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                   offset: const Offset(0, -4),
                 ),
               ],
-              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
+              border: Border(
+                top: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                ),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -331,9 +420,15 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Already have an account? ', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                    Text(
+                      'Already have an account? ',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, AppRouter.login),
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRouter.login),
                       child: Text(
                         'Log In',
                         style: AppTypography.labelSmall.copyWith(
@@ -369,7 +464,9 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
       obscureText: obscureText,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      style: AppTypography.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurface),
+      style: AppTypography.bodyMedium.copyWith(
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
       decoration: _getInputDecoration(label).copyWith(
         hintText: hint,
         helperText: helperText,
@@ -384,15 +481,33 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
-      labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-      floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
+      labelStyle: AppTypography.bodyMedium.copyWith(
+        color: colorScheme.onSurfaceVariant,
+      ),
+      floatingLabelStyle: AppTypography.labelSmall.copyWith(
+        color: colorScheme.primary,
+      ),
       filled: true,
       fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
-      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.error)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: colorScheme.outlineVariant),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: colorScheme.error),
+      ),
     );
   }
 }

@@ -119,10 +119,13 @@ class AppRouter {
       case verifyEmail:
         final email = uri.queryParameters['email'] ?? '';
         final isLoginChallenge = uri.queryParameters['login'] == 'true';
+        final otpExpiresInSeconds =
+            int.tryParse(uri.queryParameters['expires_in'] ?? '') ?? 300;
         return MaterialPageRoute(
           builder: (_) => EmailVerificationScreen(
             email: email,
             isLoginChallenge: isLoginChallenge,
+            otpExpiresInSeconds: otpExpiresInSeconds,
           ),
         );
       case completeProfile:
