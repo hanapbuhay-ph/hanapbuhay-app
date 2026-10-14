@@ -35,7 +35,6 @@ abstract class BookingRepository {
 
   Future<AuthResult> submitReview({
     required String bookingId,
-    required String workerId,
     required int rating,
     required String comment,
   });

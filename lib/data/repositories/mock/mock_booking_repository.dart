@@ -150,7 +150,6 @@ class MockBookingRepository implements BookingRepository {
   @override
   Future<AuthResult> submitReview({
     required String bookingId,
-    required String workerId,
     required int rating,
     required String comment,
   }) async {

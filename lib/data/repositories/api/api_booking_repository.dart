@@ -1,4 +1,4 @@
-﻿import '../../../core/api/api_client.dart';
+import '../../../core/api/api_client.dart';
 import '../../models/booking_model.dart';
 import '../booking_repository.dart';
 import '../../models/auth_result_model.dart';
@@ -169,7 +169,6 @@ class ApiBookingRepository implements BookingRepository {
   @override
   Future<AuthResult> submitReview({
     required String bookingId,
-    required String workerId,
     required int rating,
     required String comment,
   }) async {

@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/booking_provider.dart';
-import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
-import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 
 class RateReviewScreen extends StatefulWidget {
@@ -21,7 +19,6 @@ class RateReviewScreen extends StatefulWidget {
 
 class _RateReviewScreenState extends State<RateReviewScreen> {
   Booking? _booking;
-  Worker? _worker;
   bool _isLoading = true;
   int _selectedRating = 0;
   final _commentController = TextEditingController();
@@ -39,17 +36,12 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
 
   Future<void> _loadData() async {
     final bookingProvider = context.read<BookingProvider>();
-    final workerProvider = context.read<WorkerProvider>();
     final booking = await bookingProvider.getBookingById(widget.bookingId);
-    if (booking != null) {
-      final worker = await workerProvider.getWorkerById(booking.workerId);
-      if (mounted) {
-        setState(() {
-          _booking = booking;
-          _worker = worker;
-          _isLoading = false;
-        });
-      }
+    if (mounted) {
+      setState(() {
+        _booking = booking;
+        _isLoading = false;
+      });
     }
   }
 
@@ -74,7 +66,6 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
     try {
       final result = await context.read<BookingProvider>().submitReview(
         bookingId: widget.bookingId,
-        workerId: _worker!.id,
         rating: _selectedRating,
         comment: _commentController.text.trim(),
       );
@@ -130,7 +121,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
       return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
-    if (_booking == null || _worker == null) {
+    if (_booking == null) {
       return const Scaffold(body: Center(child: Text('Booking details not found')));
     }
 
@@ -152,13 +143,13 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'How was the service provided by ${_worker!.name.split(' ').first}?',
+                    'How was the service provided by ${_booking!.workerName?.split(' ').first ?? 'the worker'}?',
                     style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
 
-                  _buildWorkerCard(_worker!),
+                  _buildWorkerCard(_booking!),
                   const SizedBox(height: 40),
 
                   Text(
@@ -241,7 +232,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
     );
   }
 
-  Widget _buildWorkerCard(Worker worker) {
+  Widget _buildWorkerCard(Booking booking) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Container(
@@ -264,11 +255,13 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
           CircleAvatar(
             radius: 48,
             backgroundColor: colorScheme.surfaceContainerHighest,
-            backgroundImage: NetworkImage(worker.avatarUrl),
+            backgroundImage: booking.workerPhotoUrl == null
+                ? null
+                : NetworkImage(booking.workerPhotoUrl!),
           ),
           const SizedBox(height: 16),
           Text(
-            worker.name,
+            booking.workerName ?? 'Worker',
             style: AppTypography.headlineMedium.copyWith(fontSize: 22, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
           ),
           const SizedBox(height: 8),
@@ -279,7 +272,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
               borderRadius: BorderRadius.circular(30),
             ),
             child: Text(
-              worker.specialty.toUpperCase(),
+              booking.category.toUpperCase(),
               style: AppTypography.labelSmall.copyWith(
                 color: colorScheme.primary,
                 fontWeight: FontWeight.w800,

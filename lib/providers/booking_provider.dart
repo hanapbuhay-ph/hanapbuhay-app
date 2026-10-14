@@ -94,13 +94,11 @@ class BookingProvider extends ChangeNotifier {
 
   Future<AuthResult> submitReview({
     required String bookingId,
-    required String workerId,
     required int rating,
     required String comment,
   }) async {
     final result = await _repository.submitReview(
       bookingId: bookingId,
-      workerId: workerId,
       rating: rating,
       comment: comment,
     );
