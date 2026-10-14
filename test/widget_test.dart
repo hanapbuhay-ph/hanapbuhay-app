@@ -1,9 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:hanapbuhayapp/core/theme/app_colors.dart';
 import 'package:hanapbuhayapp/core/theme/app_theme.dart';
 
 void main() {
+  test('all onboarding illustrations are bundled as assets', () async {
+    const assets = [
+      'assets/images/onboarding/onboarding_01_welcome.png',
+      'assets/images/onboarding/onboarding_02_find_worker.png',
+      'assets/images/onboarding/onboarding_03_offer_skills.png',
+      'assets/images/onboarding/onboarding_04_verified.png',
+    ];
+
+    for (final asset in assets) {
+      expect(await rootBundle.load(asset), isNotNull);
+    }
+  });
+
   testWidgets('dark theme defines stable material surface tokens', (
     WidgetTester tester,
   ) async {
