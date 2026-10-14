@@ -3,6 +3,7 @@ import '../../core/api/api_client.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../widgets/navigation/app_header.dart';
+import '../../widgets/user_avatar.dart';
 
 class ClientProfileViewScreen extends StatefulWidget {
   final String clientId;
@@ -58,6 +59,8 @@ class _ClientProfileViewScreenState extends State<ClientProfileViewScreen> {
     final photo = client['profile_photo_path']?.toString() ?? client['profile_photo_url']?.toString();
     final barangay = client['barangay'] is Map ? client['barangay']['name']?.toString() : null;
     final bookings = (client['bookings'] as List<dynamic>? ?? const []).whereType<Map>().toList();
+    final ratings = (client['ratings'] as List<dynamic>? ?? const []).whereType<Map>().toList();
+    final averageRating = double.tryParse(client['average_rating']?.toString() ?? '');
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -88,6 +91,20 @@ class _ClientProfileViewScreenState extends State<ClientProfileViewScreen> {
                   _infoRow(Icons.phone_outlined, 'Mobile number', client['mobile_number']?.toString() ?? 'Not provided'),
                   _infoRow(Icons.location_on_outlined, 'Barangay', barangay ?? 'Not provided'),
                   _infoRow(Icons.calendar_today_outlined, 'Member since', _formatDate(client['joined_at'])),
+                  const SizedBox(height: 24),
+                  _sectionTitle('Worker Ratings'),
+                  _ratingsSummary(
+                    averageRating,
+                    int.tryParse(client['rating_count']?.toString() ?? '') ?? ratings.length,
+                  ),
+                  const SizedBox(height: 12),
+                  if (ratings.isEmpty)
+                    Text(
+                      'This client has not received any worker ratings yet.',
+                      style: AppTypography.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+                    )
+                  else
+                    ...ratings.map(_ratingCard),
                   const SizedBox(height: 24),
                   _sectionTitle('Booking History'),
                   Row(
@@ -127,6 +144,100 @@ class _ClientProfileViewScreenState extends State<ClientProfileViewScreen> {
   Widget _statCard(String label, String value, IconData icon) {
     final colors = Theme.of(context).colorScheme;
     return Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: colors.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)), child: Row(children: [Icon(icon, color: colors.primary), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.w800)), Text(label, style: AppTypography.labelSmall.copyWith(color: colors.onSurfaceVariant))])]));
+  }
+
+  Widget _ratingsSummary(double? rating, int count) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.star_rounded, color: Colors.amber.shade700, size: 30),
+          const SizedBox(width: 10),
+          Text(
+            rating == null ? '—' : rating.toStringAsFixed(1),
+            style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              count == 1 ? '1 rating from a worker' : '$count ratings from workers',
+              style: AppTypography.bodySmall.copyWith(color: colors.onSurfaceVariant),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ratingCard(Map rating) {
+    final colors = Theme.of(context).colorScheme;
+    final reviewerName = rating['rated_by_name']?.toString() ?? 'Worker';
+    final reviewerPhoto = AppConstants.getOptionalPhotoUrl(
+      rating['reviewer_avatar_url']?.toString(),
+    );
+    final score = double.tryParse(rating['score']?.toString() ?? '') ?? 0;
+    final comment = rating['comment']?.toString().trim() ?? '';
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              UserAvatar(name: reviewerName, radius: 20, photoPath: reviewerPhoto),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      reviewerName,
+                      style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      _formatDate(rating['created_at']),
+                      style: AppTypography.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(
+                  5,
+                  (index) => Icon(
+                    index < score ? Icons.star_rounded : Icons.star_border_rounded,
+                    size: 16,
+                    color: Colors.amber.shade700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (comment.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              comment,
+              style: AppTypography.bodyMedium.copyWith(color: colors.onSurface, height: 1.4),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _bookingCard(Map booking) {

@@ -42,11 +42,13 @@ void main() {
     test('reviewer Google photo URL is preserved', () {
       final review = WorkerReview.fromJson({
         'id': 3,
+        'rated_by_user_id': 42,
         'rated_by_name': 'Ana Cruz',
         'reviewer_avatar_url': 'https://lh3.googleusercontent.com/ana-photo',
         'score': 5,
       });
 
+      expect(review.reviewerId, '42');
       expect(
         review.reviewerAvatar,
         'https://lh3.googleusercontent.com/ana-photo',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/routing/app_router.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
@@ -562,6 +563,12 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
                   name: review.reviewerName,
                   radius: 18,
                   photoPath: review.reviewerAvatar,
+                  onTap: review.reviewerId == null
+                      ? null
+                      : () => Navigator.pushNamed(
+                          context,
+                          '${AppRouter.clientProfile}/${review.reviewerId}',
+                        ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

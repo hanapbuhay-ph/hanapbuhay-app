@@ -239,6 +239,10 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
                 name: booking.clientName ?? 'Client',
                 radius: 22,
                 photoPath: booking.clientPhotoUrl,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  '${AppRouter.clientProfile}/${booking.clientId}',
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

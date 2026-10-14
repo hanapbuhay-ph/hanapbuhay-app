@@ -24,4 +24,24 @@ void main() {
       expect(initials.style?.color, Colors.white);
     },
   );
+
+  testWidgets('invokes its tap callback when tapped', (tester) async {
+    var wasTapped = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: UserAvatar(
+            name: 'Maria Santos',
+            radius: 32,
+            onTap: () => wasTapped = true,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(UserAvatar));
+
+    expect(wasTapped, isTrue);
+  });
 }

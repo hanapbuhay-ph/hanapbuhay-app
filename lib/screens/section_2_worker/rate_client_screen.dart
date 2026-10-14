@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -186,6 +187,10 @@ class _RateClientScreenState extends State<RateClientScreen> {
             name: clientName,
             radius: 48,
             photoPath: _booking!.clientPhotoUrl,
+            onTap: () => Navigator.pushNamed(
+              context,
+              '${AppRouter.clientProfile}/${_booking!.clientId}',
+            ),
           ),
         ),
         const SizedBox(height: 16),

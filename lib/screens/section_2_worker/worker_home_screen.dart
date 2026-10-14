@@ -142,6 +142,10 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                             name: request.clientName ?? 'Client',
                             radius: 28,
                             photoPath: request.clientPhotoUrl,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '${AppRouter.clientProfile}/${request.clientId}',
+                            ),
                           ),
                            const SizedBox(width: 14),
                           Expanded(
@@ -894,6 +898,10 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
                 name: request.clientName ?? 'Client',
                 radius: 24,
                 photoPath: request.clientPhotoUrl,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  '${AppRouter.clientProfile}/${request.clientId}',
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

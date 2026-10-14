@@ -107,6 +107,10 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                             name: request.clientName ?? 'Client',
                             radius: 28,
                             photoPath: request.clientPhotoUrl,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '${AppRouter.clientProfile}/${request.clientId}',
+                            ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -376,6 +380,10 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                   name: booking.clientName ?? 'Client',
                   radius: 24,
                   photoPath: booking.clientPhotoUrl,
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '${AppRouter.clientProfile}/${booking.clientId}',
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -441,6 +449,10 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                   name: booking.clientName ?? 'Client',
                   radius: 24,
                   photoPath: booking.clientPhotoUrl,
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '${AppRouter.clientProfile}/${booking.clientId}',
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -533,6 +545,10 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                 name: booking.clientName ?? 'Client',
                 radius: 24,
                 photoPath: booking.clientPhotoUrl,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  '${AppRouter.clientProfile}/${booking.clientId}',
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

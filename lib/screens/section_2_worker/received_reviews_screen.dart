@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
+import '../../core/routing/app_router.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/user_avatar.dart';
 
@@ -193,6 +194,12 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
                 name: review.reviewerName,
                 radius: 20,
                 photoPath: review.reviewerAvatar,
+                onTap: review.reviewerId == null
+                    ? null
+                    : () => Navigator.pushNamed(
+                        context,
+                        '${AppRouter.clientProfile}/${review.reviewerId}',
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(

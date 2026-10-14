@@ -224,6 +224,10 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                             name: request.clientName ?? 'Client',
                             radius: 28,
                             photoPath: request.clientPhotoUrl,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '${AppRouter.clientProfile}/${request.clientId}',
+                            ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -360,6 +364,10 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                 name: request.clientName ?? 'Client',
                 radius: 24,
                 photoPath: request.clientPhotoUrl,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  '${AppRouter.clientProfile}/${request.clientId}',
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

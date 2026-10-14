@@ -176,6 +176,10 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             name: clientName,
             radius: 24,
             photoPath: booking.clientPhotoUrl,
+            onTap: () => Navigator.pushNamed(
+              context,
+              '${AppRouter.clientProfile}/${booking.clientId}',
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

@@ -271,6 +271,7 @@ class Worker {
 class WorkerReview {
   final String id;
   final String? bookingId;
+  final String? reviewerId;
   final String reviewerName;
   final String? reviewerAvatar;
   final double rating;
@@ -280,6 +281,7 @@ class WorkerReview {
   WorkerReview({
     required this.id,
     this.bookingId,
+    this.reviewerId,
     required this.reviewerName,
     required this.reviewerAvatar,
     required this.rating,
@@ -291,6 +293,7 @@ class WorkerReview {
     return WorkerReview(
       id: json['id']?.toString() ?? '',
       bookingId: json['booking_id']?.toString(),
+      reviewerId: json['rated_by_user_id']?.toString(),
       reviewerName: json['rated_by_name']?.toString() ?? '',
       reviewerAvatar: AppConstants.getOptionalPhotoUrl(
         json['reviewer_avatar_url']?.toString() ??
