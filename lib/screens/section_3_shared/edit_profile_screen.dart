@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/philippine_mobile_number.dart';
 import '../../core/api/api_client.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -194,17 +196,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 24),
                     _buildTextField(
                       controller: _phoneController,
-                      label: 'Contact Number',
+                      label: 'Philippine Mobile Number',
                       icon: Icons.phone_iphone_outlined,
                       keyboardType: TextInputType.phone,
-                      validator: (val) {
-                        if (val == null || val.isEmpty) return 'Required';
-                        if (!RegExp(r'^(\+63|0)9\d{9}$')
-                            .hasMatch(val.replaceAll(' ', ''))) {
-                          return 'Invalid format (e.g. 0917 123 4567)';
-                        }
-                        return null;
-                      },
+                      inputFormatters: philippineMobileNumberFormatters,
+                      helperText: 'Enter 11 digits starting with 09.',
+                      validator: validatePhilippineMobileNumber,
                     ),
                     const SizedBox(height: 24),
                     _buildReadOnlyField(
@@ -279,6 +276,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? helperText,
     String? Function(String?)? validator,
   }) {
     final theme = Theme.of(context);
@@ -296,6 +295,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           style: AppTypography.bodyMedium.copyWith(
             color: colorScheme.onSurface,
           ),
@@ -323,6 +323,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: colorScheme.primary, width: 1),
             ),
+            helperText: helperText,
           ),
           validator: validator,
         ),

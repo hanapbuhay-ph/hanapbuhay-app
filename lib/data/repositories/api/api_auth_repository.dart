@@ -2,6 +2,7 @@ import '../../models/auth_result_model.dart';
 import '../../models/barangay_model.dart';
 import '../auth_repository.dart';
 import '../../../core/api/api_client.dart';
+import '../../../core/utils/philippine_mobile_number.dart';
 
 /// API-connected AuthRepository — Section A. Aligned to 07_API_ENDPOINTS.md.
 class ApiAuthRepository implements AuthRepository {
@@ -21,7 +22,7 @@ class ApiAuthRepository implements AuthRepository {
 
   @override
   Future<AuthResult> register({required String name, required String email, required String password, required String role, required String mobileNumber, required String barangay}) async {
-    final res = await ApiClient.post('/auth/register', body: {'name': name, 'email': email, 'password': password, 'password_confirmation': password, 'mobile_number': mobileNumber, 'role': role, 'barangay_id': int.tryParse(_barangayIdFor(barangay)) ?? 13});
+    final res = await ApiClient.post('/auth/register', body: {'name': name, 'email': email, 'password': password, 'password_confirmation': password, 'mobile_number': normalizePhilippineMobileNumber(mobileNumber), 'role': role, 'barangay_id': int.tryParse(_barangayIdFor(barangay)) ?? 13});
     return _toResult(res);
   }
 
@@ -72,7 +73,7 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   Future<AuthResult> completeGoogleProfile({required String name, required String mobileNumber, required String role, required String barangay, String? avatarPath}) async {
-    final fields = <String, String>{'name': name, 'mobile_number': mobileNumber, 'role': role, 'barangay_id': _barangayIdFor(barangay)};
+    final fields = <String, String>{'name': name, 'mobile_number': normalizePhilippineMobileNumber(mobileNumber), 'role': role, 'barangay_id': _barangayIdFor(barangay)};
     final isNewFile = avatarPath != null && !avatarPath.startsWith('http');
     final files = isNewFile ? <String, List<String>>{'profile_photo': [avatarPath!]} : null;
     final res = await ApiClient.postMultipart('/auth/google/complete-profile', fields: fields, files: files, requiresAuth: true);
@@ -110,7 +111,7 @@ class ApiAuthRepository implements AuthRepository {
 
   @override
   Future<AuthResult> updateProfile({required String name, required String mobileNumber, int? barangayId, String? avatarPath}) async {
-    final fields = <String, String>{'name': name, 'mobile_number': mobileNumber};
+    final fields = <String, String>{'name': name, 'mobile_number': normalizePhilippineMobileNumber(mobileNumber)};
     if (barangayId != null) {
       fields['barangay_id'] = barangayId.toString();
     }

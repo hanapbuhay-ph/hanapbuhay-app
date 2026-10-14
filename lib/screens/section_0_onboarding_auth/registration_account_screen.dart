@@ -1,9 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/barangay_model.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
+import '../../core/utils/philippine_mobile_number.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -183,11 +185,13 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
                     
                     _buildTextField(
                       controller: _mobileController,
-                      label: 'Mobile Number',
-                      hint: '09XX XXX XXXX',
+                      label: 'Philippine Mobile Number',
+                      hint: '09171234567',
                       keyboardType: TextInputType.phone,
+                      inputFormatters: philippineMobileNumberFormatters,
+                      helperText: 'Enter 11 digits starting with 09, e.g. 09171234567.',
                       errorText: _fieldErrors['mobile_number'],
-                      validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                      validator: validatePhilippineMobileNumber,
                     ),
                     const SizedBox(height: 20),
 
@@ -352,8 +356,10 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
     required TextEditingController controller,
     required String label,
     String? hint,
+    String? helperText,
     bool obscureText = false,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
     Widget? suffixIcon,
     String? errorText,
     String? Function(String?)? validator,
@@ -362,9 +368,11 @@ class _RegistrationAccountScreenState extends State<RegistrationAccountScreen> {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: AppTypography.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurface),
       decoration: _getInputDecoration(label).copyWith(
         hintText: hint,
+        helperText: helperText,
         suffixIcon: suffixIcon,
         errorText: errorText,
       ),

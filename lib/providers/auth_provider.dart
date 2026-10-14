@@ -9,6 +9,7 @@ import '../services/device_info_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
 import '../core/api/api_client.dart'; // ignore: unused_import - used in logout()
+import '../core/utils/philippine_mobile_number.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository;
@@ -75,7 +76,13 @@ class AuthProvider extends ChangeNotifier {
     _userEmail = prefs.getString('user_email');
     _userRole = prefs.getString('user_role');
     _userName = prefs.getString('user_name');
-    _userMobile = prefs.getString('user_mobile');
+    final storedMobile = prefs.getString('user_mobile');
+    _userMobile = storedMobile == null
+        ? null
+        : normalizePhilippineMobileNumber(storedMobile);
+    if (_userMobile != null && _userMobile != storedMobile) {
+      await prefs.setString('user_mobile', _userMobile!);
+    }
     _userBarangay = prefs.getString('user_barangay');
     _userBarangayId = prefs.getInt('user_barangay_id');
     _userAvatar = prefs.getString('user_avatar');
@@ -112,8 +119,9 @@ class AuthProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final mobile = (src['mobile_number'] ?? src['mobile'] ?? src['phone'])?.toString();
       if (mobile != null && mobile.trim().isNotEmpty && mobile.trim() != 'null') {
-        await prefs.setString('user_mobile', mobile.trim());
-        _userMobile = mobile.trim();
+        final normalizedMobile = normalizePhilippineMobileNumber(mobile);
+        await prefs.setString('user_mobile', normalizedMobile);
+        _userMobile = normalizedMobile;
       }
       final b = src['barangay'];
       String? bName;
@@ -372,7 +380,7 @@ class AuthProvider extends ChangeNotifier {
       _userName = name;
     }
     if (mobile != null) {
-      final v = mobile.trim();
+      final v = normalizePhilippineMobileNumber(mobile.trim());
       if (v.isNotEmpty && v != 'null') {
         await prefs.setString('user_mobile', v);
         _userMobile = v;
@@ -492,8 +500,9 @@ class AuthProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
     _userName = name;
-    await prefs.setString('user_mobile', mobile);
-    _userMobile = mobile;
+    final normalizedMobile = normalizePhilippineMobileNumber(mobile);
+    await prefs.setString('user_mobile', normalizedMobile);
+    _userMobile = normalizedMobile;
     if (barangayId != null) {
       await prefs.setInt('user_barangay_id', barangayId);
       _userBarangayId = barangayId;

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../data/models/barangay_model.dart';
 
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/philippine_mobile_number.dart';
 
 import '../../providers/auth_provider.dart';
 
@@ -524,24 +525,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       controller: _mobileController,
 
       keyboardType: TextInputType.phone,
-
+      inputFormatters: philippineMobileNumberFormatters,
       style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
-
-      decoration: _getInputDecoration('Mobile Number').copyWith(
-
-        prefixIcon: Container(
-
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-
-          child: Text('+63 ', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
-
-        ),
-
-        hintText: '9xx xxx xxxx',
-
+      decoration: _getInputDecoration('Philippine Mobile Number').copyWith(
+        hintText: '09171234567',
+        helperText: 'Enter 11 digits starting with 09.',
       ),
-
-      validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+      validator: validatePhilippineMobileNumber,
 
     );
 

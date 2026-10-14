@@ -1,6 +1,7 @@
 import '../../models/auth_result_model.dart';
 import '../auth_repository.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/philippine_mobile_number.dart';
 
 class MockAuthRepository implements AuthRepository {
   static DateTime? _deletionRequestedAt;
@@ -41,7 +42,7 @@ class MockAuthRepository implements AuthRepository {
       'id': role == 'worker' ? AppConstants.mockWorkerId : AppConstants.mockClientId,
       'role': role,
       'name': name,
-      'mobile': mobileNumber,
+      'mobile': normalizePhilippineMobileNumber(mobileNumber),
       'avatar': role == 'worker' ? AppConstants.mockWorkerAvatar : AppConstants.mockClientAvatar,
       'signInMethod': 'email',
     };
