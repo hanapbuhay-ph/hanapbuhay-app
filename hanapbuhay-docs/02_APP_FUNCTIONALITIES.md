@@ -524,7 +524,7 @@ Splash Screen (2 seconds)
 #### C2.1 Verification Document Submission
 - Step indicator (Step 1 of 3 / 2 of 3 / 3 of 3)
 - Upload blocks (each with camera/gallery picker):
-  - Government ID (required) Shows thumbnail once uploaded
+  - Government ID front and back (both required) Show thumbnails once uploaded
   - Barangay Certificate / Clearance (required) Shows thumbnail once uploaded
   - Selfie Holding ID (required) Shows thumbnail once uploaded
   - Skill Certificate (optional) e.g. TESDA NC II certificate

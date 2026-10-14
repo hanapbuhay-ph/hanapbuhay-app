@@ -270,16 +270,18 @@ class WorkerProvider extends ChangeNotifier {
   Future<Worker?> getOwnWorkerProfile() => _repository.getOwnWorkerProfile();
 
   /// POST /api/worker/verification/submit — multipart upload.
-  /// Required: govIdPath, brgyCertPath, selfiePath (local file paths)
+  /// Required: govIdFrontPath, govIdBackPath, brgyCertPath, selfiePath (local file paths)
   /// Optional: skillCertPath
   Future<AuthResult> submitVerificationDocuments({
-    required String govIdPath,
+    required String govIdFrontPath,
+    required String govIdBackPath,
     required String brgyCertPath,
     required String selfiePath,
     String? skillCertPath,
   }) async {
     final result = await _repository.submitVerificationDocuments(
-      govIdPath: govIdPath,
+      govIdFrontPath: govIdFrontPath,
+      govIdBackPath: govIdBackPath,
       brgyCertPath: brgyCertPath,
       selfiePath: selfiePath,
       skillCertPath: skillCertPath,

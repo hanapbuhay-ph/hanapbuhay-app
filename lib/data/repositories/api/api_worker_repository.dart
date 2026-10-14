@@ -79,13 +79,15 @@ class ApiWorkerRepository implements WorkerRepository {
 
   @override
   Future<AuthResult> submitVerificationDocuments({
-    required String govIdPath,
+    required String govIdFrontPath,
+    required String govIdBackPath,
     required String brgyCertPath,
     required String selfiePath,
     String? skillCertPath,
   }) async {
     final Map<String, List<String>> f = {
-      'government_id': [govIdPath],
+      'government_id_front': [govIdFrontPath],
+      'government_id_back': [govIdBackPath],
       'barangay_certificate': [brgyCertPath],
       'selfie_with_id': [selfiePath],
       if (skillCertPath != null) 'skill_certificate': [skillCertPath],

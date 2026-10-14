@@ -390,7 +390,8 @@ class MockWorkerRepository implements WorkerRepository {
   @override
   @override
   Future<AuthResult> submitVerificationDocuments({
-    required String govIdPath,
+    required String govIdFrontPath,
+    required String govIdBackPath,
     required String brgyCertPath,
     required String selfiePath,
     String? skillCertPath,
@@ -410,7 +411,8 @@ class MockWorkerRepository implements WorkerRepository {
       'trust_tier': null,
       'remarks': null,
       'documents': [
-        {'type': 'government_id', 'status': 'pending'},
+        {'type': 'government_id_front', 'status': 'pending'},
+        {'type': 'government_id_back', 'status': 'pending'},
         {'type': 'barangay_certificate', 'status': 'pending'},
         {'type': 'selfie_with_id', 'status': 'pending'},
       ],

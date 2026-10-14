@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../data/models/trust_tier.dart';
@@ -12,7 +13,8 @@ class VerificationStatusScreen extends StatefulWidget {
   const VerificationStatusScreen({super.key});
 
   @override
-  State<VerificationStatusScreen> createState() => _VerificationStatusScreenState();
+  State<VerificationStatusScreen> createState() =>
+      _VerificationStatusScreenState();
 }
 
 class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
@@ -50,7 +52,13 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             return Column(
               children: [
                 const AppHeader(title: 'Verification Status'),
-                Expanded(child: Center(child: CircularProgressIndicator(color: colorScheme.primary))),
+                Expanded(
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
               ],
             );
           }
@@ -68,7 +76,10 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                         children: [
                           const Text('Unable to load verification status.'),
                           const SizedBox(height: 16),
-                          OutlinedButton(onPressed: () => setState(() => _loadStatus()), child: const Text('Try Again')),
+                          OutlinedButton(
+                            onPressed: () => setState(() => _loadStatus()),
+                            child: const Text('Try Again'),
+                          ),
                         ],
                       ),
                     ),
@@ -79,7 +90,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           }
 
           final data = snapshot.data;
-          final status = data?['verification_status']?.toString() ?? 'not_started';
+          final status =
+              data?['verification_status']?.toString() ?? 'not_started';
           final trustTier = _parseTrustTier(data?['trust_tier']?.toString());
           final remarks = data?['remarks']?.toString(); // backend key is "remarks", not "verification_remarks"
           final documents = data?['documents'] as List<dynamic>? ?? [];
@@ -92,9 +104,17 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                   onRefresh: () async => setState(() => _loadStatus()),
                   color: colorScheme.primary,
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 32,
+                    ),
                     physics: const AlwaysScrollableScrollPhysics(),
-                    child: _buildStatusContent(status, trustTier, remarks, documents),
+                    child: _buildStatusContent(
+                      status,
+                      trustTier,
+                      remarks,
+                      documents,
+                    ),
                   ),
                 ),
               ),
@@ -147,7 +167,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     final staticLabels = {
-      'government_id': 'Government ID',
+      'government_id_front': 'Government ID (Front)',
+      'government_id_back': 'Government ID (Back)',
       'barangay_certificate': 'Barangay Certificate',
       'selfie_with_id': 'Selfie with ID',
       'skill_certificate': 'Skill Certificate',
@@ -156,42 +177,65 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
     // If we have real document data, render from it
     final documentStatuses = <String, String>{
       for (final d in documents)
-        if (d is Map && d['type'] != null) d['type'].toString(): d['status']?.toString() ?? 'pending',
+        if (d is Map && d['type'] != null)
+          d['type'].toString(): d['status']?.toString() ?? 'pending',
     };
     final rows = staticLabels.entries
-        .map((entry) => {
-              'label': entry.value,
-              'status': documentStatuses[entry.key] ?? 'not_started',
-            })
+        .map(
+          (entry) => {
+            'label': entry.value,
+            'status':
+                documentStatuses[entry.key] ??
+                (entry.key == 'government_id_front'
+                    ? documentStatuses['government_id']
+                    : null) ??
+                'not_started',
+          },
+        )
         .toList();
 
     IconData iconFor(String s) {
       switch (s) {
-        case 'approved': return Icons.check_circle;
-        case 'rejected': return Icons.cancel;
-        case 'pending': return Icons.schedule;
-        case 'resubmission_required': return Icons.edit_note;
-        default: return Icons.remove;
+        case 'approved':
+          return Icons.check_circle;
+        case 'rejected':
+          return Icons.cancel;
+        case 'pending':
+          return Icons.schedule;
+        case 'resubmission_required':
+          return Icons.edit_note;
+        default:
+          return Icons.remove;
       }
     }
 
     Color colorFor(String s) {
       switch (s) {
-        case 'approved': return colorScheme.primary;
-        case 'rejected': return colorScheme.error;
-        case 'pending': return Colors.amber;
-        case 'resubmission_required': return Colors.orange;
-        default: return colorScheme.onSurfaceVariant;
+        case 'approved':
+          return colorScheme.primary;
+        case 'rejected':
+          return colorScheme.error;
+        case 'pending':
+          return Colors.amber;
+        case 'resubmission_required':
+          return Colors.orange;
+        default:
+          return colorScheme.onSurfaceVariant;
       }
     }
 
     String labelFor(String s) {
       switch (s) {
-        case 'approved': return 'Approved';
-        case 'rejected': return 'Rejected';
-        case 'pending': return 'Under Review';
-        case 'resubmission_required': return 'Needs Update';
-        default: return 'Not submitted';
+        case 'approved':
+          return 'Approved';
+        case 'rejected':
+          return 'Rejected';
+        case 'pending':
+          return 'Under Review';
+        case 'resubmission_required':
+          return 'Needs Update';
+        default:
+          return 'Not submitted';
       }
     }
 
@@ -199,7 +243,9 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         children: rows.asMap().entries.map((entry) {
@@ -209,13 +255,18 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         row['label']?.toString() ?? '',
-                        style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
                     Icon(iconFor(s), color: colorFor(s), size: 20),
@@ -231,7 +282,10 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                 ),
               ),
               if (i < rows.length - 1)
-                Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+                Divider(
+                  height: 1,
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                ),
             ],
           );
         }).toList(),
@@ -245,23 +299,33 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       children: [
         const SizedBox(height: 24),
         Container(
-          width: 80, height: 80,
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
             color: colorScheme.onSurfaceVariant.withValues(alpha: 0.08),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.description_outlined, size: 40, color: colorScheme.onSurfaceVariant),
+          child: Icon(
+            Icons.description_outlined,
+            size: 40,
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 24),
         Text(
           'Not Yet Verified',
-          style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface),
+          style: AppTypography.headlineMedium.copyWith(
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           'Submit your documents to get barangay-verified and rank higher in client searches.',
-          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
@@ -269,7 +333,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         const SizedBox(height: 32),
         PrimaryButton(
           label: 'Submit Documents Now',
-          onPressed: () => Navigator.pushNamed(context, AppRouter.verificationDocuments),
+          onPressed: () =>
+              Navigator.pushNamed(context, AppRouter.verificationDocuments),
         ),
       ],
     );
@@ -281,25 +346,36 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       children: [
         const SizedBox(height: 24),
         Container(
-          width: 80, height: 80,
-          decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.1), shape: BoxShape.circle),
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.amber.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
           child: const Icon(Icons.schedule, size: 40, color: Colors.amber),
         ),
         const SizedBox(height: 24),
         Text(
           'Documents Under Review',
-          style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface),
+          style: AppTypography.headlineMedium.copyWith(
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           'Your verification documents have been received and are currently being reviewed by our team. This usually takes 24–48 hours.',
-          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
         LinearProgressIndicator(
-          backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          backgroundColor: colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.3,
+          ),
           valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
           borderRadius: BorderRadius.circular(4),
         ),
@@ -322,20 +398,29 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       children: [
         const SizedBox(height: 24),
         Container(
-          width: 80, height: 80,
-          decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
           child: Icon(Icons.check_circle, size: 40, color: colorScheme.primary),
         ),
         const SizedBox(height: 24),
         Text(
           'Verification Approved',
-          style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface),
+          style: AppTypography.headlineMedium.copyWith(
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           'Congratulations! Your identity has been verified. You now have full access to worker features.',
-          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
@@ -347,9 +432,15 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+            ),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: Column(
@@ -369,16 +460,25 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                   CircleAvatar(
                     radius: 48,
                     backgroundColor: colorScheme.surfaceContainerHighest,
-                    backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                    backgroundImage: avatarUrl != null
+                        ? NetworkImage(avatarUrl)
+                        : null,
                     child: avatarUrl == null
-                        ? Icon(Icons.person, size: 48, color: colorScheme.onSurfaceVariant)
+                        ? Icon(
+                            Icons.person,
+                            size: 48,
+                            color: colorScheme.onSurfaceVariant,
+                          )
                         : null,
                   ),
                   Container(
                     width: 28,
                     height: 28,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      shape: BoxShape.circle,
+                    ),
                     child: Icon(
                       Icons.verified_rounded,
                       color: colorScheme.onPrimary,
@@ -388,10 +488,19 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              Text(name, style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+              Text(
+                name,
+                style: AppTypography.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: colorScheme.onSurface,
+                ),
+              ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: trustInfo.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(30),
@@ -417,7 +526,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         const SizedBox(height: 32),
         PrimaryButton(
           label: 'Go to Dashboard',
-          onPressed: () => Navigator.pushReplacementNamed(context, AppRouter.workerHome),
+          onPressed: () =>
+              Navigator.pushReplacementNamed(context, AppRouter.workerHome),
         ),
       ],
     );
@@ -429,20 +539,29 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       children: [
         const SizedBox(height: 24),
         Container(
-          width: 80, height: 80,
-          decoration: BoxDecoration(color: colorScheme.error.withValues(alpha: 0.1), shape: BoxShape.circle),
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: colorScheme.error.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
           child: Icon(Icons.cancel, size: 40, color: colorScheme.error),
         ),
         const SizedBox(height: 24),
         Text(
           'Verification Rejected',
-          style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface),
+          style: AppTypography.headlineMedium.copyWith(
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           "We couldn't verify your identity with the provided documents. Please review the reason below and try again.",
-          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
@@ -476,7 +595,9 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
               const SizedBox(height: 12),
               Text(
                 remarks?.isNotEmpty == true ? remarks! : 'No details provided.',
-                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -484,7 +605,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         const SizedBox(height: 32),
         PrimaryButton(
           label: 'Resubmit Documents',
-          onPressed: () => Navigator.pushNamed(context, AppRouter.verificationDocuments),
+          onPressed: () =>
+              Navigator.pushNamed(context, AppRouter.verificationDocuments),
         ),
         const SizedBox(height: 16),
         _buildSupportButton(),
@@ -499,21 +621,45 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         const SizedBox(height: 24),
         Icon(Icons.edit_note, size: 80, color: Colors.orange.shade700),
         const SizedBox(height: 24),
-        Text('Changes Requested', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+        Text(
+          'Changes Requested',
+          style: AppTypography.headlineMedium.copyWith(
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 12),
-        Text('Please review the administrator remarks and resubmit your documents.', textAlign: TextAlign.center, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+        Text(
+          'Please review the administrator remarks and resubmit your documents.',
+          textAlign: TextAlign.center,
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 24),
         if (remarks?.isNotEmpty == true)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-            child: Text(remarks!, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              remarks!,
+              style: AppTypography.bodyMedium.copyWith(
+                color: colorScheme.onSurface,
+              ),
+            ),
           ),
         const SizedBox(height: 24),
         _buildDocumentStatusList(documents),
         const SizedBox(height: 32),
-        PrimaryButton(label: 'Resubmit Documents', onPressed: () => Navigator.pushNamed(context, AppRouter.verificationDocuments)),
+        PrimaryButton(
+          label: 'Resubmit Documents',
+          onPressed: () =>
+              Navigator.pushNamed(context, AppRouter.verificationDocuments),
+        ),
       ],
     );
   }
@@ -529,11 +675,16 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
           side: BorderSide(color: colorScheme.outlineVariant),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: Text(
           'Contact Support',
-          style: TextStyle(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

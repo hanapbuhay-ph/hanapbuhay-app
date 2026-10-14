@@ -103,7 +103,7 @@ There is ONE combined admin role for simplicity. No sub-roles or permission leve
 ### 3.2 Review Submitted Documents
 - Admin clicks a pending request to open the verification detail view
 - Shows all submitted documents side by side:
-  - Government ID (image viewer)
+  - Government ID front and back (image viewers)
   - Barangay Certificate / Clearance (image viewer)
   - Selfie holding ID (image viewer)
   - Skill Certificate (image viewer, if submitted)

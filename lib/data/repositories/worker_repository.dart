@@ -113,11 +113,13 @@ abstract class WorkerRepository {
   Future<List<JobPost>> getWorkerPosts({bool includeInactive = false});
 
   /// POST /api/worker/verification/submit — multipart upload of verification docs.
-  /// Required: government_id, barangay_certificate, selfie_with_id (image files, max 5MB each)
+  /// Required: government_id_front, government_id_back, barangay_certificate,
+  /// selfie_with_id (image files, max 5MB each)
   /// Optional: skill_certificate (image file, max 5MB)
   /// Returns 422 if status is already pending or approved.
   Future<AuthResult> submitVerificationDocuments({
-    required String govIdPath,
+    required String govIdFrontPath,
+    required String govIdBackPath,
     required String brgyCertPath,
     required String selfiePath,
     String? skillCertPath,
