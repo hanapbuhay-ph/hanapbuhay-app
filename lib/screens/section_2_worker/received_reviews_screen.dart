@@ -4,6 +4,7 @@ import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
+import '../../widgets/user_avatar.dart';
 
 class ReceivedReviewsScreen extends StatefulWidget {
   const ReceivedReviewsScreen({super.key});
@@ -188,9 +189,10 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(
+              UserAvatar(
+                name: review.reviewerName,
                 radius: 20,
-                backgroundImage: NetworkImage(review.reviewerAvatar),
+                photoPath: review.reviewerAvatar,
               ),
               const SizedBox(width: 12),
               Expanded(

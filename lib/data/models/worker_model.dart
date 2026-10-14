@@ -272,7 +272,7 @@ class WorkerReview {
   final String id;
   final String? bookingId;
   final String reviewerName;
-  final String reviewerAvatar;
+  final String? reviewerAvatar;
   final double rating;
   final String comment;
   final DateTime date;
@@ -292,7 +292,7 @@ class WorkerReview {
       id: json['id']?.toString() ?? '',
       bookingId: json['booking_id']?.toString(),
       reviewerName: json['rated_by_name']?.toString() ?? '',
-      reviewerAvatar: AppConstants.getPhotoUrl(
+      reviewerAvatar: AppConstants.getOptionalPhotoUrl(
         json['reviewer_avatar_url']?.toString() ??
             json['avatar_url']?.toString(),
       ),

@@ -57,4 +57,13 @@ class AppConstants {
     }
     return '$storageBaseUrl/$path'; // relative path — prepend storage base URL
   }
+
+  /// Normalizes a photo path when present, without inventing a fallback photo.
+  static String? getOptionalPhotoUrl(String? path) {
+    final normalizedPath = path?.trim();
+    if (normalizedPath == null || normalizedPath.isEmpty) {
+      return null;
+    }
+    return getPhotoUrl(normalizedPath);
+  }
 }

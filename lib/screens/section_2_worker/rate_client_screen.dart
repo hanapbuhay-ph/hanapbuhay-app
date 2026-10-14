@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
+import '../../widgets/user_avatar.dart';
 
 class RateClientScreen extends StatefulWidget {
   final String bookingId;
@@ -165,8 +165,6 @@ class _RateClientScreenState extends State<RateClientScreen> {
 
     // Use real client name and photo from GET /api/bookings/{id} response (Fix 4).
     final clientName = _booking!.clientName ?? 'Client';
-    final clientPhoto = AppConstants.getPhotoUrl(_booking!.clientPhotoUrl);
-
     return Column(
       children: [
         Container(
@@ -184,11 +182,10 @@ class _RateClientScreenState extends State<RateClientScreen> {
             ],
             border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2), width: 2),
           ),
-          child: ClipOval(
-            child: Image(
-              image: NetworkImage(clientPhoto),
-              fit: BoxFit.cover,
-            ),
+          child: UserAvatar(
+            name: clientName,
+            radius: 48,
+            photoPath: _booking!.clientPhotoUrl,
           ),
         ),
         const SizedBox(height: 16),

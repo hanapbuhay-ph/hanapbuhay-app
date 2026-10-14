@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../core/constants/app_constants.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/maps/live_tracking_map.dart';
 import '../../services/tracking_service.dart';
+import '../../widgets/user_avatar.dart';
 
 class WorkerMapScreen extends StatefulWidget {
   final String bookingId;
@@ -235,9 +235,10 @@ class _WorkerMapScreenState extends State<WorkerMapScreen> {
           ),
           Row(
             children: [
-              CircleAvatar(
+              UserAvatar(
+                name: booking.clientName ?? 'Client',
                 radius: 22,
-                backgroundImage: NetworkImage(AppConstants.getPhotoUrl(booking.clientPhotoUrl)),
+                photoPath: booking.clientPhotoUrl,
               ),
               const SizedBox(width: 12),
               Expanded(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/utils/formatters.dart';
@@ -15,6 +14,7 @@ import '../../widgets/navigation/app_header.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
 import '../../widgets/maps/live_tracking_map.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/user_avatar.dart';
 
 class JobDetailScreen extends StatefulWidget {
   final String bookingId;
@@ -156,8 +156,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     // Use real client data from GET /api/bookings/{id} response.
     // Booking.fromJson parses clientName + clientPhotoUrl from the API.
     final clientName = booking.clientName ?? 'Client';
-    final clientPhoto = AppConstants.getPhotoUrl(booking.clientPhotoUrl);
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -174,9 +172,10 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       ),
       child: Row(
         children: [
-          CircleAvatar(
+          UserAvatar(
+            name: clientName,
             radius: 24,
-            backgroundImage: NetworkImage(clientPhoto),
+            photoPath: booking.clientPhotoUrl,
           ),
           const SizedBox(width: 12),
           Expanded(

@@ -9,6 +9,7 @@ import '../../data/models/trust_tier.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/cards/job_post_card.dart';
+import '../../widgets/user_avatar.dart';
 
 class WorkerProfileViewScreen extends StatefulWidget {
   final String workerId;
@@ -557,9 +558,10 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
           children: [
             Row(
               children: [
-                CircleAvatar(
+                UserAvatar(
+                  name: review.reviewerName,
                   radius: 18,
-                  backgroundImage: NetworkImage(review.reviewerAvatar),
+                  photoPath: review.reviewerAvatar,
                 ),
                 const SizedBox(width: 10),
                 Expanded(

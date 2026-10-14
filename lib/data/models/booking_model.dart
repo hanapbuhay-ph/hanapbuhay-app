@@ -125,7 +125,7 @@ class Booking {
 
     final cj = json['client'] is Map ? json['client'] as Map<String, dynamic> : null;
     final cName = cj?['name']?.toString();
-    final cPhoto = AppConstants.getPhotoUrl(
+    final cPhoto = AppConstants.getOptionalPhotoUrl(
       cj?['profile_photo_url']?.toString() ??
           cj?['profile_photo_path']?.toString(),
     );

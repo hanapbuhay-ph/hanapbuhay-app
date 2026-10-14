@@ -9,6 +9,7 @@ import '../../core/theme/app_typography.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/info/detail_info_row.dart';
+import '../../widgets/user_avatar.dart';
 
 class IncomingRequestsScreen extends StatefulWidget {
   const IncomingRequestsScreen({super.key});
@@ -219,7 +220,11 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                       // Header
                       Row(
                         children: [
-                          CircleAvatar(radius: 28, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(request.clientPhotoUrl))),
+                          UserAvatar(
+                            name: request.clientName ?? 'Client',
+                            radius: 28,
+                            photoPath: request.clientPhotoUrl,
+                          ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
@@ -351,7 +356,11 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(request.clientPhotoUrl))),
+              UserAvatar(
+                name: request.clientName ?? 'Client',
+                radius: 24,
+                photoPath: request.clientPhotoUrl,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -412,4 +421,3 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
   }
 
 }
-

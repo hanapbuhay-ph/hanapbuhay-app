@@ -11,6 +11,7 @@ import '../../providers/chat_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/filters/status_filter_chips.dart';
 import '../../widgets/info/detail_info_row.dart';
+import '../../widgets/user_avatar.dart';
 
 class BookingScheduleScreen extends StatefulWidget {
   const BookingScheduleScreen({super.key});
@@ -102,9 +103,10 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(
+                          UserAvatar(
+                            name: request.clientName ?? 'Client',
                             radius: 28,
-                            backgroundImage: NetworkImage(AppConstants.getPhotoUrl(request.clientPhotoUrl)),
+                            photoPath: request.clientPhotoUrl,
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -370,7 +372,11 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           children: [
             Row(
               children: [
-                CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(booking.clientPhotoUrl))),
+                UserAvatar(
+                  name: booking.clientName ?? 'Client',
+                  radius: 24,
+                  photoPath: booking.clientPhotoUrl,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -431,7 +437,11 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
           children: [
             Row(
               children: [
-                CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(booking.clientPhotoUrl))),
+                UserAvatar(
+                  name: booking.clientName ?? 'Client',
+                  radius: 24,
+                  photoPath: booking.clientPhotoUrl,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -519,7 +529,11 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> with Sing
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.getPhotoUrl(booking.clientPhotoUrl))),
+              UserAvatar(
+                name: booking.clientName ?? 'Client',
+                radius: 24,
+                photoPath: booking.clientPhotoUrl,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
