@@ -217,6 +217,21 @@ class ApiWorkerRepository implements WorkerRepository {
   }
 
   @override
+  Future<Worker?> getOwnWorkerProfile() async {
+    final res = await ApiClient.get('/worker/profile', requiresAuth: true);
+    if (res['success'] != true) {
+      throw StateError(
+        res['message']?.toString() ?? 'Unable to load your worker profile.',
+      );
+    }
+    final profile = res['data']?['worker'];
+    if (profile is! Map<String, dynamic>) {
+      throw const FormatException('Worker profile response is invalid.');
+    }
+    return Worker.fromJson(profile);
+  }
+
+  @override
   Future<JobPostListing?> getJobPostDetail(String postId) async {
     final res = await ApiClient.get('/posts/$postId', requiresAuth: true);
     if (res['success'] != true) return null;

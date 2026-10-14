@@ -139,6 +139,7 @@ abstract class WorkerRepository {
   Future<List<Worker>> getRecentlyViewedWorkers();
   Future<List<ServiceCategory>> getCategories();
   Future<Worker?> getWorkerById(String id);
+  Future<Worker?> getOwnWorkerProfile();
   Future<JobPostListing?> getJobPostDetail(String postId);
   Future<AuthResult> updateProfile({
     required String workerId,

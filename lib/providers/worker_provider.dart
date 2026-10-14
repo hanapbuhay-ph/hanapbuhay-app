@@ -267,6 +267,7 @@ class WorkerProvider extends ChangeNotifier {
   Future<List<Worker>> getRecentlyViewedWorkers() =>
       _repository.getRecentlyViewedWorkers();
   Future<Worker?> getWorkerById(String id) => _repository.getWorkerById(id);
+  Future<Worker?> getOwnWorkerProfile() => _repository.getOwnWorkerProfile();
 
   /// POST /api/worker/verification/submit — multipart upload.
   /// Required: govIdPath, brgyCertPath, selfiePath (local file paths)

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -11,6 +9,7 @@ import '../../providers/worker_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/trust_tier.dart';
+import '../../widgets/user_avatar.dart';
 
 class ProfileTabScreen extends StatefulWidget {
   const ProfileTabScreen({super.key});
@@ -21,6 +20,7 @@ class ProfileTabScreen extends StatefulWidget {
 
 class _ProfileTabScreenState extends State<ProfileTabScreen> {
   Worker? _workerData;
+  String? _workerProfileError;
   bool _isLoading = true;
 
   @override
@@ -32,18 +32,26 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   Future<void> _loadProfileData() async {
     final authProvider = context.read<AuthProvider>();
     if (authProvider.userRole == 'worker') {
-      final workerProvider = context.read<WorkerProvider>();
-      final profileId = authProvider.workerProfileId ?? authProvider.userId;
-      if (profileId == null) {
-        if (mounted) setState(() => _isLoading = false);
-        return;
-      }
-      final worker = await workerProvider.getWorkerById(profileId);
-      if (mounted) {
-        setState(() {
-          _workerData = worker;
-          _isLoading = false;
-        });
+      try {
+        final worker = await context
+            .read<WorkerProvider>()
+            .getOwnWorkerProfile();
+        if (mounted) {
+          setState(() {
+            _workerData = worker;
+            _workerProfileError = worker == null
+                ? 'Unable to find your worker profile.'
+                : null;
+            _isLoading = false;
+          });
+        }
+      } catch (error) {
+        if (mounted) {
+          setState(() {
+            _workerProfileError = error.toString();
+            _isLoading = false;
+          });
+        }
       }
     } else {
       setState(() {
@@ -140,11 +148,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildUserSummary(authProvider),
-                if (isWorker) ...[
+                if (isWorker && _workerData != null) ...[
                   const SizedBox(height: 24),
                   _buildTrustTierCard(isWorker),
                   const SizedBox(height: 16),
                   _buildQuickStats(isWorker),
+                ] else if (isWorker && _workerProfileError != null) ...[
+                  const SizedBox(height: 24),
+                  _buildWorkerProfileError(),
                 ],
                 const SizedBox(height: 32),
                 _buildAccountOptions(isWorker),
@@ -161,14 +172,35 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     );
   }
 
+  Widget _buildWorkerProfileError() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        'Unable to load your worker statistics: $_workerProfileError',
+        style: AppTypography.bodySmall.copyWith(
+          color: colorScheme.onErrorContainer,
+        ),
+      ),
+    );
+  }
+
   Widget _buildUserSummary(AuthProvider authProvider) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final name = authProvider.userName ?? _workerData?.name ?? 'User';
-    final avatar =
-        authProvider.userAvatar ??
-        _workerData?.avatarUrl ??
-        AppConstants.defaultAvatar;
+    final workerAvatar = _workerData?.avatarUrl;
+    final avatar = authProvider.userAvatar == AppConstants.defaultAvatar
+        ? null
+        : authProvider.userAvatar ??
+              (workerAvatar == AppConstants.defaultAvatar
+                  ? null
+                  : workerAvatar);
 
     return Container(
       width: double.infinity,
@@ -191,13 +223,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         children: [
           Stack(
             children: [
-              CircleAvatar(
-                radius: 48,
-                backgroundColor: colorScheme.surfaceContainerHighest,
-                backgroundImage: avatar.startsWith('http')
-                    ? NetworkImage(avatar)
-                    : FileImage(File(avatar)) as ImageProvider,
-              ),
+              UserAvatar(name: name, radius: 48, photoPath: avatar),
               Positioned(
                 bottom: 0,
                 right: 0,

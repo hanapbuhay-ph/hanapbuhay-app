@@ -360,6 +360,12 @@ class MockWorkerRepository implements WorkerRepository {
   }
 
   @override
+  Future<Worker?> getOwnWorkerProfile() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return _workers.isEmpty ? null : _workers.first;
+  }
+
+  @override
   Future<JobPostListing?> getJobPostDetail(String postId) async {
     await Future.delayed(const Duration(milliseconds: 300));
     for (final worker in _workers) {

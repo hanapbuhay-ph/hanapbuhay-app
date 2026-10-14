@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -25,29 +24,26 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
   }
 
   Future<void> _loadData() async {
-    if (mounted) setState(() { _isLoading = true; _errorMessage = null; });
-    final authProvider = context.read<AuthProvider>();
-    final workerProvider = context.read<WorkerProvider>();
-
-    // Use workerProfileId from AuthProvider (populated by GET /api/user → worker_profile.id).
-    // GET /api/workers/{workerProfileId} returns: average_rating, total_reviews, reviews[]
-    // Each review: rated_by_name, score, comment, created_at (parsed by WorkerReview.fromJson)
-    String? profileId = authProvider.workerProfileId ?? authProvider.userId;
-    if (profileId == null) {
-      await authProvider.refreshProfile();
-      profileId = authProvider.workerProfileId ?? authProvider.userId;
-    }
-
-    Worker? worker;
-    if (profileId != null) {
-      worker = await workerProvider.getWorkerById(profileId);
-    }
-
     if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+    try {
+      final worker = await context.read<WorkerProvider>().getOwnWorkerProfile();
+      if (!mounted) return;
       setState(() {
         _worker = worker;
         _isLoading = false;
         if (worker == null) _errorMessage = 'Unable to load your reviews.';
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _worker = null;
+        _isLoading = false;
+        _errorMessage = 'Unable to load your reviews: $error';
       });
     }
   }

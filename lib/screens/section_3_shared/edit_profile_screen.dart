@@ -1,12 +1,14 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/api/api_client.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/user_avatar.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -24,7 +26,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _selectedBarangayName;
   List<Map<String, dynamic>> _barangays = [];
   bool _barangaysLoading = true;
-  
+
   String? _avatarPath;
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
@@ -34,14 +36,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     final authProvider = context.read<AuthProvider>();
     _nameController = TextEditingController(text: authProvider.userName ?? '');
-    _phoneController = TextEditingController(text: authProvider.userMobile ?? '');
+    _phoneController = TextEditingController(
+      text: authProvider.userMobile ?? '',
+    );
     _email = authProvider.userEmail ?? '';
     _selectedBarangayId = authProvider.userBarangayId;
     _selectedBarangayName = authProvider.userBarangay;
     _avatarPath = authProvider.userAvatar;
     _loadBarangays();
     // Hydrate from server if mobile not yet cached (login response often lacks it)
-    if ((authProvider.userMobile == null || authProvider.userMobile!.isEmpty) && authProvider.isAuthenticated) {
+    if ((authProvider.userMobile == null || authProvider.userMobile!.isEmpty) &&
+        authProvider.isAuthenticated) {
       authProvider.refreshProfile().then((_) {
         if (!mounted) return;
         setState(() {
@@ -49,8 +54,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _phoneController.text = refreshed.userMobile ?? _phoneController.text;
           _nameController.text = refreshed.userName ?? _nameController.text;
           _email = refreshed.userEmail ?? _email;
-          _selectedBarangayId = _safeBarangayId(refreshed.userBarangayId) ?? _selectedBarangayId;
-          _selectedBarangayName = refreshed.userBarangay ?? _selectedBarangayName;
+          _selectedBarangayId =
+              _safeBarangayId(refreshed.userBarangayId) ?? _selectedBarangayId;
+          _selectedBarangayName =
+              refreshed.userBarangay ?? _selectedBarangayName;
           _avatarPath = refreshed.userAvatar ?? _avatarPath;
         });
       });
@@ -97,7 +104,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
     if (image != null) {
       setState(() {
         _avatarPath = image.path;
@@ -126,19 +136,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (result.success) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result.message), backgroundColor: colorScheme.primary),
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: colorScheme.primary,
+            ),
           );
           Navigator.pop(context);
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: colorScheme.error,
+          ),
         );
       }
     } catch (e) {
       final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: colorScheme.error),
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: colorScheme.error,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -169,7 +188,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       controller: _nameController,
                       label: 'Full Name',
                       icon: Icons.person_outline,
-                      validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                      validator: (val) =>
+                          val == null || val.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: 24),
                     _buildTextField(
@@ -179,7 +199,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       keyboardType: TextInputType.phone,
                       validator: (val) {
                         if (val == null || val.isEmpty) return 'Required';
-                        if (!RegExp(r'^(\+63|0)9\d{9}$').hasMatch(val.replaceAll(' ', ''))) {
+                        if (!RegExp(r'^(\+63|0)9\d{9}$')
+                            .hasMatch(val.replaceAll(' ', ''))) {
                           return 'Invalid format (e.g. 0917 123 4567)';
                         }
                         return null;
@@ -215,10 +236,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Center(
       child: Stack(
         children: [
-          CircleAvatar(
+          UserAvatar(
+            name: _nameController.text,
             radius: 64,
-            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-            backgroundImage: _getAvatarImage(),
+            photoPath: _avatarPath == AppConstants.defaultAvatar
+                ? null
+                : _avatarPath,
           ),
           Positioned(
             bottom: 0,
@@ -231,21 +254,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   color: colorScheme.primary,
                   shape: BoxShape.circle,
                   border: Border.all(color: colorScheme.surface, width: 2),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
-                child: Icon(Icons.photo_camera, size: 20, color: colorScheme.onPrimary),
+                child: Icon(
+                  Icons.photo_camera,
+                  size: 20,
+                  color: colorScheme.onPrimary,
+                ),
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  ImageProvider _getAvatarImage() {
-    if (_avatarPath == null) return const NetworkImage('https://i.pravatar.cc/150?u=current_user');
-    if (_avatarPath!.startsWith('http')) return NetworkImage(_avatarPath!);
-    return FileImage(File(_avatarPath!));
   }
 
   Widget _buildTextField({
@@ -260,19 +286,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTypography.labelLarge.copyWith(color: colorScheme.onSurfaceVariant)),
+        Text(
+          label,
+          style: AppTypography.labelLarge.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
-          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurface,
+          ),
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: colorScheme.onSurfaceVariant, size: 20),
+            prefixIcon: Icon(
+              icon,
+              color: colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
             filled: true,
-            fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 1)),
+            fillColor: colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.1,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: colorScheme.primary, width: 1),
+            ),
           ),
           validator: validator,
         ),
@@ -280,13 +330,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildReadOnlyField({required String label, required String value, required IconData icon}) {
+  Widget _buildReadOnlyField({
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTypography.labelLarge.copyWith(color: colorScheme.onSurfaceVariant)),
+        Text(
+          label,
+          style: AppTypography.labelLarge.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
@@ -294,13 +353,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+            ),
           ),
           child: Row(
             children: [
-              Icon(icon, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7), size: 20),
+              Icon(
+                icon,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                size: 20,
+              ),
               const SizedBox(width: 12),
-              Text(value, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7))),
+              Text(
+                value,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
+              ),
             ],
           ),
         ),
@@ -314,7 +384,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Barangay', style: AppTypography.labelLarge.copyWith(color: colorScheme.onSurfaceVariant)),
+        Text(
+          'Barangay',
+          style: AppTypography.labelLarge.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 8),
         if (_barangaysLoading)
           Container(
@@ -332,23 +407,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             initialValue: _selectedBarangayId,
             isExpanded: true,
             decoration: InputDecoration(
-              prefixIcon: Icon(Icons.location_on_outlined, color: colorScheme.onSurfaceVariant, size: 20),
+              prefixIcon: Icon(
+                Icons.location_on_outlined,
+                color: colorScheme.onSurfaceVariant,
+                size: 20,
+              ),
               filled: true,
-              fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 1)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              fillColor: colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.1,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.outlineVariant),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.primary, width: 1),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 4,
+              ),
             ),
             hint: Text(
               'Select barangay',
-              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+              style: AppTypography.bodyMedium.copyWith(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
             ),
             items: _barangays.map((b) {
               final name = b['name']?.toString() ?? '';
               return DropdownMenuItem<int?>(
-                value: b['id'] is int ? (b['id'] as int) : int.tryParse(b['id']?.toString() ?? ''),
-                child: Text(name, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface)),
+                value: b['id'] is int
+                    ? (b['id'] as int)
+                    : int.tryParse(b['id']?.toString() ?? ''),
+                child: Text(
+                  name,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
               );
             }).toList(),
             onChanged: (value) {
@@ -356,13 +460,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 _selectedBarangayId = value;
                 _selectedBarangayName = value == null
                     ? null
-                    : _barangays.firstWhere(
-                        (b) => b['id'] == value,
-                        orElse: () => const {},
-                      )['name']?.toString();
+                    : _barangays
+                          .firstWhere(
+                            (b) => b['id'] == value,
+                            orElse: () => const {},
+                          )['name']
+                          ?.toString();
               });
             },
-            validator: (value) => value == null ? 'Please select your barangay' : null,
+            validator: (value) =>
+                value == null ? 'Please select your barangay' : null,
           ),
       ],
     );

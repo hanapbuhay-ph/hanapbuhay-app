@@ -373,9 +373,14 @@ class AuthProvider extends ChangeNotifier {
       await prefs.setInt('user_barangay_id', barangayId);
       _userBarangayId = barangayId;
     }
-    if (avatar != null) {
-      await prefs.setString('user_avatar', avatar);
-      _userAvatar = avatar;
+    final normalizedAvatar = avatar?.trim();
+    if (normalizedAvatar == null || normalizedAvatar.isEmpty) {
+      await prefs.remove('user_avatar');
+      _userAvatar = null;
+    } else {
+      final photoUrl = AppConstants.getPhotoUrl(normalizedAvatar);
+      await prefs.setString('user_avatar', photoUrl);
+      _userAvatar = photoUrl;
     }
 
     _isAuthenticated = true;
