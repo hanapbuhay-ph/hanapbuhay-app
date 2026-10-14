@@ -15,7 +15,11 @@ abstract class AuthRepository {
 
   Future<AuthResult> verifyOtp(String email, String otp);
 
-  Future<AuthResult> verifyLoginOtp(String email, String otp, {String? deviceName});
+  Future<AuthResult> verifyLoginOtp(
+    String email,
+    String otp, {
+    String? deviceName,
+  });
 
   Future<AuthResult> resendLoginOtp(String email);
 
@@ -33,6 +37,8 @@ abstract class AuthRepository {
     String? currentPassword,
     required String newPassword,
   });
+
+  Future<AuthResult> getPasswordChangeCooldown();
 
   Future<AuthResult> updateProfile({
     required String name,

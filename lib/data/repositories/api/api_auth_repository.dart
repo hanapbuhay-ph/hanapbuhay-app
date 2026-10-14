@@ -7,117 +7,275 @@ import '../../../core/utils/philippine_mobile_number.dart';
 /// API-connected AuthRepository — Section A. Aligned to 07_API_ENDPOINTS.md.
 class ApiAuthRepository implements AuthRepository {
   String _barangayIdFor(String name) {
-    final m = {for (final b in Barangay.trinidadBarangays) b.name.toLowerCase(): b.id};
+    final m = {
+      for (final b in Barangay.trinidadBarangays) b.name.toLowerCase(): b.id,
+    };
     final found = m[name.toLowerCase()];
-    if (found != null) { final n = int.tryParse(found.replaceAll(RegExp(r'[^0-9]'), '')); if (n != null) return n.toString(); }
-    final idx = Barangay.trinidadBarangays.indexWhere((b) => b.name.toLowerCase() == name.toLowerCase());
+    if (found != null) {
+      final n = int.tryParse(found.replaceAll(RegExp(r'[^0-9]'), ''));
+      if (n != null) return n.toString();
+    }
+    final idx = Barangay.trinidadBarangays.indexWhere(
+      (b) => b.name.toLowerCase() == name.toLowerCase(),
+    );
     if (idx != -1) return (idx + 1).toString();
     return '13';
   }
+
   AuthResult _toResult(Map<String, dynamic> res) {
     final ok = res['success'] == true;
-    if (ok) return AuthResult.success(message: res['message'] ?? 'Success', data: res['data'] is Map ? (res['data'] as Map).map((k,v)=> MapEntry(k.toString(), v)) : {'raw': res['data']});
-    return AuthResult.failure(message: (res['message'] ?? 'Request failed').toString(), errors: res['errors'] is Map ? (res['errors'] as Map).map((k,v)=> MapEntry(k.toString(), v)) : null);
+    if (ok)
+      return AuthResult.success(
+        message: res['message'] ?? 'Success',
+        data: res['data'] is Map
+            ? (res['data'] as Map).map((k, v) => MapEntry(k.toString(), v))
+            : {'raw': res['data']},
+      );
+    return AuthResult.failure(
+      message: (res['message'] ?? 'Request failed').toString(),
+      data: res['data'] is Map
+          ? (res['data'] as Map).map((k, v) => MapEntry(k.toString(), v))
+          : null,
+      errors: res['errors'] is Map
+          ? (res['errors'] as Map).map((k, v) => MapEntry(k.toString(), v))
+          : null,
+    );
   }
 
   @override
-  Future<AuthResult> register({required String name, required String email, required String password, required String role, required String mobileNumber, required String barangay}) async {
-    final res = await ApiClient.post('/auth/register', body: {'name': name, 'email': email, 'password': password, 'password_confirmation': password, 'mobile_number': normalizePhilippineMobileNumber(mobileNumber), 'role': role, 'barangay_id': int.tryParse(_barangayIdFor(barangay)) ?? 13});
+  Future<AuthResult> register({
+    required String name,
+    required String email,
+    required String password,
+    required String role,
+    required String mobileNumber,
+    required String barangay,
+  }) async {
+    final res = await ApiClient.post(
+      '/auth/register',
+      body: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'password_confirmation': password,
+        'mobile_number': normalizePhilippineMobileNumber(mobileNumber),
+        'role': role,
+        'barangay_id': int.tryParse(_barangayIdFor(barangay)) ?? 13,
+      },
+    );
     return _toResult(res);
   }
 
   @override
   Future<AuthResult> verifyOtp(String email, String otp) async {
-    final res = await ApiClient.post('/auth/email/verify', body: {'email': email, 'code': otp});
+    final res = await ApiClient.post(
+      '/auth/email/verify',
+      body: {'email': email, 'code': otp},
+    );
     return _toResult(res);
   }
 
   @override
-  Future<AuthResult> verifyLoginOtp(String email, String otp, {String? deviceName}) async {
-    final res = await ApiClient.post('/auth/login/verify-otp', body: {
-      'email': email,
-      'code': otp,
-      if (deviceName != null && deviceName.isNotEmpty) 'device_name': deviceName,
-    });
+  Future<AuthResult> verifyLoginOtp(
+    String email,
+    String otp, {
+    String? deviceName,
+  }) async {
+    final res = await ApiClient.post(
+      '/auth/login/verify-otp',
+      body: {
+        'email': email,
+        'code': otp,
+        if (deviceName != null && deviceName.isNotEmpty)
+          'device_name': deviceName,
+      },
+    );
     return _toResult(res);
   }
 
   @override
   Future<AuthResult> resendLoginOtp(String email) async {
-    final res = await ApiClient.post('/auth/login/resend-otp', body: {'email': email});
+    final res = await ApiClient.post(
+      '/auth/login/resend-otp',
+      body: {'email': email},
+    );
     return _toResult(res);
   }
 
   @override
   Future<AuthResult> resendOtp(String email) async {
-    final res = await ApiClient.post('/auth/email/resend-otp', body: {'email': email});
+    final res = await ApiClient.post(
+      '/auth/email/resend-otp',
+      body: {'email': email},
+    );
     return _toResult(res);
   }
 
   @override
-  Future<AuthResult> login(String email, String password, {String? deviceName}) async {
-    final res = await ApiClient.post('/auth/login', body: {
-      'email': email,
-      'password': password,
-      if (deviceName != null && deviceName.isNotEmpty) 'device_name': deviceName,
-    });
+  Future<AuthResult> login(
+    String email,
+    String password, {
+    String? deviceName,
+  }) async {
+    final res = await ApiClient.post(
+      '/auth/login',
+      body: {
+        'email': email,
+        'password': password,
+        if (deviceName != null && deviceName.isNotEmpty)
+          'device_name': deviceName,
+      },
+    );
     return _toResult(res);
   }
 
-  Future<AuthResult> googleAuth({required String googleToken, String? role, String? deviceName}) async {
+  Future<AuthResult> googleAuth({
+    required String googleToken,
+    String? role,
+    String? deviceName,
+  }) async {
     final body = <String, dynamic>{'google_token': googleToken};
     if (role != null) body['role'] = role;
-    if (deviceName != null && deviceName.isNotEmpty) body['device_name'] = deviceName;
+    if (deviceName != null && deviceName.isNotEmpty)
+      body['device_name'] = deviceName;
     final res = await ApiClient.post('/auth/google', body: body);
     return _toResult(res);
   }
 
-  Future<AuthResult> completeGoogleProfile({required String name, required String mobileNumber, required String role, required String barangay, String? avatarPath}) async {
-    final fields = <String, String>{'name': name, 'mobile_number': normalizePhilippineMobileNumber(mobileNumber), 'role': role, 'barangay_id': _barangayIdFor(barangay)};
+  Future<AuthResult> completeGoogleProfile({
+    required String name,
+    required String mobileNumber,
+    required String role,
+    required String barangay,
+    String? avatarPath,
+  }) async {
+    final fields = <String, String>{
+      'name': name,
+      'mobile_number': normalizePhilippineMobileNumber(mobileNumber),
+      'role': role,
+      'barangay_id': _barangayIdFor(barangay),
+    };
     final isNewFile = avatarPath != null && !avatarPath.startsWith('http');
-    final files = isNewFile ? <String, List<String>>{'profile_photo': [avatarPath!]} : null;
-    final res = await ApiClient.postMultipart('/auth/google/complete-profile', fields: fields, files: files, requiresAuth: true);
+    final files = isNewFile
+        ? <String, List<String>>{
+            'profile_photo': [avatarPath!],
+          }
+        : null;
+    final res = await ApiClient.postMultipart(
+      '/auth/google/complete-profile',
+      fields: fields,
+      files: files,
+      requiresAuth: true,
+    );
     return _toResult(res);
   }
 
   @override
   Future<AuthResult> forgotPassword(String identifier) async {
-    final res = await ApiClient.post('/auth/password/forgot', body: {'email': identifier});
+    final res = await ApiClient.post(
+      '/auth/password/forgot',
+      body: {'email': identifier},
+    );
     return _toResult(res);
   }
 
   @override
-  Future<AuthResult> verifyForgotPasswordOtp(String identifier, String otp) async {
-    final res = await ApiClient.post('/auth/password/verify-otp', body: {'email': identifier, 'code': otp});
+  Future<AuthResult> verifyForgotPasswordOtp(
+    String identifier,
+    String otp,
+  ) async {
+    final res = await ApiClient.post(
+      '/auth/password/verify-otp',
+      body: {'email': identifier, 'code': otp},
+    );
     return _toResult(res);
   }
 
   @override
-  Future<AuthResult> resetPassword(String identifier, String newPassword) async {
-    final res = await ApiClient.post('/auth/password/reset', body: {'email': identifier, 'password': newPassword, 'password_confirmation': newPassword});
+  Future<AuthResult> resetPassword(
+    String identifier,
+    String newPassword,
+  ) async {
+    final res = await ApiClient.post(
+      '/auth/password/reset',
+      body: {
+        'email': identifier,
+        'password': newPassword,
+        'password_confirmation': newPassword,
+      },
+    );
     return _toResult(res);
   }
 
-  Future<AuthResult> resetPasswordWithToken({required String email, required String resetToken, required String newPassword}) async {
-    final res = await ApiClient.post('/auth/password/reset', body: {'email': email, 'reset_token': resetToken, 'password': newPassword, 'password_confirmation': newPassword});
+  Future<AuthResult> resetPasswordWithToken({
+    required String email,
+    required String resetToken,
+    required String newPassword,
+  }) async {
+    final res = await ApiClient.post(
+      '/auth/password/reset',
+      body: {
+        'email': email,
+        'reset_token': resetToken,
+        'password': newPassword,
+        'password_confirmation': newPassword,
+      },
+    );
     return _toResult(res);
   }
 
   @override
-  Future<AuthResult> changePassword({String? currentPassword, required String newPassword}) async {
-    final res = await ApiClient.post('/user/password', body: {'current_password': currentPassword, 'password': newPassword, 'password_confirmation': newPassword}, requiresAuth: true);
+  Future<AuthResult> changePassword({
+    String? currentPassword,
+    required String newPassword,
+  }) async {
+    final res = await ApiClient.post(
+      '/user/password',
+      body: {
+        'current_password': currentPassword,
+        'password': newPassword,
+        'password_confirmation': newPassword,
+      },
+      requiresAuth: true,
+    );
     return _toResult(res);
   }
 
   @override
-  Future<AuthResult> updateProfile({required String name, required String mobileNumber, int? barangayId, String? avatarPath}) async {
-    final fields = <String, String>{'name': name, 'mobile_number': normalizePhilippineMobileNumber(mobileNumber)};
+  Future<AuthResult> getPasswordChangeCooldown() async {
+    final res = await ApiClient.get(
+      '/user/password/cooldown',
+      requiresAuth: true,
+    );
+    return _toResult(res);
+  }
+
+  @override
+  Future<AuthResult> updateProfile({
+    required String name,
+    required String mobileNumber,
+    int? barangayId,
+    String? avatarPath,
+  }) async {
+    final fields = <String, String>{
+      'name': name,
+      'mobile_number': normalizePhilippineMobileNumber(mobileNumber),
+    };
     if (barangayId != null) {
       fields['barangay_id'] = barangayId.toString();
     }
     final isNewFile = avatarPath != null && !avatarPath.startsWith('http');
-    final files = isNewFile ? <String, List<String>>{'profile_photo': [avatarPath!]} : null;
-    final res = await ApiClient.postMultipart('/user/profile', fields: fields, files: files, requiresAuth: true);
+    final files = isNewFile
+        ? <String, List<String>>{
+            'profile_photo': [avatarPath!],
+          }
+        : null;
+    final res = await ApiClient.postMultipart(
+      '/user/profile',
+      fields: fields,
+      files: files,
+      requiresAuth: true,
+    );
     return _toResult(res);
   }
 
@@ -127,19 +285,27 @@ class ApiAuthRepository implements AuthRepository {
     if (res['success'] != true || res['data'] is! List) return [];
     return (res['data'] as List)
         .whereType<Map>()
-        .map((item) => item.map((key, value) => MapEntry(key.toString(), value)))
+        .map(
+          (item) => item.map((key, value) => MapEntry(key.toString(), value)),
+        )
         .toList();
   }
 
   @override
   Future<AuthResult> revokeSession(String sessionId) async {
-    final res = await ApiClient.delete('/user/sessions/$sessionId', requiresAuth: true);
+    final res = await ApiClient.delete(
+      '/user/sessions/$sessionId',
+      requiresAuth: true,
+    );
     return _toResult(res);
   }
 
   @override
   Future<AuthResult> revokeAllSessions() async {
-    final res = await ApiClient.post('/user/sessions/revoke-all', requiresAuth: true);
+    final res = await ApiClient.post(
+      '/user/sessions/revoke-all',
+      requiresAuth: true,
+    );
     return _toResult(res);
   }
 
@@ -151,13 +317,19 @@ class ApiAuthRepository implements AuthRepository {
 
   @override
   Future<AuthResult> requestAccountDeletion() async {
-    final res = await ApiClient.post('/user/delete-account', requiresAuth: true);
+    final res = await ApiClient.post(
+      '/user/delete-account',
+      requiresAuth: true,
+    );
     return _toResult(res);
   }
 
   @override
   Future<AuthResult> cancelAccountDeletion() async {
-    final res = await ApiClient.delete('/user/delete-account', requiresAuth: true);
+    final res = await ApiClient.delete(
+      '/user/delete-account',
+      requiresAuth: true,
+    );
     return _toResult(res);
   }
 
@@ -169,7 +341,11 @@ class ApiAuthRepository implements AuthRepository {
 
   @override
   Future<AuthResult> updateTwoFactorEnabled(bool enabled) async {
-    final res = await ApiClient.post('/user/two-factor', requiresAuth: true, body: {'enabled': enabled});
+    final res = await ApiClient.post(
+      '/user/two-factor',
+      requiresAuth: true,
+      body: {'enabled': enabled},
+    );
     return _toResult(res);
   }
 }

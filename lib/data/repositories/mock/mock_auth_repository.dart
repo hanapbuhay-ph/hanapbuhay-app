@@ -36,17 +36,21 @@ class MockAuthRepository implements AuthRepository {
     required String barangay,
   }) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    
+
     // Persist the data for this email
     _mockUsers[email.toLowerCase()] = {
-      'id': role == 'worker' ? AppConstants.mockWorkerId : AppConstants.mockClientId,
+      'id': role == 'worker'
+          ? AppConstants.mockWorkerId
+          : AppConstants.mockClientId,
       'role': role,
       'name': name,
       'mobile': normalizePhilippineMobileNumber(mobileNumber),
-      'avatar': role == 'worker' ? AppConstants.mockWorkerAvatar : AppConstants.mockClientAvatar,
+      'avatar': role == 'worker'
+          ? AppConstants.mockWorkerAvatar
+          : AppConstants.mockClientAvatar,
       'signInMethod': 'email',
     };
-    
+
     return AuthResult.success(
       message: 'OTP sent to $email',
       data: {'email': email},
@@ -56,16 +60,19 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<AuthResult> verifyOtp(String email, String otp) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    if (otp == '123456' || otp == '111111') { // Allowing a few common test OTPs
-      final userData = _mockUsers[email.toLowerCase()] ?? {
-        'id': AppConstants.mockClientId,
-        'role': 'client',
-        'name': 'Mock User',
-        'mobile': '09123456789',
-        'avatar': AppConstants.defaultAvatar,
-        'signInMethod': 'email',
-      };
-      
+    if (otp == '123456' || otp == '111111') {
+      // Allowing a few common test OTPs
+      final userData =
+          _mockUsers[email.toLowerCase()] ??
+          {
+            'id': AppConstants.mockClientId,
+            'role': 'client',
+            'name': 'Mock User',
+            'mobile': '09123456789',
+            'avatar': AppConstants.defaultAvatar,
+            'signInMethod': 'email',
+          };
+
       return AuthResult.success(
         message: 'Verification successful',
         data: {
@@ -87,27 +94,39 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthResult> verifyLoginOtp(String email, String otp, {String? deviceName}) async {
+  Future<AuthResult> verifyLoginOtp(
+    String email,
+    String otp, {
+    String? deviceName,
+  }) async {
     return login(email, 'mock_password', deviceName: deviceName);
   }
 
   @override
   Future<AuthResult> resendLoginOtp(String email) async {
-    return AuthResult.success(message: 'A new verification code has been sent.');
+    return AuthResult.success(
+      message: 'A new verification code has been sent.',
+    );
   }
 
   @override
-  Future<AuthResult> login(String email, String password, {String? deviceName}) async {
+  Future<AuthResult> login(
+    String email,
+    String password, {
+    String? deviceName,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    
-    final userData = _mockUsers[email.toLowerCase()] ?? {
-      'id': AppConstants.mockClientId,
-      'role': 'client',
-      'name': 'Maria Santos',
-      'mobile': '09171234567',
-      'avatar': AppConstants.mockClientAvatar,
-      'signInMethod': 'email',
-    };
+
+    final userData =
+        _mockUsers[email.toLowerCase()] ??
+        {
+          'id': AppConstants.mockClientId,
+          'role': 'client',
+          'name': 'Maria Santos',
+          'mobile': '09171234567',
+          'avatar': AppConstants.mockClientAvatar,
+          'signInMethod': 'email',
+        };
 
     return AuthResult.success(
       message: 'Login successful',
@@ -133,7 +152,10 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthResult> verifyForgotPasswordOtp(String identifier, String otp) async {
+  Future<AuthResult> verifyForgotPasswordOtp(
+    String identifier,
+    String otp,
+  ) async {
     await Future.delayed(const Duration(milliseconds: 800));
     if (otp == '123456') {
       return AuthResult.success(message: 'Code verified');
@@ -142,7 +164,10 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthResult> resetPassword(String identifier, String newPassword) async {
+  Future<AuthResult> resetPassword(
+    String identifier,
+    String newPassword,
+  ) async {
     await Future.delayed(const Duration(milliseconds: 800));
     return AuthResult.success(message: 'Password reset successful');
   }
@@ -150,7 +175,9 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<AuthResult> resendOtp(String email) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    return AuthResult.success(message: 'Verification code resent to your email.');
+    return AuthResult.success(
+      message: 'Verification code resent to your email.',
+    );
   }
 
   @override
@@ -166,6 +193,10 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AuthResult> getPasswordChangeCooldown() async =>
+      AuthResult.success(data: {'retry_after_seconds': 0});
+
+  @override
   Future<AuthResult> updateProfile({
     required String name,
     required String mobileNumber,
@@ -179,7 +210,12 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<List<Map<String, dynamic>>> getSessions() async {
     return [
-      {'id': 'mock-current', 'device': 'This device', 'last_used_at': DateTime.now().toIso8601String(), 'is_current': true},
+      {
+        'id': 'mock-current',
+        'device': 'This device',
+        'last_used_at': DateTime.now().toIso8601String(),
+        'is_current': true,
+      },
     ];
   }
 
@@ -195,9 +231,9 @@ class MockAuthRepository implements AuthRepository {
 
   @override
   Future<AuthResult> getDeletionRequestStatus() async {
-    return AuthResult.success(data: {
-      'deletion_requested_at': _deletionRequestedAt?.toIso8601String(),
-    });
+    return AuthResult.success(
+      data: {'deletion_requested_at': _deletionRequestedAt?.toIso8601String()},
+    );
   }
 
   @override
