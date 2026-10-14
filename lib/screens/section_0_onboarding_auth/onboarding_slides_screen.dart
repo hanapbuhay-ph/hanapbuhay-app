@@ -41,9 +41,10 @@ class _OnboardingSlidesScreenState extends State<OnboardingSlidesScreen> {
     ];
   }
 
-  void _onFinish() {
-    context.read<AuthProvider>().completeOnboarding();
-    Navigator.pushReplacementNamed(context, AppRouter.login);
+  Future<void> _onFinish() async {
+    await context.read<AuthProvider>().completeOnboarding();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, AppRouter.welcome);
   }
 
   void _onSkip() {

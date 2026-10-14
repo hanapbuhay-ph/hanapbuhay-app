@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../screens/section_0_onboarding_auth/splash_screen.dart';
 import '../../screens/section_0_onboarding_auth/onboarding_slides_screen.dart';
+import '../../screens/section_0_onboarding_auth/welcome_screen.dart';
 import '../../screens/section_0_onboarding_auth/login_screen.dart';
 import '../../screens/section_0_onboarding_auth/registration_role_screen.dart';
 import '../../screens/section_0_onboarding_auth/registration_account_screen.dart';
@@ -47,6 +48,7 @@ class AppRouter {
 
   static const String splash = '/';
   static const String onboarding = '/onboarding';
+  static const String welcome = '/welcome';
   static const String login = '/login';
   static const String registerRole = '/register-role';
   static const String registerAccount = '/register-account';
@@ -105,6 +107,8 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const OnboardingSlidesScreen(),
         );
+      case welcome:
+        return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case registerRole:

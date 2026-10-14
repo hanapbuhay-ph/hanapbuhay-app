@@ -1,10 +1,34 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'package:hanapbuhayapp/core/routing/app_router.dart';
 import 'package:hanapbuhayapp/core/theme/app_colors.dart';
 import 'package:hanapbuhayapp/core/theme/app_theme.dart';
+import 'package:hanapbuhayapp/screens/section_0_onboarding_auth/welcome_screen.dart';
 
 void main() {
+  testWidgets('welcome greeting animates in and continues to login', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: const WelcomeScreen(),
+        routes: {
+          AppRouter.login: (_) => const Scaffold(body: Text('Login screen')),
+        },
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel('Welcome to HanapBuhay'), findsOneWidget);
+    expect(find.text('Continue'), findsOneWidget);
+
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Login screen'), findsOneWidget);
+  });
+
   test('all onboarding illustrations are bundled as assets', () async {
     const assets = [
       'assets/images/onboarding/onboarding_01_welcome.png',
