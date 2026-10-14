@@ -27,7 +27,6 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
   String? _selectedCategory;      // label for display
   int? _selectedCategoryId;       // integer ID for the API
   RateType _selectedRateType = RateType.perHour;
-  bool _isAvailable = true;
   bool _isLoading = false;
   final List<XFile> _selectedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
@@ -75,7 +74,7 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
         description: _descriptionController.text.trim(),
         startingRate: double.tryParse(_rateController.text) ?? 0.0,
         rateType: _selectedRateType,
-        isAvailable: _isAvailable,
+        isAvailable: true,
       );
 
       final result = await workerProvider.createJobPost(newPost);
@@ -246,38 +245,6 @@ class _CreateJobPostScreenState extends State<CreateJobPostScreen> {
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Availability Toggle
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Available for Booking', style: AppTypography.labelLarge),
-                                Text(
-                                  'Clients can see this post and send requests.',
-                                  style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Switch(
-                            value: _isAvailable,
-                            onChanged: (val) => setState(() => _isAvailable = val),
-                            activeThumbColor: colorScheme.primary,
-                          ),
-                        ],
-                      ),
                     ),
                     const SizedBox(height: 40),
                   ],
