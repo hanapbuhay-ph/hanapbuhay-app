@@ -34,7 +34,13 @@ GET  /api/barangays
 GET  /api/service-categories
 POST /api/auth/register
 POST /api/auth/login
+POST /api/auth/login/verify-otp
+POST /api/auth/login/resend-otp
 POST /api/auth/google
+POST /api/auth/admin/login
+POST /api/auth/admin/login/verify-otp
+POST /api/auth/admin/login/resend-otp
+POST /api/auth/admin/google
 POST /api/auth/email/verify
 POST /api/auth/email/resend-otp
 POST /api/auth/password/forgot
@@ -296,6 +302,7 @@ per email address
 ### B4. Login (Manual)
 ```
 POST /api/auth/login
+Mobile app only. Admin and super_admin accounts are rejected.
 
 Request Body:
 {
@@ -353,11 +360,21 @@ Response 403 (account suspended):
 }
 ```
 
+Admin web portal sign-in uses separate routes:
+```
+POST /api/auth/admin/login
+POST /api/auth/admin/login/verify-otp
+POST /api/auth/admin/login/resend-otp
+```
+These routes accept only admin and super_admin accounts. The mobile app must
+continue using `/api/auth/login` and its matching OTP routes.
+
 ---
 
 ### B5. Google Sign-In
 ```
 POST /api/auth/google
+Mobile app only. Admin and super_admin accounts are rejected.
 
 Request Body:
 {
@@ -420,6 +437,9 @@ Note: If is_new_user = true, Flutter navigates
 to Role Selection → Complete Profile Screen.
 The token is already valid — use it for the
 complete-profile request.
+
+The admin web portal uses `POST /api/auth/admin/google`. Admin accounts cannot
+sign in through the mobile Google endpoint.
 ```
 
 ---

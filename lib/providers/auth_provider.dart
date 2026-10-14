@@ -58,6 +58,9 @@ class AuthProvider extends ChangeNotifier {
   bool _twoFactorEnabled = true;
   bool get twoFactorEnabled => _twoFactorEnabled;
 
+  bool _isAdminRole(String? role) =>
+      role == 'admin' || role == 'super_admin';
+
   String getHomeRoute() {
     return _userRole == 'worker' ? '/worker-home' : '/client-home';
   }
@@ -80,6 +83,11 @@ class AuthProvider extends ChangeNotifier {
     _signInMethod = prefs.getString('sign_in_method');
     _twoFactorEnabled = prefs.getBool('2fa_enabled') ?? true;
 
+    if (_isAuthenticated && _isAdminRole(_userRole)) {
+      await logout();
+      return;
+    }
+
     notifyListeners();
     if (_isAuthenticated && (_userMobile == null || _userMobile!.isEmpty)) {
       await refreshProfile();
@@ -95,6 +103,12 @@ class AuthProvider extends ChangeNotifier {
       final user = raw is Map ? raw.map((k, v) => MapEntry(k.toString(), v)) : <String, dynamic>{};
       final nested = user['user'] is Map ? (user['user'] as Map).map((k, v) => MapEntry(k.toString(), v)) : null;
       final src = nested ?? user;
+      final role = src['role']?.toString();
+      if (_isAdminRole(role)) {
+        await logout();
+        return;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       final mobile = (src['mobile_number'] ?? src['mobile'] ?? src['phone'])?.toString();
       if (mobile != null && mobile.trim().isNotEmpty && mobile.trim() != 'null') {
@@ -144,7 +158,6 @@ class AuthProvider extends ChangeNotifier {
           _workerProfileId = wpIdStr;
         }
       }
-      final role = src['role']?.toString();
       if (role != null && role.isNotEmpty && role != 'null') {
         await prefs.setString('user_role', role);
         _userRole = role;
