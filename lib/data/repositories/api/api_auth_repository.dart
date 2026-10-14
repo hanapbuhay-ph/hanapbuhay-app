@@ -143,6 +143,24 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AuthResult> getDeletionRequestStatus() async {
+    final res = await ApiClient.get('/user/delete-account', requiresAuth: true);
+    return _toResult(res);
+  }
+
+  @override
+  Future<AuthResult> requestAccountDeletion() async {
+    final res = await ApiClient.post('/user/delete-account', requiresAuth: true);
+    return _toResult(res);
+  }
+
+  @override
+  Future<AuthResult> cancelAccountDeletion() async {
+    final res = await ApiClient.delete('/user/delete-account', requiresAuth: true);
+    return _toResult(res);
+  }
+
+  @override
   Future<bool> getTwoFactorEnabled() async {
     final res = await ApiClient.get('/user/two-factor', requiresAuth: true);
     return res['success'] == true && res['data']?['enabled'] == true;

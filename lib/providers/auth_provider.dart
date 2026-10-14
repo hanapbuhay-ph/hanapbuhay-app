@@ -461,6 +461,15 @@ class AuthProvider extends ChangeNotifier {
 
   Future<AuthResult> revokeAllSessions() => _authRepository.revokeAllSessions();
 
+  Future<AuthResult> getDeletionRequestStatus() =>
+      _authRepository.getDeletionRequestStatus();
+
+  Future<AuthResult> requestAccountDeletion() =>
+      _authRepository.requestAccountDeletion();
+
+  Future<AuthResult> cancelAccountDeletion() =>
+      _authRepository.cancelAccountDeletion();
+
   Future<void> loadTwoFactorPreference() async {
     _twoFactorEnabled = await _authRepository.getTwoFactorEnabled();
     final prefs = await SharedPreferences.getInstance();

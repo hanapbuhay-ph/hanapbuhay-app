@@ -3,6 +3,8 @@ import '../auth_repository.dart';
 import '../../../core/constants/app_constants.dart';
 
 class MockAuthRepository implements AuthRepository {
+  static DateTime? _deletionRequestedAt;
+
   // In-memory store to persist user data across registration steps for the session
   static final Map<String, Map<String, dynamic>> _mockUsers = {
     'worker@test.com': {
@@ -188,6 +190,31 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<AuthResult> revokeAllSessions() async {
     return AuthResult.success(message: 'All sessions revoked.');
+  }
+
+  @override
+  Future<AuthResult> getDeletionRequestStatus() async {
+    return AuthResult.success(data: {
+      'deletion_requested_at': _deletionRequestedAt?.toIso8601String(),
+    });
+  }
+
+  @override
+  Future<AuthResult> requestAccountDeletion() async {
+    _deletionRequestedAt ??= DateTime.now();
+    return AuthResult.success(
+      message: 'Account deletion requested. An admin will process your request within 30 days.',
+      data: {'deletion_requested_at': _deletionRequestedAt!.toIso8601String()},
+    );
+  }
+
+  @override
+  Future<AuthResult> cancelAccountDeletion() async {
+    _deletionRequestedAt = null;
+    return AuthResult.success(
+      message: 'Deletion request cancelled.',
+      data: {'deletion_requested_at': null},
+    );
   }
 
   @override

@@ -47,6 +47,12 @@ abstract class AuthRepository {
 
   Future<AuthResult> revokeAllSessions();
 
+  Future<AuthResult> getDeletionRequestStatus();
+
+  Future<AuthResult> requestAccountDeletion();
+
+  Future<AuthResult> cancelAccountDeletion();
+
   Future<bool> getTwoFactorEnabled();
 
   Future<AuthResult> updateTwoFactorEnabled(bool enabled);
