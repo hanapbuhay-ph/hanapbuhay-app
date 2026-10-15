@@ -11,18 +11,22 @@ class AuthResult {
     this.errors,
   });
 
-  factory AuthResult.success({String message = 'Success', Map<String, dynamic>? data}) {
-    return AuthResult(
-      success: true,
-      message: message,
-      data: data,
-    );
+  factory AuthResult.success({
+    String message = 'Success',
+    Map<String, dynamic>? data,
+  }) {
+    return AuthResult(success: true, message: message, data: data);
   }
 
-  factory AuthResult.failure({required String message, Map<String, dynamic>? errors}) {
+  factory AuthResult.failure({
+    required String message,
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? errors,
+  }) {
     return AuthResult(
       success: false,
       message: message,
+      data: data,
       errors: errors,
     );
   }

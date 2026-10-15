@@ -30,7 +30,7 @@ class MockReportRepository implements ReportRepository {
   ];
 
   @override
-  Future<List<Report>> getReports() async {
+  Future<List<Report>> getReports({String view = 'all'}) async {
     await Future.delayed(const Duration(milliseconds: 600));
     return _mockReports;
   }

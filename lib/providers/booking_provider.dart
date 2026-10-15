@@ -2,46 +2,103 @@ import 'package:flutter/material.dart';
 import '../data/repositories/booking_repository.dart';
 import '../data/models/booking_model.dart';
 import '../data/models/auth_result_model.dart';
+import 'dart:async';
 
 class BookingProvider extends ChangeNotifier {
   final BookingRepository _repository;
 
   BookingProvider(this._repository);
 
-  Future<List<Booking>> getBookings() => _repository.getBookings();
+  Future<List<Booking>> getBookings({String? status}) async {
+    final bookings = await _repository.getBookings(status: status);
+    if (status == null || status == 'pending') {
+      _pendingCountController.add(bookings.where((booking) => booking.status == BookingStatus.pending).length);
+    }
+    return bookings;
+  }
+
+  final StreamController<int> _pendingCountController = StreamController<int>.broadcast();
+
+  Stream<int> getPendingCount() => _pendingCountController.stream;
   Future<Booking?> getBookingById(String id) => _repository.getBookingById(id);
   
   Future<AuthResult> createBooking({
     required String workerId,
-    required String category,
-    required DateTime date,
-    required String time,
-    required String notes,
-    required String barangay,
+    required int? serviceCategoryId,
+    required DateTime scheduledAt,
+    String? notes,
     String? jobPostId,
   }) async {
     final result = await _repository.createBooking(
       workerId: workerId,
-      category: category,
-      date: date,
-      time: time,
+      serviceCategoryId: serviceCategoryId,
+      scheduledAt: scheduledAt,
       notes: notes,
-      barangay: barangay,
       jobPostId: jobPostId,
     );
     notifyListeners();
     return result;
   }
 
+  @override
+  void dispose() {
+    _pendingCountController.close();
+    super.dispose();
+  }
+
+  Future<AuthResult> cancelBooking({
+    required String bookingId,
+    String? reason,
+  }) async {
+    final result = await _repository.cancelBooking(bookingId: bookingId, reason: reason);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> completeBooking({required String bookingId}) async {
+    final result = await _repository.completeBooking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> startTracking({required String bookingId}) async {
+    final result = await _repository.startTracking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> stopTracking({required String bookingId}) async {
+    final result = await _repository.stopTracking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> updateTrackingLocation({
+    required String bookingId,
+    required double latitude,
+    required double longitude,
+    double? accuracy,
+  }) async {
+    final result = await _repository.updateTrackingLocation(
+      bookingId: bookingId,
+      latitude: latitude,
+      longitude: longitude,
+      accuracy: accuracy,
+    );
+    notifyListeners();
+    return result;
+  }
+
+  Future<Map<String, dynamic>?> getTrackingStatus(String bookingId) =>
+      _repository.getTrackingStatus(bookingId);
+
   Future<AuthResult> submitReview({
     required String bookingId,
-    required String workerId,
     required int rating,
     required String comment,
   }) async {
     final result = await _repository.submitReview(
       bookingId: bookingId,
-      workerId: workerId,
       rating: rating,
       comment: comment,
     );
@@ -74,11 +131,41 @@ class BookingProvider extends ChangeNotifier {
     return result;
   }
 
+  /// POST /api/bookings/{id}/accept — Worker accepts a pending booking.
+  Future<AuthResult> acceptBooking({required String bookingId}) async {
+    final result = await _repository.acceptBooking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
+  /// POST /api/bookings/{id}/decline — Worker declines a pending booking.
+  Future<AuthResult> declineBooking({required String bookingId}) async {
+    final result = await _repository.declineBooking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
+  /// POST /api/bookings/{id}/start — Worker marks job as active (started).
+  Future<AuthResult> startBooking({required String bookingId}) async {
+    final result = await _repository.startBooking(bookingId: bookingId);
+    notifyListeners();
+    return result;
+  }
+
   Future<AuthResult> updateBookingStatus({
     required String bookingId,
     required BookingStatus status,
   }) async {
     final result = await _repository.updateBookingStatus(bookingId: bookingId, status: status);
+    notifyListeners();
+    return result;
+  }
+
+  Future<AuthResult> rescheduleBooking({
+    required String bookingId,
+    required DateTime scheduledAt,
+  }) async {
+    final result = await _repository.rescheduleBooking(bookingId: bookingId, scheduledAt: scheduledAt);
     notifyListeners();
     return result;
   }

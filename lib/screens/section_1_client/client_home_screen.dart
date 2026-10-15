@@ -1,16 +1,16 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
-import '../../data/models/worker_model.dart';
+import '../../providers/notification_provider.dart';
+import '../../data/repositories/worker_repository.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/barangay_model.dart';
-import '../../data/models/trust_tier.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/layout/responsive_content.dart';
+import '../../widgets/cards/job_post_card.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   const ClientHomeScreen({super.key});
@@ -20,7 +20,8 @@ class ClientHomeScreen extends StatefulWidget {
 }
 
 class _ClientHomeScreenState extends State<ClientHomeScreen> {
-  late Future<List<JobPostListing>> _filteredWorkersFuture;
+  late Future<FeedResponse> _filteredWorkersFuture;
+  late Future<List<ServiceCategory>> _categoriesFuture;
 
   @override
   void initState() {
@@ -30,15 +31,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
   void _loadData() {
     final workerProvider = context.read<WorkerProvider>();
-    final authProvider = context.read<AuthProvider>();
-    _filteredWorkersFuture = workerProvider.getFilteredWorkers(userBarangayName: authProvider.userBarangay);
+    _filteredWorkersFuture = workerProvider.getFeed();
+    _categoriesFuture = workerProvider.getCategories();
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +41,117 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     final colorScheme = theme.colorScheme;
 
     return Column(
-        children: [
-          Expanded(
+      children: [
+        SafeArea(
+          bottom: false,
+          child: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'HanapBuhay',
+                      style: AppTypography.headlineSmall.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      'Skills today. Better tomorrow.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Search workers',
+                  onPressed: () =>
+                      Navigator.pushNamed(context, AppRouter.workerSearch),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainerLow,
+                    foregroundColor: colorScheme.onSurface,
+                    fixedSize: const Size(38, 38),
+                    shape: const CircleBorder(),
+                  ),
+                  icon: const Icon(Icons.search_rounded),
+                ),
+                const SizedBox(width: 6),
+                StreamBuilder<int>(
+                  stream: context.read<NotificationProvider>().getUnreadCount(),
+                  builder: (context, snapshot) {
+                    final hasUnread = (snapshot.data ?? 0) > 0;
+                    return IconButton(
+                      tooltip: 'Notifications',
+                      onPressed: () => Navigator.pushNamed(
+                        context,
+                        AppRouter.notificationCenter,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: colorScheme.surfaceContainerLow,
+                        foregroundColor: colorScheme.onSurface,
+                        fixedSize: const Size(38, 38),
+                        shape: const CircleBorder(),
+                      ),
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            Icons.notifications_none_rounded,
+                            color: colorScheme.onSurface,
+                          ),
+                          if (hasUnread)
+                            Positioned(
+                              right: -1,
+                              top: -1,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.error,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: colorScheme.surface,
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            color: colorScheme.surface,
             child: RefreshIndicator(
               onRefresh: () async {
                 setState(() => _loadData());
@@ -55,427 +159,333 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               color: colorScheme.primary,
               child: SingleChildScrollView(
                 padding: EdgeInsets.zero,
-                physics: const BouncingScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
                 child: ResponsiveContent(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    // Search Bar
-                    _buildSearchBar(),
-                    const SizedBox(height: 16),
-
-                    // Quick Filters
-                    _buildQuickFilters(),
-                    const SizedBox(height: 16),
-
-                    // Feed header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Discover Workers',
-                          style: AppTypography.headlineMedium.copyWith(
-                            fontSize: 20,
-                            height: 1,
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+                        child: _buildWelcomeBanner(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: _buildCategorySection(),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 4,
+                        child: ColoredBox(
+                          color: colorScheme.surfaceContainerHighest,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Explore local services',
+                              style: AppTypography.headlineSmall.copyWith(
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Find skilled people ready to help',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.45,
                           ),
                         ),
-                      ],
-                    ),
-
-                    // Vertical feed
-                    _buildFeedSection(),
-                    const SizedBox(height: 32),
+                      ),
+                      _buildFeedSection(),
                     ],
                   ),
                 ),
               ),
             ),
           ),
-        ],
+        ),
+      ],
     );
   }
 
   // Header owned by TabShell
 
-  Widget _buildSearchBar() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final workerProvider = context.watch<WorkerProvider>();
-    final filterCount = workerProvider.activeAdvancedFilterCount;
-
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, AppRouter.browseCategory),
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 16, right: 12),
-              child: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
-            ),
-            Expanded(
-              child: Text(
-                'Search workers...',
-                style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  GestureDetector(
-                    onTap: () => _showAdvancedFilters(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.tune, color: colorScheme.onPrimary, size: 20),
-                    ),
-                  ),
-                  if (filterCount > 0)
-                    Positioned(
-                      right: -4,
-                      top: -4,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: colorScheme.error,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: colorScheme.surface, width: 2),
-                        ),
-                        child: Text(
-                          filterCount.toString(),
-                          style: TextStyle(color: colorScheme.onError, fontSize: 8, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWorkerCard(JobPostListing listing) {
+  Widget _buildWelcomeBanner() {
     final colorScheme = Theme.of(context).colorScheme;
-    final worker = listing.worker;
-    final post = listing.post;
-
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '${AppRouter.clientPostDetail}/${post.id}'),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+    return Container(
+      height: 176,
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [colorScheme.primary, colorScheme.primaryContainer],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top row: avatar + name + trust badge
-            Row(
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -30,
+            top: -46,
+            child: Container(
+              width: 190,
+              height: 190,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 112, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}'),
-                  child: CircleAvatar(radius: 26, backgroundImage: NetworkImage(worker.avatarUrl)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '${AppRouter.workerProfile}/${worker.id}'),
-                        child: Text(
-                          worker.name,
-                          style: AppTypography.labelLarge.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        post.category,
-                        style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
-                      ),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on_outlined, size: 12, color: colorScheme.onSurfaceVariant),
-                          const SizedBox(width: 3),
-                          Expanded(
-                            child: Text(
-                              worker.barangay,
-                              style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 11),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                Text(
+                  'Find the right skills.\nGet the right help.',
+                  style: AppTypography.headlineSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    height: 1.18,
                   ),
                 ),
-                _buildTrustBadge(worker, colorScheme),
+                const SizedBox(height: 10),
+                Text(
+                  'Connect with skilled people in your community.',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Colors.white.withValues(alpha: 0.92),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 10),
-            if (post.images.isNotEmpty || post.imageUrls.isNotEmpty) ...[
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: CachedNetworkImage(
-                      imageUrl: post.thumbnailUrl ?? post.previewImageUrl ?? post.imageUrls.first,
-                      width: double.infinity,
-                      height: 180,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        height: 180,
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        height: 180,
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Center(child: Icon(Icons.image_outlined)),
-                      ),
-                    ),
+          ),
+          Positioned(
+            right: 14,
+            bottom: 0,
+            child: Container(
+              width: 84,
+              height: 84,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.94),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
                   ),
-                  if ((post.images.isNotEmpty ? post.images.length : post.imageUrls.length) > 1)
-                    Positioned(
-                      right: 10,
-                      top: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${post.images.isNotEmpty ? post.images.length : post.imageUrls.length} photos',
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
                 ],
               ),
-              const SizedBox(height: 10),
-            ],
-            // Post title
-            Text(
-              post.title,
-              style: AppTypography.labelLarge.copyWith(
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-                fontSize: 14,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              clipBehavior: Clip.antiAlias,
+              child: Image.asset('assets/icon/app_icon.png', fit: BoxFit.cover),
             ),
-            const SizedBox(height: 4),
-            // Description preview
-            Text(
-              post.description,
-              style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 10),
-            // Bottom row: distance + rate + availability dot
-            Row(
-              children: [
-                Icon(Icons.near_me_outlined, size: 13, color: colorScheme.onSurfaceVariant),
-                const SizedBox(width: 3),
-                Expanded(
-                  child: Text(
-                    worker.distance,
-                    style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  'From ₱${post.startingRate.toInt()}${post.rateType.shortLabel}',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: worker.isAvailable ? colorScheme.primary : Colors.orange,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrustBadge(Worker worker, ColorScheme colorScheme) {
-    final tier = worker.trustTier;
-    final Color color;
-    final String label;
-    final IconData icon;
-
-    switch (tier) {
-      case TrustTier.trusted:
-        color = Colors.blue;
-        label = 'Trusted';
-        icon = Icons.star;
-        break;
-      case TrustTier.verified:
-        color = colorScheme.primary;
-        label = 'Verified';
-        icon = Icons.shield;
-        break;
-      default:
-        color = Colors.orange;
-        label = 'Unverified';
-        icon = Icons.warning_amber_rounded;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 11, color: color),
-          const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickFilters() {
-    final workerProvider = context.watch<WorkerProvider>();
+  Widget _buildCategorySection() {
     final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      children: ['All', 'Verified ✓', 'Unverified'].map((label) {
-          final filterKey = label.replaceAll(' ✓', '');
-          final isSelected = workerProvider.quickFilter == filterKey;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(label),
-              selected: isSelected,
-              onSelected: (val) {
-                if (val) {
-                  workerProvider.setQuickFilter(filterKey);
-                  _loadData();
-                }
-              },
-              selectedColor: colorScheme.primary,
-              labelStyle: TextStyle(
-                color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13,
-              ),
-              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-              showCheckmark: false,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-                side: BorderSide.none,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-          );
-      }).toList(),
-    );
-  }
-
-  Widget _buildFeedSection() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return FutureBuilder<List<JobPostListing>>(
-      future: _filteredWorkersFuture,
+    return FutureBuilder<List<ServiceCategory>>(
+      future: _categoriesFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: colorScheme.primary));
+        final categories = snapshot.data ?? const <ServiceCategory>[];
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            categories.isEmpty) {
+          return const SizedBox(
+            height: 88,
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
-        final listings = snapshot.data ?? [];
-        if (listings.isEmpty) {
-          return Column(
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const SizedBox(height: 32),
-                Icon(Icons.search_off, size: 56, color: colorScheme.outlineVariant),
-                const SizedBox(height: 12),
-                Text('No workers found', style: AppTypography.headlineSmall.copyWith(color: colorScheme.onSurface)),
-                const SizedBox(height: 8),
                 Text(
-                  'Try adjusting your filters or check back later.',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+                  'Categories',
+                  style: AppTypography.headlineSmall.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, AppRouter.browseCategory),
+                  child: Text(
+                    'View All',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ],
-          );
-        }
-        return ListView.builder(
-          shrinkWrap: true,
-          primary: false,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(top: 8),
-          itemCount: listings.length,
-          itemBuilder: (context, index) => _buildWorkerCard(listings[index]),
+            ),
+            const SizedBox(height: 4),
+            SizedBox(
+              height: 120,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                itemCount: categories.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, index) =>
+                    _buildCategoryCard(categories[index], index),
+              ),
+            ),
+          ],
         );
       },
     );
   }
 
-  void _showAdvancedFilters(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const _AdvancedFilterBottomSheet(),
-    ).then((_) => _loadData());
+  Widget _buildCategoryCard(ServiceCategory category, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = index.isEven || isDark
+        ? colorScheme.primary
+        : const Color(0xFF2674D9);
+    final tileColor = isDark
+        ? colorScheme.surfaceContainerHigh
+        : index.isEven
+        ? const Color(0xFFEAF6EE)
+        : const Color(0xFFEDF4FF);
+
+    return InkWell(
+      onTap: () => Navigator.pushNamed(
+        context,
+        '${AppRouter.categoryResults}/${category.id}?name=${Uri.encodeComponent(category.label)}',
+      ),
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        width: 232,
+        height: 108,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: tileColor,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+              child: Icon(category.icon, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                category.label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.labelLarge.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right_rounded, color: accent, size: 24),
+          ],
+        ),
+      ),
+    );
   }
 
+  Widget _buildFeedSection() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return FutureBuilder<FeedResponse>(
+      future: _filteredWorkersFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(color: colorScheme.primary),
+          );
+        }
+        final listings = snapshot.data?.posts ?? [];
+        if (listings.isEmpty) {
+          return Column(
+            children: [
+              const SizedBox(height: 32),
+              Icon(
+                Icons.search_off,
+                size: 56,
+                color: colorScheme.outlineVariant,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No workers found',
+                style: AppTypography.headlineSmall.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Try adjusting your filters or check back later.',
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          );
+        }
+        return ListView.separated(
+          shrinkWrap: true,
+          primary: false,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 8),
+          itemCount: listings.length,
+          itemBuilder: (context, index) =>
+              JobPostCard(listing: listings[index]),
+          separatorBuilder: (context, index) => SizedBox(
+            height: 4,
+            child: ColoredBox(color: colorScheme.surfaceContainerHighest),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _AdvancedFilterBottomSheet extends StatefulWidget {
   const _AdvancedFilterBottomSheet();
 
   @override
-  State<_AdvancedFilterBottomSheet> createState() => _AdvancedFilterBottomSheetState();
+  State<_AdvancedFilterBottomSheet> createState() =>
+      _AdvancedFilterBottomSheetState();
 }
 
-class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> {
+class _AdvancedFilterBottomSheetState
+    extends State<_AdvancedFilterBottomSheet> {
   late List<String> _selectedCategories;
   String? _selectedBarangay;
   late List<RateType> _selectedRateTypes;
@@ -507,12 +517,22 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
-          Container(width: 48, height: 4, decoration: BoxDecoration(color: colorScheme.outlineVariant, borderRadius: BorderRadius.circular(2))),
+          Container(
+            width: 48,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Advanced Filters', style: AppTypography.headlineMedium.copyWith(fontSize: 22)),
+              const Text(
+                'Advanced Filters',
+                style: AppTypography.headlineSmall,
+              ),
               TextButton(
                 onPressed: () {
                   setState(() {
@@ -522,7 +542,13 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                     _onlyAvailable = false;
                   });
                 },
-                child: Text('Reset', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Reset',
+                  style: TextStyle(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -534,61 +560,99 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 24),
-                  Text('Service Category', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Service Category',
+                    style: AppTypography.labelLarge.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   FutureBuilder<List<ServiceCategory>>(
                     future: workerProvider.getCategories(),
                     builder: (context, snapshot) {
-                      final categories = (snapshot.data ?? []).map((c) => c.label).toList();
+                      final categories = snapshot.data ?? [];
                       return Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: categories.map((cat) {
-                          final isSelected = _selectedCategories.contains(cat);
+                          final isSelected = _selectedCategories.contains(
+                            cat.id,
+                          );
                           return FilterChip(
-                            label: Text(cat),
+                            label: Text(cat.label),
                             selected: isSelected,
                             onSelected: (val) {
                               setState(() {
                                 if (val) {
-                                  _selectedCategories.add(cat);
+                                  _selectedCategories.add(cat.id);
                                 } else {
-                                  _selectedCategories.remove(cat);
+                                  _selectedCategories.remove(cat.id);
                                 }
                               });
                             },
                             selectedColor: colorScheme.primary,
-                            labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
-                            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? colorScheme.onPrimary
+                                  : colorScheme.onSurfaceVariant,
+                            ),
+                            backgroundColor: colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.2),
                             showCheckmark: false,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide.none,
+                            ),
                           );
                         }).toList(),
                       );
                     },
                   ),
                   const SizedBox(height: 32),
-                  Text('Barangay', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Barangay',
+                    style: AppTypography.labelLarge.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedBarangay,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      fillColor: colorScheme.surfaceContainerHighest.withValues(
+                        alpha: 0.1,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: colorScheme.outlineVariant,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
                     ),
                     hint: const Text('All Barangays'),
-                    items: Barangay.trinidadBarangays.map((b) => DropdownMenuItem(
-                      value: b.name,
-                      child: Text(b.name),
-                    )).toList(),
+                    items: Barangay.trinidadBarangays
+                        .map(
+                          (b) => DropdownMenuItem(
+                            value: b.id,
+                            child: Text(b.name),
+                          ),
+                        )
+                        .toList(),
                     onChanged: (val) => setState(() => _selectedBarangay = val),
                     dropdownColor: colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   const SizedBox(height: 32),
-                  Text('Rate Type', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Rate Type',
+                    style: AppTypography.labelLarge.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -608,10 +672,18 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                           });
                         },
                         selectedColor: colorScheme.primary,
-                        labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant),
-                        backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? colorScheme.onPrimary
+                              : colorScheme.onSurfaceVariant,
+                        ),
+                        backgroundColor: colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.2),
                         showCheckmark: false,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide.none,
+                        ),
                       );
                     }).toList(),
                   ),
@@ -622,13 +694,24 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Available Now', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
-                          Text('Show only workers ready to work', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                          Text(
+                            'Available Now',
+                            style: AppTypography.labelLarge.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Show only workers ready to work',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
                         ],
                       ),
                       Switch(
                         value: _onlyAvailable,
-                        onChanged: (val) => setState(() => _onlyAvailable = val),
+                        onChanged: (val) =>
+                            setState(() => _onlyAvailable = val),
                         activeThumbColor: colorScheme.primary,
                       ),
                     ],

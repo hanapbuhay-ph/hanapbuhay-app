@@ -1,8 +1,8 @@
 import '../models/auth_result_model.dart';
 
 abstract class AuthRepository {
-  /// Set this to true to use MockAuthRepository across the app.
-  static const bool useMock = true;
+  /// Section A complete — app is now API-connected for auth.
+  static const bool useMock = false;
 
   Future<AuthResult> register({
     required String name,
@@ -15,7 +15,15 @@ abstract class AuthRepository {
 
   Future<AuthResult> verifyOtp(String email, String otp);
 
-  Future<AuthResult> login(String email, String password);
+  Future<AuthResult> verifyLoginOtp(
+    String email,
+    String otp, {
+    String? deviceName,
+  });
+
+  Future<AuthResult> resendLoginOtp(String email);
+
+  Future<AuthResult> login(String email, String password, {String? deviceName});
 
   Future<AuthResult> forgotPassword(String identifier);
 
@@ -23,14 +31,35 @@ abstract class AuthRepository {
 
   Future<AuthResult> resetPassword(String identifier, String newPassword);
 
+  Future<AuthResult> resendOtp(String email);
+
   Future<AuthResult> changePassword({
-    required String currentPassword,
+    String? currentPassword,
     required String newPassword,
   });
+
+  Future<AuthResult> getPasswordChangeCooldown();
 
   Future<AuthResult> updateProfile({
     required String name,
     required String mobileNumber,
+    int? barangayId,
     String? avatarPath,
   });
+
+  Future<List<Map<String, dynamic>>> getSessions();
+
+  Future<AuthResult> revokeSession(String sessionId);
+
+  Future<AuthResult> revokeAllSessions();
+
+  Future<AuthResult> getDeletionRequestStatus();
+
+  Future<AuthResult> requestAccountDeletion();
+
+  Future<AuthResult> cancelAccountDeletion();
+
+  Future<bool> getTwoFactorEnabled();
+
+  Future<AuthResult> updateTwoFactorEnabled(bool enabled);
 }

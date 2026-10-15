@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/report_provider.dart';
 import '../../data/models/report_model.dart';
@@ -17,6 +17,7 @@ class ReportStatusScreen extends StatefulWidget {
 
 class _ReportStatusScreenState extends State<ReportStatusScreen> {
   late Future<List<Report>> _reportsFuture;
+  String _view = 'submitted';
   final Set<String> _expandedReportIds = {};
 
   @override
@@ -26,7 +27,14 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
   }
 
   void _loadReports() {
-    _reportsFuture = context.read<ReportProvider>().getReports();
+    _reportsFuture = context.read<ReportProvider>().getReports(view: _view);
+  }
+
+  void _setView(String view) {
+    setState(() {
+      _view = view;
+      _loadReports();
+    });
   }
 
   void _toggleExpand(String id) {
@@ -56,10 +64,6 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                 }
 
                 final reports = snapshot.data ?? [];
-                if (reports.isEmpty) {
-                  return _buildEmptyState();
-                }
-
                 return SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   physics: const BouncingScrollPhysics(),
@@ -73,7 +77,19 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                         style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 32),
-                      ...reports.map((report) => _buildReportCard(report)),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(value: 'submitted', label: Text('Submitted'), icon: Icon(Icons.outbox_outlined)),
+                          ButtonSegment(value: 'received', label: Text('Received'), icon: Icon(Icons.inbox_outlined)),
+                        ],
+                        selected: {_view},
+                        onSelectionChanged: (selection) => _setView(selection.first),
+                      ),
+                      const SizedBox(height: 20),
+                      if (reports.isEmpty)
+                        _buildScopedEmptyState()
+                      else
+                        ...reports.map((report) => _buildReportCard(report)),
                     ],
                   ),
                 );
@@ -81,6 +97,29 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScopedEmptyState() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isReceived = _view == 'received';
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 56),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(isReceived ? Icons.inbox_outlined : Icons.outbox_outlined, size: 52, color: colorScheme.outline),
+            const SizedBox(height: 16),
+            Text(isReceived ? 'No Reports Received' : 'No Reports Submitted', style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            Text(
+              isReceived ? 'Reports filed against your account will appear here.' : 'Reports you file will appear here.',
+              textAlign: TextAlign.center,
+              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -126,7 +165,7 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '${report.reason} - ${report.description.split('.').first}',
+                    '${report.reasonLabel} - ${report.description.split('.').first}',
                     style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -167,14 +206,18 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                 children: [
                   Text('Original Report', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
+                  _buildReporter(report),
+                  const SizedBox(height: 20),
+                  _buildReportMeta(report),
+                  const SizedBox(height: 20),
                   Text(
                     report.description,
                     style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.6),
                   ),
                   const SizedBox(height: 24),
                   
-                  if (report.adminRemarks != null) ...[
-                    _buildAdminRemarks(report),
+                  if (report.adminRemarks != null || report.resolutionAction != null) ...[
+                    _buildAdminDecision(report),
                     const SizedBox(height: 24),
                   ],
 
@@ -188,18 +231,15 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
                     const SizedBox(height: 16),
                   ],
 
-                  if (report.status == ReportStatus.underReview || report.status == ReportStatus.pending)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: OutlinedButton(
-                        onPressed: () => _showAddNoteDialog(report.id),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: colorScheme.primary),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: Text('Add Note', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
+                  if (report.photoPaths.isNotEmpty) ...[
+                    _buildEvidencePhotos(report.photoPaths),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // "Add Note" button intentionally removed:
+                  // POST /api/reports/{id}/notes does not exist in the backend.
+                  // ApiReportRepository.addReportNote() throws UnimplementedError.
+                  // Documented in HANDOFF.md as a missing endpoint blocker.
                 ],
               ),
             ),
@@ -240,102 +280,202 @@ class _ReportStatusScreenState extends State<ReportStatusScreen> {
     );
   }
 
-  Widget _buildAdminRemarks(Report report) {
+  Widget _buildReporter(Report report) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isResolved = report.status == ReportStatus.resolved;
-    final color = isResolved ? colorScheme.onSurfaceVariant : colorScheme.primary;
+    final name = report.reporterName ?? 'Client';
+    final photoPath = report.reporterPhotoPath ?? report.reporterPhotoUrl;
+    final photoUrl = photoPath == null
+        ? null
+      : AppConstants.getPhotoUrl(photoPath);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: colorScheme.primaryContainer,
+            backgroundImage: photoUrl == null ? null : NetworkImage(photoUrl),
+            child: photoUrl == null
+                ? Icon(Icons.person_outline, color: colorScheme.onPrimaryContainer)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Reported by', style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 2),
+                Text(name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+          Icon(Icons.person_search_outlined, color: colorScheme.primary),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportMeta(Report report) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        Chip(
+          avatar: Icon(Icons.flag_outlined, size: 16, color: colorScheme.primary),
+          label: Text('Reason: ${report.reasonLabel}'),
+          visualDensity: VisualDensity.compact,
+        ),
+        Chip(
+          avatar: Icon(Icons.confirmation_number_outlined, size: 16, color: colorScheme.primary),
+          label: Text('Booking #${report.bookingId}'),
+          visualDensity: VisualDensity.compact,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdminDecision(Report report) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final decision = report.resolutionAction?.replaceAll('_', ' ');
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
+        color: colorScheme.primary.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border(left: BorderSide(color: color, width: 4)),
+        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(isResolved ? Icons.task_alt : Icons.admin_panel_settings, size: 18, color: color),
+              Icon(Icons.gavel_outlined, size: 19, color: colorScheme.primary),
               const SizedBox(width: 8),
-              Text(
-                isResolved ? 'Resolution Summary' : 'Admin Remarks',
-                style: AppTypography.labelLarge.copyWith(color: color, fontWeight: FontWeight.w800),
-              ),
+              Text('Admin Decision', style: AppTypography.labelLarge.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800)),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            report.adminRemarks!,
-            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.5),
+          if (decision != null) ...[
+            const SizedBox(height: 10),
+            Text('Action: ${decision[0].toUpperCase()}${decision.substring(1)}', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w700)),
+          ],
+          if (report.adminRemarks != null) ...[
+            const SizedBox(height: 8),
+            Text(report.adminRemarks!, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.5)),
+          ],
+          if (report.resolvedBy != null || report.resolvedAt != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              '${report.resolvedBy == null ? '' : 'Reviewed by ${report.resolvedBy}'}${report.resolvedAt == null ? '' : ' on ${AppFormatters.date(report.resolvedAt!)}'}',
+              style: AppTypography.labelSmall.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEvidencePhotos(List<String> paths) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Evidence Photos',
+          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 88,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: paths.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final url = AppConstants.getPhotoUrl(paths[index]);
+              return GestureDetector(
+                onTap: () => _showFullScreenImage(url),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    url,
+                    width: 88,
+                    height: 88,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: colorScheme.outlineVariant),
+                      ),
+                      child: Icon(Icons.broken_image_outlined, color: colorScheme.onSurfaceVariant, size: 28),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
-          if (report.updatedAt != null) ...[
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'Updated: ${AppFormatters.date(report.updatedAt!)}',
-                style: AppTypography.labelSmall.copyWith(fontSize: 9, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+        ),
+      ],
+    );
+  }
+
+  void _showFullScreenImage(String url) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Container(
+                    padding: const EdgeInsets.all(32),
+                    color: colorScheme.surface,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.broken_image_outlined, size: 48, color: colorScheme.onSurfaceVariant),
+                        const SizedBox(height: 12),
+                        Text('Image unavailable', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Material(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(20),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.description_outlined, size: 80, color: AppColors.outlineVariant),
-            const SizedBox(height: 24),
-            Text('No Reports Filed', style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 12),
-            const Text(
-              'You haven\'t submitted any issue reports yet. If you encounter any problems with a service, you can report it from the Bookings page.',
-              textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium,
-            ),
-          ],
         ),
-      ),
-    );
-  }
-
-  void _showAddNoteDialog(String reportId) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Note'),
-        content: TextField(
-          controller: controller,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Add more details to your report...',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              if (controller.text.trim().isEmpty) return;
-              final reportProvider = context.read<ReportProvider>();
-              await reportProvider.addReportNote(reportId: reportId, note: controller.text.trim());
-              if (context.mounted) {
-                Navigator.pop(context);
-                setState(() => _loadReports());
-              }
-            },
-            child: const Text('Submit'),
-          ),
-        ],
       ),
     );
   }

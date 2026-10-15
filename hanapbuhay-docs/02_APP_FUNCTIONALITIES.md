@@ -67,7 +67,7 @@ Splash Screen (2 seconds)
   - Email Address (required, unique)
   - Password (required, min 8 characters)
   - Confirm Password (required, must match)
-  - Mobile Number (required, Philippine format, collected for coordination — NOT OTP verified)
+  - Philippine Mobile Number (required; 11 digits starting with 09, e.g. 09171234567 — NOT OTP verified)
   - Barangay (required, dropdown of 20 Trinidad, Bohol barangays)
 - Role badge shown at top (e.g. "Signing up as: Client") with "Change" link back to role selection
 - Terms & Privacy checkbox required before submit
@@ -90,7 +90,7 @@ Splash Screen (2 seconds)
   - Full Name (editable)
   - Email (non-editable, greyed out, "Provided by Google" label shown)
 - User must fill in:
-  - Mobile Number (Philippine format)
+  - Philippine Mobile Number (11 digits starting with 09, e.g. 09171234567)
   - Barangay (dropdown, required)
 - Continue button → goes to Home Screen
 - No OTP step after this screen
@@ -162,7 +162,7 @@ Splash Screen (2 seconds)
 - Editable fields:
   - Profile photo (tap to change, image picker)
   - Full Name
-  - Mobile Number
+  - Philippine Mobile Number (11 digits starting with 09, e.g. 09171234567)
   - Barangay (dropdown)
 - Email is non-editable (shown greyed out for reference)
 - Save Changes button
@@ -524,7 +524,7 @@ Splash Screen (2 seconds)
 #### C2.1 Verification Document Submission
 - Step indicator (Step 1 of 3 / 2 of 3 / 3 of 3)
 - Upload blocks (each with camera/gallery picker):
-  - Government ID (required) Shows thumbnail once uploaded
+  - Government ID front and back (both required) Show thumbnails once uploaded
   - Barangay Certificate / Clearance (required) Shows thumbnail once uploaded
   - Selfie Holding ID (required) Shows thumbnail once uploaded
   - Skill Certificate (optional) e.g. TESDA NC II certificate

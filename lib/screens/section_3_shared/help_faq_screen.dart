@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/navigation/client_bottom_nav.dart';
@@ -278,9 +277,11 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton.icon(
+          child:           ElevatedButton.icon(
             onPressed: () {
-              Navigator.pushNamed(context, '${AppRouter.chatThread}/c2'); 
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Support chat requires an active booking. Please use the Report feature from your booking details.')),
+              );
             },
             icon: const Icon(Icons.headset_mic_outlined),
             label: const Text('Contact Support'),

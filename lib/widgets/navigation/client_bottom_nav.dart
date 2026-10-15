@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
-import '../../providers/notification_provider.dart';
+import '../../providers/chat_provider.dart';
+import '../../providers/booking_provider.dart';
+import 'notification_nav_icon.dart';
 
 class ClientBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -60,43 +62,19 @@ class ClientBottomNav extends StatelessWidget {
             activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.work_outline),
-            activeIcon: Icon(Icons.work),
+          BottomNavigationBarItem(
+            icon: _bookingIcon(context, colorScheme, false),
+            activeIcon: _bookingIcon(context, colorScheme, true),
             label: 'Bookings',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
+          BottomNavigationBarItem(
+            icon: _messageIcon(context, colorScheme, false),
+            activeIcon: _messageIcon(context, colorScheme, true),
             label: 'Messages',
           ),
-          BottomNavigationBarItem(
-            icon: StreamBuilder<int>(
-              stream: context.read<NotificationProvider>().getUnreadCount(),
-              builder: (context, snapshot) {
-                final count = snapshot.data ?? 0;
-                return Stack(
-                  children: [
-                    const Icon(Icons.notifications_none),
-                    if (count > 0)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: colorScheme.error,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: colorScheme.surface, width: 1),
-                          ),
-                          constraints: const BoxConstraints(minWidth: 8, minHeight: 8),
-                        ),
-                      ),
-                  ],
-                );
-              },
-            ),
-            activeIcon: const Icon(Icons.notifications),
+          const BottomNavigationBarItem(
+            icon: NotificationNavIcon(active: false),
+            activeIcon: NotificationNavIcon(active: true),
             label: 'Alerts',
           ),
           const BottomNavigationBarItem(
@@ -108,4 +86,44 @@ class ClientBottomNav extends StatelessWidget {
       ),
     );
   }
+
+  Widget _messageIcon(BuildContext context, ColorScheme colorScheme, bool active) {
+    return StreamBuilder<int>(
+      stream: context.read<ChatProvider>().getUnreadCount(),
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(active ? Icons.chat_bubble : Icons.chat_bubble_outline),
+            if (count > 0) Positioned(right: -5, top: -4, child: _countBadge(colorScheme, count)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _bookingIcon(BuildContext context, ColorScheme colorScheme, bool active) {
+    return StreamBuilder<int>(
+      stream: context.read<BookingProvider>().getPendingCount(),
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(active ? Icons.work : Icons.work_outline),
+            if (count > 0) Positioned(right: -5, top: -4, child: _countBadge(colorScheme, count)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _countBadge(ColorScheme colorScheme, int count) => Container(
+        constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: colorScheme.error, shape: BoxShape.circle, border: Border.all(color: colorScheme.surface, width: 1.5)),
+        child: Text(count > 9 ? '9+' : '$count', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w800)),
+      );
 }

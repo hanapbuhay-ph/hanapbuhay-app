@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
+import '../../widgets/user_avatar.dart';
 
 class RateClientScreen extends StatefulWidget {
   final String bookingId;
@@ -66,6 +68,9 @@ class _RateClientScreenState extends State<RateClientScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      // POST /api/bookings/{id}/rate — same endpoint used by both client and worker.
+      // score: required int 1-5, comment: optional string max 1000.
+      // Note: max is 1000 not 300 as docs claim (verified from RateBookingRequest.php).
       final result = await context.read<BookingProvider>().submitClientRating(
         bookingId: widget.bookingId,
         clientId: _booking!.clientId,
@@ -81,9 +86,20 @@ class _RateClientScreenState extends State<RateClientScreen> {
         );
         Navigator.pop(context, true);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
-        );
+        // Fix 3 — show inline field errors if present, otherwise show snackbar
+        final errors = result.errors ?? {};
+        if (errors.isNotEmpty) {
+          final fieldMessages = errors.values
+              .expand((v) => v is List ? v.map((e) => e.toString()) : [v.toString()])
+              .join('\n');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(fieldMessages), backgroundColor: AppColors.error),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          );
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -148,6 +164,8 @@ class _RateClientScreenState extends State<RateClientScreen> {
   Widget _buildClientSummary() {
     final colorScheme = Theme.of(context).colorScheme;
 
+    // Use real client name and photo from GET /api/bookings/{id} response (Fix 4).
+    final clientName = _booking!.clientName ?? 'Client';
     return Column(
       children: [
         Container(
@@ -165,16 +183,19 @@ class _RateClientScreenState extends State<RateClientScreen> {
             ],
             border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2), width: 2),
           ),
-          child: const ClipOval(
-            child: Image(
-              image: NetworkImage('https://i.pravatar.cc/150?u=client123'),
-              fit: BoxFit.cover,
+          child: UserAvatar(
+            name: clientName,
+            radius: 48,
+            photoPath: _booking!.clientPhotoUrl,
+            onTap: () => Navigator.pushNamed(
+              context,
+              '${AppRouter.clientProfile}/${_booking!.clientId}',
             ),
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          'Maria Santos', 
+          clientName,
           style: AppTypography.headlineMedium.copyWith(
             fontWeight: FontWeight.w800,
             color: colorScheme.onSurface,
@@ -271,7 +292,7 @@ class _RateClientScreenState extends State<RateClientScreen> {
           maxLines: 4,
           style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
           decoration: InputDecoration(
-            hintText: 'Share your experience working with Maria...',
+            hintText: 'Share your experience working with this client...',
             hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
             filled: true,
             fillColor: colorScheme.surface,

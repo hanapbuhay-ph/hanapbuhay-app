@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_typography.dart';
+
 import '../../core/routing/app_router.dart';
+import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/trust_tier.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/navigation/app_header.dart';
-import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/cards/job_post_card.dart';
+import '../../widgets/user_avatar.dart';
 
 class WorkerProfileViewScreen extends StatefulWidget {
   final String workerId;
 
-  const WorkerProfileViewScreen({
-    super.key,
-    required this.workerId,
-  });
+  const WorkerProfileViewScreen({super.key, required this.workerId});
 
   @override
-  State<WorkerProfileViewScreen> createState() => _WorkerProfileViewScreenState();
+  State<WorkerProfileViewScreen> createState() =>
+      _WorkerProfileViewScreenState();
 }
 
-class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with SingleTickerProviderStateMixin {
+class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Worker? _worker;
   bool _isLoading = true;
@@ -36,7 +37,9 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
   }
 
   Future<void> _fetchWorker() async {
-    final worker = await context.read<WorkerProvider>().getWorkerById(widget.workerId);
+    final worker = await context.read<WorkerProvider>().getWorkerById(
+      widget.workerId,
+    );
     if (mounted) {
       setState(() {
         _worker = worker;
@@ -57,7 +60,11 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
     final colorScheme = theme.colorScheme;
 
     if (_isLoading) {
-      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
+      );
     }
 
     if (_worker == null) {
@@ -70,14 +77,12 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
       backgroundColor: colorScheme.surface,
       body: Column(
         children: [
-          const AppHeader(title: 'HanapBuhay'),
+          const AppHeader(title: 'Profile'),
 
           Expanded(
             child: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                SliverToBoxAdapter(
-                  child: _buildProfileHeader(worker),
-                ),
+                SliverToBoxAdapter(child: _buildProfileHeader(worker)),
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _SliverAppBarDelegate(
@@ -87,7 +92,9 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
                       unselectedLabelColor: colorScheme.onSurfaceVariant,
                       indicatorColor: colorScheme.primary,
                       indicatorWeight: 3,
-                      labelStyle: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
+                      labelStyle: AppTypography.labelLarge.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                       unselectedLabelStyle: AppTypography.bodyMedium,
                       tabs: const [
                         Tab(text: 'About'),
@@ -109,8 +116,6 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
               ),
             ),
           ),
-          
-
         ],
       ),
     );
@@ -119,6 +124,8 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
   Widget _buildProfileHeader(Worker worker) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final trustInfo = worker.trustTier.info;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -138,76 +145,169 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
           Stack(
             alignment: Alignment.center,
             children: [
-              Container(
-                width: 136,
-                height: 136,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      colorScheme.primaryContainer,
-                      colorScheme.secondaryContainer,
-                    ],
-                  ),
-                ),
-              ),
               CircleAvatar(
                 radius: 64,
-                backgroundColor: colorScheme.surface,
+                backgroundColor: colorScheme.surfaceContainerHighest,
                 child: CircleAvatar(
                   radius: 60,
                   backgroundImage: NetworkImage(worker.avatarUrl),
                 ),
               ),
+              if (worker.isOnline)
+                Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: colorScheme.surface, width: 3),
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 16),
-          
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                worker.name,
-                style: AppTypography.headlineLarge.copyWith(fontSize: 28, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
-              ),
-              const SizedBox(width: 8),
-              Icon(worker.trustTier.info.icon, color: worker.trustTier.info.color, size: 24),
-            ],
+
+          Text(
+            worker.name,
+            style: AppTypography.headlineLarge.copyWith(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: colorScheme.onSurface,
+            ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.08),
+              color: trustInfo.color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.shield, color: colorScheme.primary, size: 16),
+                Icon(trustInfo.icon, color: trustInfo.color, size: 16),
                 const SizedBox(width: 6),
                 Text(
-                  'Verified Professional',
-                  style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700),
+                  trustInfo.label,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: trustInfo.color,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          
-          Text(
-            '⭐ ${worker.rating} · ${worker.reviewCount} reviews · ${worker.completedJobsCount} jobs',
-            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: _availabilityColor(worker.availabilityStatus)
+                  .withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _availabilityIcon(worker.availabilityStatus),
+                  color: _availabilityColor(worker.availabilityStatus),
+                  size: 15,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _availabilityLabel(worker.availabilityStatus),
+                  style: AppTypography.labelSmall.copyWith(
+                    color: _availabilityColor(worker.availabilityStatus),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.star_rounded, size: 17, color: colorScheme.primary),
+              const SizedBox(width: 4),
+              Text(
+                '${worker.rating} · ${worker.reviewCount} reviews · ${worker.completedJobsCount} jobs',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
-          Text(
-            '📍 ${worker.barangay} · ~${worker.distance}',
-            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                size: 17,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '${worker.barangay} · ${_formatDistance(worker.distance)}',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  String _formatDistance(String distance) {
+    final normalized = distance.replaceFirst(RegExp(r'^~+'), '');
+    if (normalized.toLowerCase().startsWith('distance unavailable')) {
+      return normalized;
+    }
+    return '~$normalized';
+  }
+
+  Color _availabilityColor(WorkerAvailability status) {
+    switch (status) {
+      case WorkerAvailability.available:
+        return Colors.green;
+      case WorkerAvailability.busy:
+        return Colors.orange;
+      case WorkerAvailability.offline:
+        return Colors.grey;
+    }
+  }
+
+  IconData _availabilityIcon(WorkerAvailability status) {
+    switch (status) {
+      case WorkerAvailability.available:
+        return Icons.check_circle;
+      case WorkerAvailability.busy:
+        return Icons.schedule;
+      case WorkerAvailability.offline:
+        return Icons.do_not_disturb_on;
+    }
+  }
+
+  String _availabilityLabel(WorkerAvailability status) {
+    switch (status) {
+      case WorkerAvailability.available:
+        return 'Available';
+      case WorkerAvailability.busy:
+        return 'Busy';
+      case WorkerAvailability.offline:
+        return 'Offline';
+    }
   }
 
   Widget _buildAboutTab(Worker worker) {
@@ -224,7 +324,9 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.03),
@@ -238,43 +340,106 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
               children: [
                 Row(
                   children: [
-                    Icon(Icons.person_outline, color: colorScheme.primary, size: 20),
+                    Icon(
+                      Icons.person_outline,
+                      color: colorScheme.primary,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
-                    Text('Professional Summary', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                    Text(
+                      'Professional Summary',
+                      style: AppTypography.labelLarge.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   worker.bio,
-                  style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant, height: 1.6),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.6,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 32),
-          
-          Text('Services Offered', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+
+          Text(
+            'Services Offered',
+            style: AppTypography.labelLarge.copyWith(
+              fontWeight: FontWeight.w800,
+              color: colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
             runSpacing: 10,
             children: [
-              ...worker.services.take(_expandServices ? worker.services.length : 3).map((s) => _buildServiceChip(s)),
+              ...worker.services
+                  .take(_expandServices ? worker.services.length : 3)
+                  .map((s) => _buildServiceChip(s)),
               if (worker.services.length > 3 && !_expandServices)
                 GestureDetector(
                   onTap: () => setState(() => _expandServices = true),
-                  child: _buildServiceChip('+${worker.services.length - 3} more', isAction: true),
+                  child: _buildServiceChip(
+                    '+${worker.services.length - 3} more',
+                    isAction: true,
+                  ),
                 ),
             ],
           ),
+          if (worker.portfolioImages.isNotEmpty) ...[
+            const SizedBox(height: 32),
+            Text(
+              'Past Work',
+              style: AppTypography.labelLarge.copyWith(
+                fontWeight: FontWeight.w800,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 16),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: worker.portfolioImages.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.15,
+              ),
+              itemBuilder: (context, index) => ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.network(
+                  worker.portfolioImages[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: colorScheme.surfaceContainerHighest,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 32),
-          
+
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: colorScheme.primary.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
+              border: Border.all(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+              ),
             ),
             child: Row(
               children: [
@@ -285,12 +450,19 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        worker.isAvailable ? 'Currently Available' : 'Currently Unavailable',
-                        style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
+                        worker.isAvailable
+                            ? 'Currently Available'
+                            : 'Currently Unavailable',
+                        style: AppTypography.labelLarge.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                       Text(
                         'Responds in ~${worker.responseTime}',
-                        style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
+                        style: AppTypography.bodySmall.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -310,9 +482,15 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: isAction ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3) : colorScheme.primary.withValues(alpha: 0.08),
+        color: isAction
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
+            : colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: isAction ? colorScheme.outlineVariant.withValues(alpha: 0.5) : colorScheme.primary.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: isAction
+              ? colorScheme.outlineVariant.withValues(alpha: 0.5)
+              : colorScheme.primary.withValues(alpha: 0.1),
+        ),
       ),
       child: Text(
         label,
@@ -326,99 +504,38 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
 
   Widget _buildStatusDot(bool isAvailable) {
     if (!isAvailable) {
-      return Container(width: 12, height: 12, decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle));
+      return Container(
+        width: 12,
+        height: 12,
+        decoration: const BoxDecoration(
+          color: Colors.grey,
+          shape: BoxShape.circle,
+        ),
+      );
     }
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 12,
       height: 12,
-      decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        shape: BoxShape.circle,
+      ),
     );
   }
 
   Widget _buildPostsTab(Worker worker) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     if (worker.jobPosts.isEmpty) {
       return _buildEmptyTab('No active posts yet', Icons.work_outline);
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       itemCount: worker.jobPosts.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
-        final post = worker.jobPosts[index];
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  post.category,
-                  style: AppTypography.labelSmall.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                post.title,
-                style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                post.description,
-                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(
-                    'From ₱${post.startingRate.toInt()}${post.rateType.shortLabel}',
-                    style: AppTypography.labelLarge.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700),
-                  ),
-                  const Spacer(),
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: post.isAvailable ? colorScheme.primary : Colors.grey,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    post.isAvailable ? 'Available' : 'Unavailable',
-                    style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              PrimaryButton(
-                label: 'Book This Service',
-                onPressed: () => _handleBooking(worker),
-              ),
-            ],
-          ),
+        return JobPostCard(
+          listing: JobPostListing(worker: worker, post: worker.jobPosts[index]),
         );
       },
     );
@@ -436,55 +553,86 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
       separatorBuilder: (_, __) => const SizedBox(height: 20),
       itemBuilder: (context, index) {
         final review = worker.reviews[index];
+        final bookingId = review.bookingId;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                CircleAvatar(radius: 18, backgroundImage: NetworkImage(review.reviewerAvatar)),
+                UserAvatar(
+                  name: review.reviewerName,
+                  radius: 18,
+                  photoPath: review.reviewerAvatar,
+                  onTap: review.reviewerId == null
+                      ? null
+                      : () => Navigator.pushNamed(
+                          context,
+                          '${AppRouter.clientProfile}/${review.reviewerId}',
+                        ),
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(review.reviewerName, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface)),
+                      Text(
+                        review.reviewerName,
+                        style: AppTypography.labelLarge.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
                       Row(
-                        children: List.generate(5, (i) => Icon(
-                          Icons.star, 
-                          size: 14, 
-                          color: i < review.rating ? Colors.amber : colorScheme.surfaceContainerHighest,
-                        )),
+                        children: List.generate(
+                          5,
+                          (i) => Icon(
+                            Icons.star,
+                            size: 14,
+                            color: i < review.rating
+                                ? Colors.amber
+                                : colorScheme.surfaceContainerHighest,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   '${review.date.day}/${review.date.month}/${review.date.year}',
-                  style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
+                  style: AppTypography.bodySmall.copyWith(
+                    fontSize: 10,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               review.comment,
-              style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(6),
+              style: AppTypography.bodyMedium.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
-              child: Text(
-                'Re: Booking #${Booking.formatBookingCode(review.id, review.date)}',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
+            ),
+            if (bookingId != null && bookingId.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'Re: Booking #${Booking.formatBookingCode(bookingId, review.date)}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         );
       },
@@ -499,79 +647,16 @@ class _WorkerProfileViewScreenState extends State<WorkerProfileViewScreen> with 
         children: [
           Icon(icon, size: 64, color: colorScheme.outlineVariant),
           const SizedBox(height: 16),
-          Text(message, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+          Text(
+            message,
+            style: AppTypography.bodyMedium.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
   }
-
-  Future<void> _handleBooking(Worker worker) async {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    // Check if worker is verified or trusted
-    final bool isVerified = worker.trustTier == TrustTier.verified || worker.trustTier == TrustTier.trusted;
-
-    if (!isVerified) {
-      final bool? proceed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 28),
-              SizedBox(width: 12),
-              Expanded(child: Text('Not Yet Verified')),
-            ],
-          ),
-          content: const Text(
-            'This worker has not yet completed barangay document verification. '
-            'HanapBuhay cannot fully guarantee their identity at this time.\n\n'
-            'Do you want to proceed with the booking at your own discretion?'
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Find Verified Worker path
-                context.read<WorkerProvider>().setQuickFilter('Verified');
-                Navigator.pop(context, false); // Return to feed
-              },
-              child: Text(
-                'Find Verified Worker',
-                style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w700),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text('Book Anyway'),
-            ),
-          ],
-        ),
-      );
-
-      if (proceed == false) {
-        if (mounted) {
-          // If they chose "Find Verified Worker", we already set the filter.
-          // Now we just need to go back to the Home screen.
-          Navigator.popUntil(context, (route) => route.settings.name == AppRouter.clientHome || route.isFirst);
-        }
-        return;
-      }
-      if (proceed == null) return; // Dismissed without choice
-    }
-
-    // Proceed to booking form
-    if (mounted) {
-      Navigator.pushNamed(context, '${AppRouter.sendBookingRequest}/${worker.id}');
-    }
-  }
-
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
@@ -586,7 +671,11 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _tabBar.preferredSize.height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: colorScheme.surface.withValues(alpha: 0.95),
       child: _tabBar,

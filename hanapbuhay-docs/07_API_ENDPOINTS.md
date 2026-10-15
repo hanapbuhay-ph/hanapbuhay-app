@@ -34,7 +34,13 @@ GET  /api/barangays
 GET  /api/service-categories
 POST /api/auth/register
 POST /api/auth/login
+POST /api/auth/login/verify-otp
+POST /api/auth/login/resend-otp
 POST /api/auth/google
+POST /api/auth/admin/login
+POST /api/auth/admin/login/verify-otp
+POST /api/auth/admin/login/resend-otp
+POST /api/auth/admin/google
 POST /api/auth/email/verify
 POST /api/auth/email/resend-otp
 POST /api/auth/password/forgot
@@ -179,7 +185,7 @@ Validation Rules:
   email:                 required, email,
                          unique:users
   password:              required, min:8, confirmed
-  mobile_number:         required, string, max:20
+  mobile_number:         required, valid Philippine mobile (09 + 9 digits)
   role:                  required, in:client,worker
   barangay_id:           required,
                          exists:barangays,id
@@ -210,7 +216,7 @@ Side Effects:
   If role = worker: creates worker_profile
   Generates 6-digit OTP
   Sends OTP to user's email via Laravel Mail
-  OTP expires in 10 minutes
+  OTP expires in 5 minutes
 
 Response 422 (validation failed):
 {
@@ -296,6 +302,7 @@ per email address
 ### B4. Login (Manual)
 ```
 POST /api/auth/login
+Mobile app only. Admin and super_admin accounts are rejected.
 
 Request Body:
 {
@@ -353,11 +360,21 @@ Response 403 (account suspended):
 }
 ```
 
+Admin web portal sign-in uses separate routes:
+```
+POST /api/auth/admin/login
+POST /api/auth/admin/login/verify-otp
+POST /api/auth/admin/login/resend-otp
+```
+These routes accept only admin and super_admin accounts. The mobile app must
+continue using `/api/auth/login` and its matching OTP routes.
+
 ---
 
 ### B5. Google Sign-In
 ```
 POST /api/auth/google
+Mobile app only. Admin and super_admin accounts are rejected.
 
 Request Body:
 {
@@ -420,6 +437,9 @@ Note: If is_new_user = true, Flutter navigates
 to Role Selection → Complete Profile Screen.
 The token is already valid — use it for the
 complete-profile request.
+
+The admin web portal uses `POST /api/auth/admin/google`. Admin accounts cannot
+sign in through the mobile Google endpoint.
 ```
 
 ---
@@ -431,7 +451,9 @@ POST /api/auth/google/complete-profile
 
 Request Body (multipart/form-data):
   name:           string, required
-  mobile_number:  string, required
+  mobile_number:  string, required,
+                  Philippine mobile (09 + 9 digits;
+                  +639 is accepted and normalized)
   role:           string, required,
                   in:client,worker
   barangay_id:    integer, required
@@ -507,7 +529,7 @@ Response 200:
 Note: reset_token is a short-lived temporary
 token (stored in otp_codes or cache).
 Used in next step to authorize password reset.
-Expires in 15 minutes.
+Expires 10 minutes after OTP verification.
 ```
 
 ---
@@ -612,7 +634,9 @@ POST /api/user/profile
 
 Request Body:
   name:           string, optional
-  mobile_number:  string, optional
+  mobile_number:  string, optional,
+                  Philippine mobile (09 + 9 digits;
+                  +639 is accepted and normalized)
   barangay_id:    integer, optional,
                   exists:barangays,id
   profile_photo:  file, optional
@@ -732,6 +756,27 @@ Response 200:
 
 Note: Call this every time the app starts
 and whenever Firebase issues a new token.
+```
+
+### Account Deletion Request
+```
+GET /api/user/delete-account
+POST /api/user/delete-account
+DELETE /api/user/delete-account
+(Protected)
+```
+
+GET returns the authenticated user's request timestamp, or `null` when there
+is no pending request. POST submits an idempotent request for admin review;
+the account is not deleted immediately. DELETE cancels a pending request.
+
+```json
+{
+    "success": true,
+    "data": {
+        "deletion_requested_at": "2026-10-14T02:00:00+00:00"
+    }
+}
 ```
 
 ---
@@ -951,8 +996,10 @@ POST /api/worker/verification/submit
 multipart/form-data)
 
 Request Body:
-  government_id:         file, required
-                         (jpeg/png, max 5MB)
+  government_id_front:   file, required
+                         (front of government ID, jpeg/png, max 5MB)
+  government_id_back:    file, required
+                         (back of government ID, jpeg/png, max 5MB)
   barangay_certificate:  file, required
                          (jpeg/png, max 5MB)
   selfie_with_id:        file, required
@@ -997,7 +1044,11 @@ Response 200:
             Please resubmit.",
         "documents": [
             {
-                "type": "government_id",
+                "type": "government_id_front",
+                "status": "approved"
+            },
+            {
+                "type": "government_id_back",
                 "status": "approved"
             },
             {
@@ -2091,22 +2142,31 @@ Response 200:
                 "documents": [
                     {
                         "id": 1,
-                        "type": "government_id",
+                        "type": "government_id_front",
                         "file_url": "http://...
                             storage/
                             verifications/
-                            10/gov_id.jpg",
+                            10/government_id_front.jpg",
                         "status": "pending"
                     },
                     {
                         "id": 2,
+                        "type": "government_id_back",
+                        "file_url": "http://...
+                            storage/
+                            verifications/
+                            10/government_id_back.jpg",
+                        "status": "pending"
+                    },
+                    {
+                        "id": 3,
                         "type":
                             "barangay_certificate",
                         "file_url": "...",
                         "status": "pending"
                     },
                     {
-                        "id": 3,
+                        "id": 4,
                         "type": "selfie_with_id",
                         "file_url": "...",
                         "status": "pending"

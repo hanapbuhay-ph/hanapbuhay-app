@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -33,6 +34,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   final _notesController = TextEditingController();
+  Map<String, dynamic>? _serverErrors;
 
   final List<String> _categories = [
     'Electrical',
@@ -61,11 +63,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
           final post = widget.postId == null
               ? null
               : worker.jobPosts.where((item) => item.id == widget.postId).firstOrNull;
-          final match = _categories.firstWhere(
-            (c) => post?.category.contains(c) == true || worker.specialty.contains(c),
-            orElse: () => _categories.first,
-          );
-          _selectedCategory = match;
+          _selectedCategory = post?.category ?? worker.specialty;
         }
       });
     }
@@ -124,17 +122,69 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
 
     setState(() => _isSubmitting = true);
 
-    // In a real app, we'd get the actual barangay ID from the user object
-    const clientBarangay = AppConstants.defaultBarangay;
+    // Capture providers before any await to avoid BuildContext-across-async-gap lint.
+    final workerProvider = context.read<WorkerProvider>();
+    final bookingProvider = context.read<BookingProvider>();
 
     try {
-      final result = await context.read<BookingProvider>().createBooking(
-        workerId: widget.workerId,
-        category: _selectedCategory!,
-        date: _selectedDate!,
-        time: _selectedTime!.format(context),
+      final worker = _worker;
+      final scheduledAt = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
+      // Resolve the service category id.
+      // Priority 1: match the dropdown label against the worker's own job posts
+      //             (already loaded, no extra request needed).
+      // Priority 2: match against the full API categories list via
+      //             GET /api/service-categories (covers the case where the
+      //             worker profile was loaded without embedded job posts).
+      // If both fail the field stays null and we show a user-facing error rather
+      // than sending a null value that the backend will reject with a 422.
+      int? categoryId;
+      if (worker != null) {
+        final matchingPost = worker.jobPosts
+            .where((p) => p.category.toLowerCase().contains(_selectedCategory!.toLowerCase()))
+            .firstOrNull;
+        categoryId = matchingPost?.serviceCategoryId ??
+            worker.jobPosts.firstOrNull?.serviceCategoryId;
+      }
+
+      // Fallback: resolve label → id from the API categories list.
+      if (categoryId == null && _selectedCategory != null) {
+        try {
+          final apiCategories = await workerProvider.getCategories();
+          final match = apiCategories.firstWhere(
+            (c) => c.label.toLowerCase().contains(_selectedCategory!.toLowerCase()) ||
+                _selectedCategory!.toLowerCase().contains(c.label.toLowerCase()),
+            orElse: () => apiCategories.first,
+          );
+          categoryId = int.tryParse(match.id);
+        } catch (_) {
+          // getCategories() failed — categoryId stays null, guard below fires.
+        }
+      }
+
+      if (categoryId == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not resolve service category. Please try again.'),
+            ),
+          );
+        }
+        setState(() => _isSubmitting = false);
+        return;
+      }
+
+      final result = await bookingProvider.createBooking(
+        workerId: worker?.userId ?? widget.workerId,
+        serviceCategoryId: categoryId,
+        scheduledAt: scheduledAt,
         notes: _notesController.text.trim(),
-        barangay: clientBarangay,
         jobPostId: widget.postId,
       );
 
@@ -151,8 +201,18 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
         // TODO: Eventually go to booking_detail_screen (1.6)
         Navigator.pop(context); 
       } else {
+        setState(() => _serverErrors = result.errors);
+        final msgs = <String>[];
+        (result.errors ?? const {}).forEach((key, value) {
+          if (value is List && value.isNotEmpty) {
+            msgs.add('• ${value.join(', ')}');
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(msgs.isEmpty ? result.message : msgs.join('\n')),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } catch (e) {
@@ -196,16 +256,23 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                     // Service Category
                     Text('Service Required', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedCategory,
-                      decoration: _getInputDecoration('Category'),
-                      items: _categories.map((c) => DropdownMenuItem(
-                        value: c,
-                        child: Text(c, style: AppTypography.bodyMedium),
-                      )).toList(),
-                      onChanged: (val) => setState(() => _selectedCategory = val),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(_selectedCategory ?? 'N/A', style: AppTypography.bodyMedium),
+                          const Spacer(),
+                          Icon(Icons.lock, size: 18, color: colorScheme.onSurfaceVariant),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 24),
+
 
                     // Date & Time Row
                     Row(
@@ -271,9 +338,10 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                         ),
                       ],
                     ),
+                    _buildFieldErrors('scheduled_at'),
                     const SizedBox(height: 24),
 
-                    // Service Location (Architecture Correction: Read-only Barangay)
+                    // Service Location
                     Text('Service Location', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
                     Container(
@@ -291,7 +359,10 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                             children: [
                               Icon(Icons.location_on, size: 18, color: colorScheme.primary),
                               const SizedBox(width: 8),
-                              Text('${AppConstants.defaultBarangay}, ${AppConstants.municipalityName}', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                              Text(
+                                context.read<AuthProvider>().userBarangay ?? 'Not set',
+                                style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -316,6 +387,7 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
                       ),
                       validator: (val) => val == null || val.isEmpty ? 'Please provide some details' : null,
                     ),
+                    _buildFieldErrors('notes'),
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -398,6 +470,33 @@ class _SendBookingRequestScreenState extends State<SendBookingRequestScreen> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
+    );
+  }
+
+  List<String> _fieldErrors(String field) {
+    final map = _serverErrors;
+    if (map == null) return const [];
+    final raw = map[field];
+    if (raw is List) return raw.map((e) => e.toString()).toList();
+    if (raw is String) return [raw];
+    return const [];
+  }
+
+  Widget _buildFieldErrors(String field) {
+    final errors = _fieldErrors(field);
+    if (errors.isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: errors
+            .map((e) => Text(
+                  e,
+                  style: AppTypography.bodySmall.copyWith(color: colorScheme.error),
+                ))
+            .toList(),
+      ),
     );
   }
 

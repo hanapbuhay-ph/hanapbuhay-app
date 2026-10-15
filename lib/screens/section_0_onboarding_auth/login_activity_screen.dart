@@ -13,33 +13,32 @@ class LoginActivityScreen extends StatefulWidget {
 }
 
 class _LoginActivityScreenState extends State<LoginActivityScreen> {
-  final List<_LoginSession> _sessions = [
-    _LoginSession(
-      id: 's1',
-      device: 'iPhone 13 Pro',
-      location: 'Trinidad, Bohol',
-      timestamp: 'Current Session',
-      isCurrent: true,
-    ),
-    _LoginSession(
-      id: 's2',
-      device: 'Chrome on MacOS',
-      location: 'Tagbilaran City, Bohol',
-      timestamp: '2 hours ago',
-    ),
-    _LoginSession(
-      id: 's3',
-      device: 'Samsung Galaxy S22',
-      location: 'Cebu City, Cebu',
-      timestamp: 'Yesterday',
-    ),
-    _LoginSession(
-      id: 's4',
-      device: 'iPad Air',
-      location: 'Manila, Metro Manila',
-      timestamp: '3 days ago',
-    ),
-  ];
+  List<_LoginSession> _sessions = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessions();
+  }
+
+  Future<void> _loadSessions() async {
+    try {
+      final rawSessions = await context.read<AuthProvider>().getSessions();
+      if (!mounted) return;
+      setState(() {
+        _sessions = rawSessions.map(_LoginSession.fromJson).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Unable to load login activity.';
+        _isLoading = false;
+      });
+    }
+  }
 
   Future<void> _handleLogoutSession(_LoginSession session) async {
     final theme = Theme.of(context);
@@ -78,12 +77,18 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
           Navigator.pushNamedAndRemoveUntil(context, AppRouter.login, (route) => false);
         }
       } else {
-        setState(() {
-          _sessions.removeWhere((s) => s.id == session.id);
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Logged out from ${session.device}')),
-        );
+        final result = await context.read<AuthProvider>().revokeSession(session.id);
+        if (!mounted) return;
+        if (result.success) {
+          setState(() => _sessions.removeWhere((s) => s.id == session.id));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Logged out from ${session.device}')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
+          );
+        }
       }
     }
   }
@@ -99,7 +104,11 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
         children: [
           const AppHeader(title: 'Login Activity'),
           Expanded(
-            child: ListView.separated(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
+                    ? Center(child: Text(_errorMessage!))
+                    : ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               itemCount: _sessions.length,
               separatorBuilder: (context, index) => Divider(
@@ -206,4 +215,27 @@ class _LoginSession {
     required this.timestamp,
     this.isCurrent = false,
   });
+
+  factory _LoginSession.fromJson(Map<String, dynamic> json) {
+    final lastUsedAt = DateTime.tryParse(json['last_used_at']?.toString() ?? '');
+    return _LoginSession(
+      id: json['id']?.toString() ?? '',
+      device: json['device']?.toString() ?? 'Unknown device',
+      location: json['location']?.toString() ?? 'Location unavailable',
+      timestamp: json['is_current'] == true
+          ? 'Current Session'
+          : _formatTimestamp(lastUsedAt),
+      isCurrent: json['is_current'] == true,
+    );
+  }
+
+  static String _formatTimestamp(DateTime? timestamp) {
+    if (timestamp == null) return 'Last active time unavailable';
+    final difference = DateTime.now().difference(timestamp.toLocal());
+    if (difference.inMinutes < 1) return 'Just now';
+    if (difference.inHours < 1) return '${difference.inMinutes} minutes ago';
+    if (difference.inDays < 1) return '${difference.inHours} hours ago';
+    if (difference.inDays == 1) return 'Yesterday';
+    return '${difference.inDays} days ago';
+  }
 }

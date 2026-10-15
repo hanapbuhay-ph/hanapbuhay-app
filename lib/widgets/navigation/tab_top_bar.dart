@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
@@ -13,7 +14,7 @@ class TabTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final authProvider = context.watch<AuthProvider>();
-    final avatar = authProvider.userAvatar ?? 'https://i.pravatar.cc/150?u=user';
+    final avatar = AppConstants.getPhotoUrl(authProvider.userAvatar);
 
     return SafeArea(
       bottom: false,

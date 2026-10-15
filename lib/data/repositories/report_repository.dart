@@ -2,7 +2,7 @@ import '../models/report_model.dart';
 import '../models/auth_result_model.dart';
 
 abstract class ReportRepository {
-  Future<List<Report>> getReports();
+  Future<List<Report>> getReports({String view = 'all'});
 
   Future<AuthResult> submitReport({
     required String bookingId,

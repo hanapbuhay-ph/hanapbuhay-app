@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/api/api_client.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/report_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
@@ -30,41 +33,129 @@ class _FileReportScreenState extends State<FileReportScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
+  Map<String, dynamic>? _serverErrors;
   
   Booking? _booking;
-  Worker? _worker;
   bool _isLoadingData = true;
   bool _isSubmitting = false;
 
   String? _selectedReason;
   final List<XFile> _selectedPhotos = [];
 
-  final List<String> _reasons = [
-    'No-show',
-    'Unsatisfactory work',
-    'Misconduct',
-    'Other'
-  ];
+  String? _reportedUserId;
+  String? _reportedUserName;
+  String? _reportedUserAvatar;
+  String? _reportedUserSubtitle;
+
+  final List<String> _reasons = [];
+  final Map<String, String> _reasonToApi = {};
+
+  static const Map<String, String> _fallbackReasonMap = {
+    'No-show': 'no_show',
+    'Unsatisfactory work': 'unsatisfactory_work',
+    'Misconduct': 'misconduct',
+    'Non-payment': 'non_payment',
+    'Unsafe Environment': 'unsafe_environment',
+    'Abusive Behavior': 'abusive_behavior',
+    'False Information': 'false_information',
+    'Other': 'other',
+  };
 
   @override
   void initState() {
     super.initState();
+    _loadReportReasons();
     _loadData();
+  }
+
+  Future<void> _loadReportReasons() async {
+    try {
+      final res = await ApiClient.get('/report-reasons', requiresAuth: true);
+      if (res['success'] != true) {
+        _applyFallbackReasons();
+        return;
+      }
+
+      final items = (res['data'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .toList();
+
+      final reasons = <String>[];
+      final reasonMap = <String, String>{};
+
+      for (final item in items) {
+        final label = (item['label'] ?? '').toString();
+        final code = (item['code'] ?? '').toString();
+        if (label.isEmpty || code.isEmpty) continue;
+        reasons.add(label);
+        reasonMap[label] = code;
+      }
+
+      if (mounted) {
+        setState(() {
+          _reasons.clear();
+          _reasons.addAll(reasons);
+          _reasonToApi.clear();
+          _reasonToApi.addAll(reasonMap);
+        });
+      }
+    } catch (_) {
+      _applyFallbackReasons();
+    }
+  }
+
+  void _applyFallbackReasons() {
+    if (!mounted) return;
+
+    setState(() {
+      _reasons
+        ..clear()
+        ..addAll(_fallbackReasonMap.keys);
+      _reasonToApi
+        ..clear()
+        ..addAll(_fallbackReasonMap);
+    });
   }
 
   Future<void> _loadData() async {
     final bookingProvider = context.read<BookingProvider>();
     final workerProvider = context.read<WorkerProvider>();
+    final authProvider = context.read<AuthProvider>();
     final booking = await bookingProvider.getBookingById(widget.bookingId);
     if (booking != null) {
-      final worker = await workerProvider.getWorkerById(booking.workerId);
+      final isClient = authProvider.userRole == 'client';
+
+      Worker? worker;
+      String reportedUserName;
+      String reportedUserAvatar;
+      String reportedUserId;
+      String? reportedUserSubtitle;
+
+      if (isClient) {
+        worker = await workerProvider.getWorkerById(booking.workerId);
+        reportedUserName = worker?.name ?? 'Worker';
+        reportedUserAvatar = AppConstants.getPhotoUrl(worker?.avatarUrl);
+        reportedUserId = booking.workerId;
+        reportedUserSubtitle = worker?.specialty;
+      } else {
+        reportedUserName = booking.clientName ?? 'Client';
+        reportedUserAvatar = AppConstants.getPhotoUrl(booking.clientPhotoUrl);
+        reportedUserId = booking.clientId;
+        reportedUserSubtitle = 'Client';
+      }
+
       if (mounted) {
         setState(() {
           _booking = booking;
-          _worker = worker;
           _isLoadingData = false;
+          _reportedUserId = reportedUserId;
+          _reportedUserName = reportedUserName;
+          _reportedUserAvatar = reportedUserAvatar;
+          _reportedUserSubtitle = reportedUserSubtitle;
         });
       }
+    } else if (mounted) {
+      setState(() => _isLoadingData = false);
     }
   }
 
@@ -108,8 +199,8 @@ class _FileReportScreenState extends State<FileReportScreen> {
     try {
       final result = await context.read<ReportProvider>().submitReport(
         bookingId: widget.bookingId,
-        workerId: _worker!.id,
-        reason: _selectedReason!,
+        workerId: _reportedUserId!,
+        reason: _reasonToApi[_selectedReason!] ?? 'other',
         description: _descriptionController.text.trim(),
         photoPaths: _selectedPhotos.map((p) => p.path).toList(),
       );
@@ -122,8 +213,18 @@ class _FileReportScreenState extends State<FileReportScreen> {
         );
         Navigator.pushReplacementNamed(context, AppRouter.reportStatus);
       } else {
+        setState(() => _serverErrors = result.errors);
+        final msgs = <String>[];
+        (result.errors ?? const {}).forEach((key, value) {
+          if (value is List && value.isNotEmpty) {
+            msgs.add('• ${value.join(', ')}');
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(msgs.isEmpty ? result.message : msgs.join('\n')),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } catch (e) {
@@ -142,7 +243,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
       return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
-    if (_booking == null || _worker == null) {
+    if (_booking == null) {
       return const Scaffold(body: Center(child: Text('Booking details not found')));
     }
 
@@ -161,8 +262,8 @@ class _FileReportScreenState extends State<FileReportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Context Card
-                    _buildContextCard(_booking!, _worker!),
+                     // Context Card
+                    _buildContextCard(_booking!),
                     const SizedBox(height: 32),
 
                     // Reason Dropdown
@@ -178,6 +279,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
                       onChanged: (val) => setState(() => _selectedReason = val),
                       validator: (val) => val == null ? 'Please select a reason' : null,
                     ),
+                    _buildFieldErrors('reason'),
                     const SizedBox(height: 24),
 
                     // Description
@@ -192,6 +294,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
                       ),
                       validator: (val) => val == null || val.isEmpty ? 'Please provide a description' : null,
                     ),
+                    _buildFieldErrors('description'),
                     const SizedBox(height: 32),
 
                     // Photo Evidence
@@ -236,7 +339,7 @@ class _FileReportScreenState extends State<FileReportScreen> {
     );
   }
 
-  Widget _buildContextCard(Booking booking, Worker worker) {
+  Widget _buildContextCard(Booking booking) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
@@ -256,14 +359,14 @@ class _FileReportScreenState extends State<FileReportScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              CircleAvatar(radius: 24, backgroundImage: NetworkImage(worker.avatarUrl)),
+              CircleAvatar(radius: 24, backgroundImage: NetworkImage(_reportedUserAvatar ?? '')),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(worker.name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
-                    Text(worker.specialty, style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                    Text(_reportedUserName ?? '', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800)),
+                    Text(_reportedUserSubtitle ?? '', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ),
@@ -321,6 +424,33 @@ class _FileReportScreenState extends State<FileReportScreen> {
     return PhotoPreviewTile(
       path: _selectedPhotos[index].path,
       onRemove: () => _removeImage(index),
+    );
+  }
+
+  List<String> _fieldErrors(String field) {
+    final map = _serverErrors;
+    if (map == null) return const [];
+    final raw = map[field];
+    if (raw is List) return raw.map((e) => e.toString()).toList();
+    if (raw is String) return [raw];
+    return const [];
+  }
+
+  Widget _buildFieldErrors(String field) {
+    final errors = _fieldErrors(field);
+    if (errors.isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: errors
+            .map((e) => Text(
+                  e,
+                  style: AppTypography.bodySmall.copyWith(color: colorScheme.error),
+                ))
+            .toList(),
+      ),
     );
   }
 

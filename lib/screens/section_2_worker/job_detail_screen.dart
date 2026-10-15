@@ -5,13 +5,16 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/utils/formatters.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/chat_provider.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/worker_model.dart';
+import '../../data/models/auth_result_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/navigation/worker_bottom_nav.dart';
 import '../../widgets/maps/live_tracking_map.dart';
 import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/user_avatar.dart';
 
 class JobDetailScreen extends StatefulWidget {
   final String bookingId;
@@ -29,7 +32,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Booking? _booking;
   Worker? _worker;
   bool _isLoading = true;
-  bool _isTracking = false;
 
   @override
   void initState() {
@@ -48,8 +50,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           _booking = booking;
           _worker = worker;
           _isLoading = false;
-          // Conceptually, if status is 'active' (en route), we show the map
-          _isTracking = booking.status == BookingStatus.active;
         });
       }
     }
@@ -58,8 +58,19 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Future<void> _updateStatus(BookingStatus newStatus) async {
     setState(() => _isLoading = true);
     final bookingProvider = context.read<BookingProvider>();
-    final result = await bookingProvider.updateBookingStatus(bookingId: widget.bookingId, status: newStatus);
-    
+    final AuthResult result;
+
+    if (newStatus == BookingStatus.active) {
+      // POST /api/bookings/{id}/start — sets started_at on the booking.
+      // Do NOT use startTracking() here — that is the location-sharing endpoint.
+      result = await bookingProvider.startBooking(bookingId: widget.bookingId);
+    } else if (newStatus == BookingStatus.completed) {
+      // POST /api/bookings/{id}/complete
+      result = await bookingProvider.completeBooking(bookingId: widget.bookingId);
+    } else {
+      result = await bookingProvider.updateBookingStatus(bookingId: widget.bookingId, status: newStatus);
+    }
+
     if (mounted) {
       if (result.success) {
         await _loadData();
@@ -140,7 +151,11 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Widget _buildClientCard() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final booking = _booking!;
 
+    // Use real client data from GET /api/bookings/{id} response.
+    // Booking.fromJson parses clientName + clientPhotoUrl from the API.
+    final clientName = booking.clientName ?? 'Client';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -157,23 +172,45 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
-            radius: 24, 
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=client123'),
+          UserAvatar(
+            name: clientName,
+            radius: 24,
+            photoPath: booking.clientPhotoUrl,
+            onTap: () => Navigator.pushNamed(
+              context,
+              '${AppRouter.clientProfile}/${booking.clientId}',
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Maria Santos', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                Text(clientName, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                 Text('Client', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ),
           IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '${AppRouter.chatThread}/c1'); // Mock ID
+            onPressed: () => Navigator.pushNamed(
+              context,
+              '${AppRouter.clientProfile}/${booking.clientId}',
+            ),
+            icon: Icon(Icons.person_outline, color: colorScheme.primary),
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          IconButton(
+            onPressed: () async {
+              final conversationId = await context.read<ChatProvider>().resolveConversationId(
+                otherUserId: booking.clientId,
+                fallbackBookingId: booking.id,
+              );
+              if (mounted) {
+                Navigator.pushNamed(context, '${AppRouter.chatThread}/$conversationId');
+              }
             },
             icon: Icon(Icons.chat_bubble_outline, color: colorScheme.primary),
             style: IconButton.styleFrom(
@@ -187,85 +224,94 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildMapSection(Booking booking, Worker worker) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    const clientLoc = LatLng(9.9575, 124.3517);
+    final colorScheme = Theme.of(context).colorScheme;
+    final clientLoc = booking.clientBarangayCoordinates ?? const LatLng(9.9575, 124.3517);
     final workerLoc = worker.barangayCoordinates ?? const LatLng(9.9312, 124.3121);
 
-    return Container(
-      height: 280,
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          LiveTrackingMap(
-            clientLocation: clientLoc,
-            workerLocation: workerLoc,
-            isTracking: _isTracking,
-            onArrival: () => setState(() => _isTracking = false),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Clean map preview — no overlaid action buttons
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
           ),
-          
-          Positioned(
-            top: 12,
-            right: 12,
-            child: FloatingActionButton.small(
-              heroTag: 'view_map_worker',
-              onPressed: () => Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${booking.id}/tracking'),
-              backgroundColor: colorScheme.surface,
-              child: Icon(Icons.fullscreen, color: colorScheme.onSurfaceVariant),
-            ),
-          ),
-
-          Positioned(
-            bottom: 12,
-            left: 12,
-            right: 12,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)],
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              LiveTrackingMap(
+                clientLocation: clientLoc,
+                workerLocation: workerLoc,
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _isTracking ? 'Traveling to client' : 'Arrived at destination',
-                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: FloatingActionButton.small(
+                  heroTag: 'view_map_worker',
+                  onPressed: () => Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}'),
+                  backgroundColor: colorScheme.surface,
+                  child: Icon(Icons.fullscreen, color: colorScheme.onSurfaceVariant),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Tracking status banner
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}'),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: (booking.isWorkerTracking ?? false)
+                  ? colorScheme.primary.withValues(alpha: 0.08)
+                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: (booking.isWorkerTracking ?? false)
+                    ? colorScheme.primary.withValues(alpha: 0.3)
+                    : colorScheme.outlineVariant.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  (booking.isWorkerTracking ?? false) ? Icons.location_on : Icons.location_off_outlined,
+                  size: 18,
+                  color: (booking.isWorkerTracking ?? false) ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (booking.isWorkerTracking ?? false) ? 'Traveling to client' : 'Location sharing off',
+                        style: AppTypography.labelSmall.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: (booking.isWorkerTracking ?? false) ? colorScheme.primary : colorScheme.onSurface,
                         ),
-                        Text(
-                          _isTracking ? 'Estimated arrival: 10 mins' : 'Please proceed with the service',
-                          style: AppTypography.bodySmall.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (_isTracking)
-                    ElevatedButton(
-                      onPressed: () => setState(() => _isTracking = false),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: colorScheme.onPrimary,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('I\'ve Arrived', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    ),
-                ],
-              ),
+                      Text(
+                        (booking.isWorkerTracking ?? false)
+                            ? 'Client can see your location'
+                            : 'Tap to open map and start sharing',
+                        style: AppTypography.bodySmall.copyWith(
+                          fontSize: 10,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, size: 18, color: colorScheme.onSurfaceVariant),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -322,8 +368,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildLocationRow(Booking booking) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Row(
       children: [
@@ -334,18 +379,15 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Location', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant, fontSize: 10)),
-              Text('Trinidad (${booking.barangay})', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
+              Text('Trinidad (${booking.clientBarangay ?? booking.barangay})', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
             ],
           ),
         ),
-        TextButton(
-          onPressed: () {
-            if (_booking!.status == BookingStatus.upcoming) {
-              _updateStatus(BookingStatus.active);
-            }
-          },
-          child: Text('View on Map', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w700)),
-        ),
+        if (booking.status == BookingStatus.active)
+          TextButton(
+            onPressed: () => Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}'),
+            child: Text('View on Map', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w700)),
+          ),
       ],
     );
   }
@@ -422,14 +464,19 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildConditionalAction(Booking booking) {
-    if (booking.status == BookingStatus.upcoming) {
+    if (booking.status == BookingStatus.accepted) {
       return PrimaryButton(
         label: 'Start Traveling',
-        onPressed: () => _updateStatus(BookingStatus.active),
+        onPressed: () async {
+          await _updateStatus(BookingStatus.active);
+          if (mounted) {
+            Navigator.pushNamed(context, '${AppRouter.workerMap}/${booking.id}');
+          }
+        },
       );
     }
-    
-    if (booking.status == BookingStatus.active && !_isTracking) {
+
+    if (booking.status == BookingStatus.active) {
       return PrimaryButton(
         label: 'Mark as Completed',
         onPressed: () => _updateStatus(BookingStatus.completed),

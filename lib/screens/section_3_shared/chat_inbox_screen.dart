@@ -36,6 +36,32 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            width: double.infinity,
+            color: theme.colorScheme.primary,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Messages',
+                    style: AppTypography.headlineMedium.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Stay connected with clients and workers.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: theme.colorScheme.onPrimary.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           _buildSearchBar(),
           _buildFilterChips(),
           Expanded(
@@ -155,9 +181,10 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
             GestureDetector(
               onTap: () {
                 if (conversation.isSupport) return;
-                if (conversation.otherUserRole == 'Client') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Client profiles coming soon!')),
+                if (conversation.otherUserRole.toLowerCase() == 'client') {
+                  Navigator.pushNamed(
+                    context,
+                    '${AppRouter.clientProfile}/${conversation.otherUserId}',
                   );
                 } else {
                   Navigator.pushNamed(context, '${AppRouter.workerProfile}/${conversation.otherUserId}');
@@ -187,6 +214,16 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
                     ],
                   ),
                   const SizedBox(height: 4),
+                  if (!conversation.isSupport)
+                    Text(
+                      conversation.otherUserRole.toLowerCase() == 'worker'
+                          ? 'Availability: ${conversation.availabilityStatus ?? 'unknown'}'
+                          : (conversation.isOnline ? 'Online' : 'Offline'),
+                      style: AppTypography.labelSmall.copyWith(
+                        color: conversation.isOnline ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   Row(
                     children: [
                       Expanded(
@@ -244,7 +281,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
     return Stack(
       children: [
         CircleAvatar(radius: 26, backgroundImage: NetworkImage(conversation.otherUserAvatar)),
-        if (conversation.isOnline)
+        if (conversation.otherUserRole.toLowerCase() == 'worker' || conversation.isOnline)
           Positioned(
             right: 0,
             bottom: 0,
@@ -252,7 +289,7 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
               width: 14,
               height: 14,
               decoration: BoxDecoration(
-                color: colorScheme.primary,
+                color: _presenceColor(conversation, colorScheme),
                 shape: BoxShape.circle,
                 border: Border.all(color: colorScheme.surface, width: 2),
               ),
@@ -260,6 +297,23 @@ class _ChatInboxScreenState extends State<ChatInboxScreen> {
           ),
       ],
     );
+  }
+
+  Color _presenceColor(Conversation conversation, ColorScheme colorScheme) {
+    if (conversation.otherUserRole.toLowerCase() != 'worker') {
+      return conversation.isOnline ? colorScheme.primary : colorScheme.outline;
+    }
+
+    switch (conversation.availabilityStatus?.toLowerCase()) {
+      case 'busy':
+        return Colors.orange;
+      case 'offline':
+        return Colors.grey;
+      case 'available':
+        return Colors.green;
+      default:
+        return colorScheme.outline;
+    }
   }
 
   Widget _buildEmptyState() {

@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/booking_provider.dart';
-import '../../providers/worker_provider.dart';
 import '../../data/models/booking_model.dart';
-import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 
 class RateReviewScreen extends StatefulWidget {
@@ -21,7 +19,6 @@ class RateReviewScreen extends StatefulWidget {
 
 class _RateReviewScreenState extends State<RateReviewScreen> {
   Booking? _booking;
-  Worker? _worker;
   bool _isLoading = true;
   int _selectedRating = 0;
   final _commentController = TextEditingController();
@@ -29,6 +26,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
   // Submit Button States
   bool _isSubmitting = false;
   bool _isSuccess = false;
+  Map<String, dynamic>? _serverErrors;
 
   @override
   void initState() {
@@ -38,17 +36,12 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
 
   Future<void> _loadData() async {
     final bookingProvider = context.read<BookingProvider>();
-    final workerProvider = context.read<WorkerProvider>();
     final booking = await bookingProvider.getBookingById(widget.bookingId);
-    if (booking != null) {
-      final worker = await workerProvider.getWorkerById(booking.workerId);
-      if (mounted) {
-        setState(() {
-          _booking = booking;
-          _worker = worker;
-          _isLoading = false;
-        });
-      }
+    if (mounted) {
+      setState(() {
+        _booking = booking;
+        _isLoading = false;
+      });
     }
   }
 
@@ -73,7 +66,6 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
     try {
       final result = await context.read<BookingProvider>().submitReview(
         bookingId: widget.bookingId,
-        workerId: _worker!.id,
         rating: _selectedRating,
         comment: _commentController.text.trim(),
       );
@@ -92,9 +84,21 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
         }
       } else if (mounted) {
         final colorScheme = Theme.of(context).colorScheme;
-        setState(() => _isSubmitting = false);
+        setState(() {
+          _isSubmitting = false;
+          _serverErrors = result.errors;
+        });
+        final msgs = <String>[];
+        (result.errors ?? const {}).forEach((key, value) {
+          if (value is List && value.isNotEmpty) {
+            msgs.add('• ${value.join(', ')}');
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
+          SnackBar(
+            content: Text(msgs.isEmpty ? result.message : msgs.join('\n')),
+            backgroundColor: colorScheme.error,
+          ),
         );
       }
     } catch (e) {
@@ -117,7 +121,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
       return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
     }
 
-    if (_booking == null || _worker == null) {
+    if (_booking == null) {
       return const Scaffold(body: Center(child: Text('Booking details not found')));
     }
 
@@ -139,13 +143,13 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'How was the service provided by ${_worker!.name.split(' ').first}?',
+                    'How was the service provided by ${_booking!.workerName?.split(' ').first ?? 'the worker'}?',
                     style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
 
-                  _buildWorkerCard(_worker!),
+                  _buildWorkerCard(_booking!),
                   const SizedBox(height: 40),
 
                   Text(
@@ -154,6 +158,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildStarRating(),
+                  _buildFieldErrors('score'),
                   const SizedBox(height: 40),
 
                   Align(
@@ -187,6 +192,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
                       ),
                     ),
                   ),
+                  _buildFieldErrors('comment'),
                   const SizedBox(height: 48),
 
                   _buildSubmitButton(),
@@ -199,7 +205,34 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
     );
   }
 
-  Widget _buildWorkerCard(Worker worker) {
+  List<String> _fieldErrors(String field) {
+    final map = _serverErrors;
+    if (map == null) return const [];
+    final raw = map[field];
+    if (raw is List) return raw.map((e) => e.toString()).toList();
+    if (raw is String) return [raw];
+    return const [];
+  }
+
+  Widget _buildFieldErrors(String field) {
+    final errors = _fieldErrors(field);
+    if (errors.isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: errors
+            .map((e) => Text(
+                  e,
+                  style: AppTypography.bodySmall.copyWith(color: colorScheme.error),
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildWorkerCard(Booking booking) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Container(
@@ -222,11 +255,13 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
           CircleAvatar(
             radius: 48,
             backgroundColor: colorScheme.surfaceContainerHighest,
-            backgroundImage: NetworkImage(worker.avatarUrl),
+            backgroundImage: booking.workerPhotoUrl == null
+                ? null
+                : NetworkImage(booking.workerPhotoUrl!),
           ),
           const SizedBox(height: 16),
           Text(
-            worker.name,
+            booking.workerName ?? 'Worker',
             style: AppTypography.headlineMedium.copyWith(fontSize: 22, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
           ),
           const SizedBox(height: 8),
@@ -237,7 +272,7 @@ class _RateReviewScreenState extends State<RateReviewScreen> {
               borderRadius: BorderRadius.circular(30),
             ),
             child: Text(
-              worker.specialty.toUpperCase(),
+              booking.category.toUpperCase(),
               style: AppTypography.labelSmall.copyWith(
                 color: colorScheme.primary,
                 fontWeight: FontWeight.w800,

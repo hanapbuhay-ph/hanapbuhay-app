@@ -1,13 +1,7 @@
 import 'worker_model.dart';
+export 'service_category_model.dart';
 
-enum RateType {
-  perHour,
-  perDay,
-  perWeek,
-  perMonth,
-  perSession,
-  perProject,
-}
+enum RateType { perHour, perDay, perWeek, perMonth, perSession, perProject }
 
 extension RateTypeExtension on RateType {
   String get label {
@@ -145,6 +139,7 @@ class JobPost {
   final String id;
   final String workerId;
   final String category;
+  final int? serviceCategoryId;
   final String title;
   final String description;
   final double startingRate;
@@ -157,6 +152,7 @@ class JobPost {
     required this.id,
     required this.workerId,
     required this.category,
+    this.serviceCategoryId,
     required this.title,
     required this.description,
     required this.startingRate,
@@ -180,12 +176,14 @@ class JobPost {
       return imageUrls
           .asMap()
           .entries
-          .map((e) => JobPostImage(
-                id: 'local_${e.key}',
-                imageUrl: e.value,
-                thumbnailUrl: e.value,
-                displayOrder: e.key,
-              ))
+          .map(
+            (e) => JobPostImage(
+              id: 'local_${e.key}',
+              imageUrl: e.value,
+              thumbnailUrl: e.value,
+              displayOrder: e.key,
+            ),
+          )
           .toList();
     }
     return const [];
@@ -196,13 +194,15 @@ class JobPost {
   String? get previewImageUrl =>
       images.isNotEmpty ? images.first.imageUrl : null;
 
-  String? get thumbnailUrl =>
-      images.isNotEmpty ? (images.first.thumbnailUrl ?? images.first.imageUrl) : null;
+  String? get thumbnailUrl => images.isNotEmpty
+      ? (images.first.thumbnailUrl ?? images.first.imageUrl)
+      : null;
 
   JobPost copyWith({
     String? id,
     String? workerId,
     String? category,
+    int? serviceCategoryId,
     String? title,
     String? description,
     double? startingRate,
@@ -216,6 +216,7 @@ class JobPost {
       id: id ?? this.id,
       workerId: workerId ?? this.workerId,
       category: category ?? this.category,
+      serviceCategoryId: serviceCategoryId ?? this.serviceCategoryId,
       title: title ?? this.title,
       description: description ?? this.description,
       startingRate: startingRate ?? this.startingRate,
@@ -227,7 +228,10 @@ class JobPost {
     );
   }
 
-  factory JobPost.fromJson(Map<String, dynamic> json, {String? defaultWorkerId}) {
+  factory JobPost.fromJson(
+    Map<String, dynamic> json, {
+    String? defaultWorkerId,
+  }) {
     final rawImages = json['images'] as List<dynamic>? ?? [];
     final parsedImages = rawImages
         .map((item) => JobPostImage.fromJson(item as Map<String, dynamic>))
@@ -237,11 +241,20 @@ class JobPost {
     final categoryName = categoryVal is Map
         ? (categoryVal['name'] ?? '')
         : (json['category_name'] ?? categoryVal ?? '');
+    final catId = (categoryVal is Map && categoryVal['id'] is num)
+        ? (categoryVal['id'] as num).toInt()
+        : (json['service_category_id'] is num)
+        ? (json['service_category_id'] as num).toInt()
+        : null;
 
     return JobPost(
       id: (json['id'] ?? json['job_post_id'])?.toString() ?? '',
-      workerId: (json['worker_profile_id'] ?? json['worker_id'] ?? defaultWorkerId)?.toString() ?? '',
+      workerId:
+          (json['worker_profile_id'] ?? json['worker_id'] ?? defaultWorkerId)
+              ?.toString() ??
+          '',
       category: categoryName.toString(),
+      serviceCategoryId: catId,
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       startingRate: (json['rate_amount'] is num)
@@ -259,6 +272,7 @@ class JobPost {
       'id': id,
       'worker_id': workerId,
       'category': category,
+      'service_category_id': serviceCategoryId,
       'title': title,
       'description': description,
       'rate_amount': startingRate,
@@ -275,18 +289,30 @@ class JobPostListing {
   final Worker worker;
   final JobPost post;
 
-  JobPostListing({
-    required this.worker,
-    required this.post,
-  });
+  JobPostListing({required this.worker, required this.post});
 
   factory JobPostListing.fromJson(Map<String, dynamic> json) {
-    final workerData = json['worker'] as Map<String, dynamic>? ?? {};
+    final workerData = <String, dynamic>{
+      ...json['worker'] as Map<String, dynamic>? ?? {},
+      if (json['distance_label'] != null)
+        'distance_label': json['distance_label'],
+      if (json['distance_km'] != null) 'distance_km': json['distance_km'],
+    };
     final worker = Worker.fromJson(
       workerData,
       fallbackProfileId: json['worker_profile_id']?.toString(),
     );
     final post = JobPost.fromJson(json, defaultWorkerId: worker.id);
     return JobPostListing(worker: worker, post: post);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'job_post_id': post.id,
+      'worker_profile_id': worker.id,
+      'worker': worker.toJson(),
+      ...post.toJson(),
+      'category': {'id': post.serviceCategoryId, 'name': post.category},
+    };
   }
 }

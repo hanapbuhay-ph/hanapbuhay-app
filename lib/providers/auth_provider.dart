@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+
 import '../data/repositories/auth_repository.dart';
+import '../data/repositories/api/api_auth_repository.dart';
 import '../data/models/auth_result_model.dart';
 import '../services/secure_storage_service.dart';
+import '../services/google_auth_service.dart';
+import '../services/fcm_service.dart';
+import '../services/device_info_service.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../core/constants/app_constants.dart';
+import '../core/api/api_client.dart'; // ignore: unused_import - used in logout()
+import '../core/utils/philippine_mobile_number.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository;
@@ -31,8 +41,18 @@ class AuthProvider extends ChangeNotifier {
   String? _userBarangay;
   String? get userBarangay => _userBarangay;
 
+  int? _userBarangayId;
+  int? get userBarangayId => _userBarangayId;
+
   String? _userAvatar;
   String? get userAvatar => _userAvatar;
+
+  String? _workerProfileId;
+
+  /// The authenticated worker's profile ID (integer stored as string).
+  /// Populated from GET /api/user → data.worker_profile.id.
+  /// null for client-role users or before refreshProfile() completes.
+  String? get workerProfileId => _workerProfileId;
 
   String? _signInMethod;
   String? get signInMethod => _signInMethod;
@@ -42,6 +62,8 @@ class AuthProvider extends ChangeNotifier {
 
   bool _twoFactorEnabled = true;
   bool get twoFactorEnabled => _twoFactorEnabled;
+
+  bool _isAdminRole(String? role) => role == 'admin' || role == 'super_admin';
 
   String getHomeRoute() {
     return _userRole == 'worker' ? '/worker-home' : '/client-home';
@@ -57,13 +79,112 @@ class AuthProvider extends ChangeNotifier {
     _userEmail = prefs.getString('user_email');
     _userRole = prefs.getString('user_role');
     _userName = prefs.getString('user_name');
-    _userMobile = prefs.getString('user_mobile');
+    final storedMobile = prefs.getString('user_mobile');
+    _userMobile = storedMobile == null
+        ? null
+        : normalizePhilippineMobileNumber(storedMobile);
+    if (_userMobile != null && _userMobile != storedMobile) {
+      await prefs.setString('user_mobile', _userMobile!);
+    }
     _userBarangay = prefs.getString('user_barangay');
+    _userBarangayId = prefs.getInt('user_barangay_id');
     _userAvatar = prefs.getString('user_avatar');
+    _workerProfileId = prefs.getString('worker_profile_id');
     _signInMethod = prefs.getString('sign_in_method');
     _twoFactorEnabled = prefs.getBool('2fa_enabled') ?? true;
 
+    if (_isAuthenticated && _isAdminRole(_userRole)) {
+      await logout();
+      return;
+    }
+
     notifyListeners();
+    if (_isAuthenticated && (_userMobile == null || _userMobile!.isEmpty)) {
+      await refreshProfile();
+    }
+  }
+
+  /// Fetch GET /api/user and hydrate local fields. Login/Verify often omit mobile_number.
+  Future<void> refreshProfile() async {
+    try {
+      final res = await ApiClient.get('/user', requiresAuth: true);
+      if (res['success'] != true) return;
+      final raw = res['data'];
+      final user = raw is Map
+          ? raw.map((k, v) => MapEntry(k.toString(), v))
+          : <String, dynamic>{};
+      final nested = user['user'] is Map
+          ? (user['user'] as Map).map((k, v) => MapEntry(k.toString(), v))
+          : null;
+      final src = nested ?? user;
+      final role = src['role']?.toString();
+      if (_isAdminRole(role)) {
+        await logout();
+        return;
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final mobile = (src['mobile_number'] ?? src['mobile'] ?? src['phone'])
+          ?.toString();
+      if (mobile != null &&
+          mobile.trim().isNotEmpty &&
+          mobile.trim() != 'null') {
+        final normalizedMobile = normalizePhilippineMobileNumber(mobile);
+        await prefs.setString('user_mobile', normalizedMobile);
+        _userMobile = normalizedMobile;
+      }
+      final b = src['barangay'];
+      String? bName;
+      if (b is Map)
+        bName = b['name']?.toString();
+      else if (b != null)
+        bName = b.toString();
+      if (bName != null && bName.isNotEmpty && bName != 'null') {
+        await prefs.setString('user_barangay', bName);
+        _userBarangay = bName;
+      }
+      // Extract barangay id (integer) for dropdown matching
+      if (b is Map) {
+        final bId = b['id'];
+        final parsedId = bId is int ? bId : int.tryParse(bId?.toString() ?? '');
+        if (parsedId != null) {
+          await prefs.setInt('user_barangay_id', parsedId);
+          _userBarangayId = parsedId;
+        }
+      }
+      final name = src['name']?.toString();
+      if (name != null && name.isNotEmpty) {
+        await prefs.setString('user_name', name);
+        _userName = name;
+      }
+      final email = src['email']?.toString();
+      if (email != null && email.isNotEmpty) {
+        await prefs.setString('user_email', email);
+        _userEmail = email;
+      }
+      final rawAvatar = (src['profile_photo_url'] ?? src['avatar_url'])
+          ?.toString();
+      if (rawAvatar != null && rawAvatar.isNotEmpty) {
+        final avatar = AppConstants.getPhotoUrl(rawAvatar);
+        await prefs.setString('user_avatar', avatar);
+        _userAvatar = avatar;
+      }
+      // Extract worker_profile.id for worker-authenticated endpoints
+      final wp = src['worker_profile'];
+      if (wp is Map) {
+        final wpId = wp['id'];
+        final wpIdStr = wpId?.toString();
+        if (wpIdStr != null && wpIdStr.isNotEmpty && wpIdStr != 'null') {
+          await prefs.setString('worker_profile_id', wpIdStr);
+          _workerProfileId = wpIdStr;
+        }
+      }
+      if (role != null && role.isNotEmpty && role != 'null') {
+        await prefs.setString('user_role', role);
+        _userRole = role;
+      }
+      notifyListeners();
+    } catch (_) {}
   }
 
   bool get isGoogleLinked => _signInMethod == 'google';
@@ -83,27 +204,42 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<AuthResult> login(String email, String password) async {
-    final result = await _authRepository.login(email, password);
+    final deviceName = await DeviceInfoService.displayName();
+    final result = await _authRepository.login(
+      email,
+      password,
+      deviceName: deviceName,
+    );
     if (result.success) {
-      if (_twoFactorEnabled) {
-        return AuthResult.success(
-          message: 'Two-factor authentication required.',
-          data: {'email': email, 'requiresOtp': true},
-        );
-      }
-
       final userData = result.data?['user'] as Map<String, dynamic>?;
-      await setAuthenticated(
-        result.data?['token'] ?? '',
-        userData?['role'] ?? 'client',
-        id: userData?['id']?.toString(),
-        email: email,
-        name: userData?['name'],
-        mobile: userData?['mobile_number'],
-        barangay: userData?['barangay']?['name'],
-        avatar: userData?['avatar_url'],
-        method: userData?['sign_in_method'] ?? 'email',
-      );
+      final token = result.data?['token']?.toString() ?? '';
+      if (token.isNotEmpty) {
+        final bar = userData?['barangay'];
+        final barIdRaw = bar is Map ? bar['id'] : null;
+        final barId = barIdRaw is int
+            ? barIdRaw
+            : int.tryParse(barIdRaw?.toString() ?? '');
+        await setAuthenticated(
+          token,
+          (userData?['role']?.toString() ?? 'client'),
+          id: userData?['id']?.toString(),
+          email: (userData?['email']?.toString() ?? email),
+          name: userData?['name']?.toString(),
+          mobile:
+              (userData?['mobile_number'] ??
+                      userData?['mobile'] ??
+                      userData?['phone'])
+                  ?.toString(),
+          barangay: bar is Map ? (bar['name']?.toString()) : bar?.toString(),
+          barangayId: barId,
+          avatar: (userData?['profile_photo_url'] ?? userData?['avatar_url'])
+              ?.toString(),
+          method: (userData?['is_google_account'] == true ? 'google' : 'email'),
+        );
+        if (_userMobile == null || _userMobile!.isEmpty) {
+          await refreshProfile();
+        }
+      }
     }
     return result;
   }
@@ -130,33 +266,228 @@ class AuthProvider extends ChangeNotifier {
     final result = await _authRepository.verifyOtp(email, otp);
     if (result.success) {
       final userData = result.data?['user'] as Map<String, dynamic>?;
-      await setAuthenticated(
-        result.data?['token'] ?? '',
-        userData?['role'] ?? 'client',
-        id: userData?['id']?.toString(),
-        email: email,
-        name: userData?['name'],
-        mobile: userData?['mobile_number'],
-        barangay: userData?['barangay']?['name'],
-        avatar: userData?['avatar_url'],
-        method: userData?['sign_in_method'] ?? 'email',
-      );
+      final token = result.data?['token']?.toString() ?? '';
+      if (token.isNotEmpty) {
+        String? barangayName;
+        int? barangayId;
+        final b = userData?['barangay'];
+        if (b is Map) {
+          barangayName = b['name']?.toString();
+          final bId = b['id'];
+          barangayId = bId is int ? bId : int.tryParse(bId?.toString() ?? '');
+        }
+        final avatarUrl =
+            (userData?['profile_photo_url'] ?? userData?['avatar_url'])
+                ?.toString();
+        final isGoogle = userData?['is_google_account'] == true;
+        await setAuthenticated(
+          token,
+          (userData?['role']?.toString() ?? 'client'),
+          id: userData?['id']?.toString(),
+          email: (userData?['email']?.toString() ?? email),
+          name: userData?['name']?.toString(),
+          mobile:
+              (userData?['mobile_number'] ??
+                      userData?['mobile'] ??
+                      userData?['phone'])
+                  ?.toString(),
+          barangay: barangayName,
+          barangayId: barangayId,
+          avatar: avatarUrl,
+          method: isGoogle ? 'google' : 'email',
+        );
+        if (_userMobile == null || _userMobile!.isEmpty) {
+          await refreshProfile();
+        }
+      }
     }
     return result;
   }
 
-  Future<void> setAuthenticated(String token, String role, {
-    String? id, 
-    String? email, 
-    String? name, 
-    String? mobile, 
+  Future<AuthResult> verifyLoginOtp(String email, String otp) async {
+    final deviceName = await DeviceInfoService.displayName();
+    final result = await _authRepository.verifyLoginOtp(
+      email,
+      otp,
+      deviceName: deviceName,
+    );
+    if (result.success) {
+      final userData = result.data?['user'] as Map<String, dynamic>?;
+      final token = result.data?['token']?.toString() ?? '';
+      if (token.isNotEmpty) {
+        final bar = userData?['barangay'];
+        final barIdRaw = bar is Map ? bar['id'] : null;
+        final barId = barIdRaw is int
+            ? barIdRaw
+            : int.tryParse(barIdRaw?.toString() ?? '');
+        await setAuthenticated(
+          token,
+          userData?['role']?.toString() ?? 'client',
+          id: userData?['id']?.toString(),
+          email: userData?['email']?.toString() ?? email,
+          name: userData?['name']?.toString(),
+          mobile: userData?['mobile_number']?.toString(),
+          barangay: bar is Map ? bar['name']?.toString() : bar?.toString(),
+          barangayId: barId,
+          avatar: userData?['profile_photo_url']?.toString(),
+          method: userData?['is_google_account'] == true ? 'google' : 'email',
+        );
+      }
+    }
+    return result;
+  }
+
+  Future<AuthResult> resendLoginOtp(String email) =>
+      _authRepository.resendLoginOtp(email);
+
+  Future<AuthResult> googleLogin({
+    String? roleForNewUser,
+    bool forceAccountPicker = true,
+  }) async {
+    final account = await GoogleAuthService().signIn(
+      forceAccountPicker: forceAccountPicker,
+    );
+    if (account == null)
+      return AuthResult.failure(message: 'Google sign-in cancelled.');
+    final auth = await account.authentication;
+    final idToken = auth.idToken;
+    if (idToken == null || idToken.isEmpty)
+      return AuthResult.failure(message: 'Failed to get Google ID token.');
+    AuthResult result;
+    if (_authRepository is ApiAuthRepository) {
+      final deviceName = await DeviceInfoService.displayName();
+      result = await (_authRepository as ApiAuthRepository).googleAuth(
+        googleToken: idToken,
+        role: roleForNewUser,
+        deviceName: deviceName,
+      );
+    } else {
+      result = AuthResult.success(
+        message: 'Google sign-in (mock)',
+        data: {
+          'token': 'mock_google_token',
+          'is_new_user': true,
+          'user': {
+            'email': account.email,
+            'name': account.displayName ?? account.email,
+          },
+        },
+      );
+    }
+    if (result.success) {
+      final data = result.data ?? {};
+      final token = data['token']?.toString() ?? '';
+      final userRaw = data['user'];
+      final user = userRaw is Map
+          ? userRaw.map((k, v) => MapEntry(k.toString(), v))
+          : <String, dynamic>{};
+      final isNew = data['is_new_user'] == true;
+      // Don't default role for new users — backend returns role=null and Flutter must go through CompleteProfile
+      String role = user['role']?.toString() ?? '';
+      if (role.isEmpty) {
+        if (!isNew && roleForNewUser != null)
+          role = roleForNewUser;
+        else if (!isNew)
+          role = 'client';
+        else
+          role = roleForNewUser ?? '';
+      }
+      if (token.isNotEmpty) {
+        final avatarUrl = (user['profile_photo_url'] ?? user['avatar_url'])
+            ?.toString();
+        // For new users with no role yet, keep role empty so getHomeRoute isn't confused; complete-profile will set it
+        final storedRole = role.isEmpty ? '' : role;
+        await setAuthenticated(
+          token,
+          storedRole,
+          id: user['id']?.toString(),
+          email: (user['email']?.toString() ?? account.email),
+          name: (user['name']?.toString() ?? account.displayName),
+          avatar: avatarUrl,
+          method: 'google',
+        );
+        // Preserve raw role for caller by keeping it in result data; ensure is_new_user survives setAuthenticated
+      }
+    }
+    return result;
+  }
+
+  Future<AuthResult> completeGoogleProfile({
+    required String name,
+    required String mobileNumber,
+    required String role,
+    required String barangay,
+    String? avatarPath,
+  }) async {
+    if (_authRepository is ApiAuthRepository) {
+      final r = await (_authRepository as ApiAuthRepository)
+          .completeGoogleProfile(
+            name: name,
+            mobileNumber: mobileNumber,
+            role: role,
+            barangay: barangay,
+            avatarPath: avatarPath,
+          );
+      if (r.success) {
+        final userRaw = r.data?['user'];
+        final user = userRaw is Map
+            ? userRaw.map((k, v) => MapEntry(k.toString(), v))
+            : null;
+        await updateLocalProfile(
+          name: user?['name']?.toString() ?? name,
+          mobile: user?['mobile_number']?.toString() ?? mobileNumber,
+          avatar: (user?['profile_photo_url'] ?? avatarPath)?.toString(),
+        );
+        final prefs = await SharedPreferences.getInstance();
+        final newRole = user?['role']?.toString() ?? role;
+        await prefs.setString('user_role', newRole);
+        _userRole = newRole;
+        final b2 = user?['barangay'];
+        String? barangayName2;
+        if (b2 is Map)
+          barangayName2 = b2['name']?.toString();
+        else if (b2 != null)
+          barangayName2 = b2.toString();
+        if (barangayName2 != null) {
+          await prefs.setString('user_barangay', barangayName2);
+          _userBarangay = barangayName2;
+        }
+        if (b2 is Map) {
+          final b2Id = b2['id'];
+          final parsedB2Id = b2Id is int
+              ? b2Id
+              : int.tryParse(b2Id?.toString() ?? '');
+          if (parsedB2Id != null) {
+            await prefs.setInt('user_barangay_id', parsedB2Id);
+            _userBarangayId = parsedB2Id;
+          }
+        }
+        notifyListeners();
+      }
+      return r;
+    }
+    return await _authRepository.updateProfile(
+      name: name,
+      mobileNumber: mobileNumber,
+      avatarPath: avatarPath,
+    );
+  }
+
+  Future<void> setAuthenticated(
+    String token,
+    String role, {
+    String? id,
+    String? email,
+    String? name,
+    String? mobile,
     String? barangay,
+    int? barangayId,
     String? avatar,
     String method = 'email',
   }) async {
     await _storage.saveToken(token);
     final prefs = await SharedPreferences.getInstance();
-    
+
     await prefs.setString('user_role', role);
     _userRole = role;
 
@@ -176,44 +507,110 @@ class AuthProvider extends ChangeNotifier {
       _userName = name;
     }
     if (mobile != null) {
-      await prefs.setString('user_mobile', mobile);
-      _userMobile = mobile;
+      final v = normalizePhilippineMobileNumber(mobile.trim());
+      if (v.isNotEmpty && v != 'null') {
+        await prefs.setString('user_mobile', v);
+        _userMobile = v;
+      }
     }
     if (barangay != null) {
       await prefs.setString('user_barangay', barangay);
       _userBarangay = barangay;
     }
-    if (avatar != null) {
-      await prefs.setString('user_avatar', avatar);
-      _userAvatar = avatar;
+    if (barangayId != null) {
+      await prefs.setInt('user_barangay_id', barangayId);
+      _userBarangayId = barangayId;
+    }
+    final normalizedAvatar = avatar?.trim();
+    if (normalizedAvatar == null || normalizedAvatar.isEmpty) {
+      await prefs.remove('user_avatar');
+      _userAvatar = null;
+    } else {
+      final photoUrl = AppConstants.getPhotoUrl(normalizedAvatar);
+      await prefs.setString('user_avatar', photoUrl);
+      _userAvatar = photoUrl;
     }
 
     _isAuthenticated = true;
     notifyListeners();
+    FcmService.initializeAndRegister();
   }
 
-  Future<AuthResult> updateProfile({required String name, required String mobileNumber, String? avatarPath}) async {
-    final result = await _authRepository.updateProfile(name: name, mobileNumber: mobileNumber, avatarPath: avatarPath);
+  Future<AuthResult> updateProfile({
+    required String name,
+    required String mobileNumber,
+    int? barangayId,
+    String? barangayName,
+    String? avatarPath,
+  }) async {
+    final result = await _authRepository.updateProfile(
+      name: name,
+      mobileNumber: mobileNumber,
+      barangayId: barangayId,
+      avatarPath: avatarPath,
+    );
     if (result.success) {
-      await updateLocalProfile(name: name, mobile: mobileNumber, avatar: avatarPath);
+      await updateLocalProfile(
+        name: name,
+        mobile: mobileNumber,
+        barangayId: barangayId,
+        barangayName: barangayName,
+        avatar: avatarPath,
+      );
     }
     return result;
+  }
+
+  Future<AuthResult> resendOtp(String email) async {
+    return await _authRepository.resendOtp(email);
   }
 
   Future<AuthResult> forgotPassword(String identifier) async {
     return await _authRepository.forgotPassword(identifier);
   }
 
-  Future<AuthResult> verifyForgotPasswordOtp(String identifier, String otp) async {
+  Future<AuthResult> verifyForgotPasswordOtp(
+    String identifier,
+    String otp,
+  ) async {
     return await _authRepository.verifyForgotPasswordOtp(identifier, otp);
   }
 
-  Future<AuthResult> resetPassword(String identifier, String newPassword) async {
+  Future<AuthResult> resetPassword(
+    String identifier,
+    String newPassword,
+  ) async {
     return await _authRepository.resetPassword(identifier, newPassword);
   }
 
-  Future<AuthResult> changePassword({required String currentPassword, required String newPassword}) async {
-    final result = await _authRepository.changePassword(currentPassword: currentPassword, newPassword: newPassword);
+  /// Resets password using the token returned by verifyForgotPasswordOtp.
+  /// Sends { email, reset_token, password, password_confirmation } — the full
+  /// contract required by the backend's ResetPasswordRequest.
+  Future<AuthResult> resetPasswordWithToken({
+    required String email,
+    required String resetToken,
+    required String newPassword,
+  }) async {
+    if (_authRepository is ApiAuthRepository) {
+      return await (_authRepository as ApiAuthRepository)
+          .resetPasswordWithToken(
+            email: email,
+            resetToken: resetToken,
+            newPassword: newPassword,
+          );
+    }
+    // Fallback for mock: delegate to the base resetPassword method.
+    return await _authRepository.resetPassword(email, newPassword);
+  }
+
+  Future<AuthResult> changePassword({
+    String? currentPassword,
+    required String newPassword,
+  }) async {
+    final result = await _authRepository.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
     if (result.success && _signInMethod == 'google') {
       final prefs = await SharedPreferences.getInstance();
       _signInMethod = 'email'; // Or 'both'
@@ -223,12 +620,65 @@ class AuthProvider extends ChangeNotifier {
     return result;
   }
 
-  Future<void> updateLocalProfile({required String name, required String mobile, String? avatar}) async {
+  Future<AuthResult> getPasswordChangeCooldown() =>
+      _authRepository.getPasswordChangeCooldown();
+
+  Future<List<Map<String, dynamic>>> getSessions() =>
+      _authRepository.getSessions();
+
+  Future<AuthResult> revokeSession(String sessionId) =>
+      _authRepository.revokeSession(sessionId);
+
+  Future<AuthResult> revokeAllSessions() => _authRepository.revokeAllSessions();
+
+  Future<AuthResult> getDeletionRequestStatus() =>
+      _authRepository.getDeletionRequestStatus();
+
+  Future<AuthResult> requestAccountDeletion() =>
+      _authRepository.requestAccountDeletion();
+
+  Future<AuthResult> cancelAccountDeletion() =>
+      _authRepository.cancelAccountDeletion();
+
+  Future<void> loadTwoFactorPreference() async {
+    _twoFactorEnabled = await _authRepository.getTwoFactorEnabled();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('2fa_enabled', _twoFactorEnabled);
+    notifyListeners();
+  }
+
+  Future<bool> updateTwoFactorPreference(bool enabled) async {
+    final result = await _authRepository.updateTwoFactorEnabled(enabled);
+    if (result.success) {
+      _twoFactorEnabled = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('2fa_enabled', enabled);
+      notifyListeners();
+    }
+    return result.success;
+  }
+
+  Future<void> updateLocalProfile({
+    required String name,
+    required String mobile,
+    int? barangayId,
+    String? barangayName,
+    String? avatar,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
     _userName = name;
-    await prefs.setString('user_mobile', mobile);
-    _userMobile = mobile;
+    final normalizedMobile = normalizePhilippineMobileNumber(mobile);
+    await prefs.setString('user_mobile', normalizedMobile);
+    _userMobile = normalizedMobile;
+    if (barangayId != null) {
+      await prefs.setInt('user_barangay_id', barangayId);
+      _userBarangayId = barangayId;
+    }
+    if (barangayName != null) {
+      await prefs.setString('user_barangay', barangayName);
+      _userBarangay = barangayName;
+    }
     if (avatar != null) {
       await prefs.setString('user_avatar', avatar);
       _userAvatar = avatar;
@@ -237,6 +687,15 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    // Best-effort server logout
+    try {
+      await ApiClient.post('/auth/logout', requiresAuth: true);
+    } catch (_) {}
+    if (_signInMethod == 'google') {
+      try {
+        await GoogleAuthService().signOut();
+      } catch (_) {}
+    }
     await _storage.deleteToken();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_id');
@@ -245,17 +704,21 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove('user_name');
     await prefs.remove('user_mobile');
     await prefs.remove('user_avatar');
+    await prefs.remove('user_barangay');
+    await prefs.remove('user_barangay_id');
     await prefs.remove('sign_in_method');
-    
+    await prefs.remove('worker_profile_id');
     _isAuthenticated = false;
     _userId = null;
     _userEmail = null;
     _userRole = null;
     _userName = null;
     _userMobile = null;
+    _userBarangay = null;
+    _userBarangayId = null;
     _userAvatar = null;
     _signInMethod = null;
-    
+    _workerProfileId = null;
     notifyListeners();
   }
 }

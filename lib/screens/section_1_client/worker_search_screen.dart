@@ -4,7 +4,6 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../data/models/worker_model.dart';
 import '../../data/models/trust_tier.dart';
 import '../../data/models/job_post_model.dart';
 import '../../data/models/barangay_model.dart';
@@ -65,18 +64,10 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
     final workerProvider = context.read<WorkerProvider>();
     final authProvider = context.read<AuthProvider>();
     
-    // Applying current search query and filters through provider
-    _filteredListings = await workerProvider.getFilteredWorkers(userBarangayName: authProvider.userBarangay);
-    
-    // Search query filter (local)
-    if (_searchController.text.isNotEmpty) {
-      final query = _searchController.text.toLowerCase();
-      _filteredListings = _filteredListings.where((listing) {
-        return listing.worker.name.toLowerCase().contains(query) ||
-               listing.post.title.toLowerCase().contains(query) ||
-               listing.post.category.toLowerCase().contains(query);
-      }).toList();
-    }
+    final query = _searchController.text.trim();
+    _filteredListings = query.isNotEmpty
+        ? await workerProvider.searchWorkers(search: query, categoryId: _selectedCategory)
+        : await workerProvider.getFilteredWorkers(userBarangayName: authProvider.userBarangay);
 
     setState(() => _isLoading = false);
   }
@@ -453,21 +444,21 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                   FutureBuilder<List<ServiceCategory>>(
                     future: workerProvider.getCategories(),
                     builder: (context, snapshot) {
-                      final categories = (snapshot.data ?? []).map((c) => c.label).toList();
+                      final categories = snapshot.data ?? [];
                       return Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: categories.map((cat) {
-                          final isSelected = _selectedCategories.contains(cat);
+                          final isSelected = _selectedCategories.contains(cat.id);
                           return FilterChip(
-                            label: Text(cat),
+                            label: Text(cat.label),
                             selected: isSelected,
                             onSelected: (val) {
                               setState(() {
                                 if (val) {
-                                  _selectedCategories.add(cat);
+                                  _selectedCategories.add(cat.id);
                                 } else {
-                                  _selectedCategories.remove(cat);
+                                  _selectedCategories.remove(cat.id);
                                 }
                               });
                             },
@@ -494,7 +485,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                     ),
                     hint: const Text('All Barangays'),
                     items: Barangay.trinidadBarangays.map((b) => DropdownMenuItem(
-                      value: b.name,
+                      value: b.id,
                       child: Text(b.name),
                     )).toList(),
                     onChanged: (val) => setState(() => _selectedBarangay = val),

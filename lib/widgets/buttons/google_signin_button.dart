@@ -8,11 +8,13 @@ import '../../core/theme/app_typography.dart';
 class GoogleSignInButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String label;
+  final bool isLoading;
 
   const GoogleSignInButton({
     super.key,
     this.onPressed,
     this.label = 'Continue with Google',
+    this.isLoading = false,
   });
 
   @override
@@ -20,11 +22,12 @@ class GoogleSignInButton extends StatelessWidget {
     final bool isEnabled = onPressed != null;
     final colorScheme = Theme.of(context).colorScheme;
     
+    final effectiveOnPressed = isLoading ? null : onPressed;
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: SvgPicture.asset('assets/icon/google.svg', height: 24),
+        onPressed: effectiveOnPressed,
+        icon: isLoading ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary)) : SvgPicture.asset('assets/icon/google.svg', height: 24),
         label: Text(
           label,
           style: AppTypography.labelLarge.copyWith(

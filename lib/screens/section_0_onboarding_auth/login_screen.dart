@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/google_auth_service.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
 import '../../widgets/buttons/google_signin_button.dart';
 
 /// Login Screen (0.6)
-/// 
+///
 /// Allows users to authenticate via Email/Mobile or Google.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,15 +24,31 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _obscurePassword = true;
   bool _isLoading = false;
+  int _lockoutSeconds = 0;
+  Timer? _lockoutTimer;
 
   @override
   void dispose() {
+    _lockoutTimer?.cancel();
     _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _startLoginLockout(int seconds) {
+    _lockoutTimer?.cancel();
+    setState(() => _lockoutSeconds = seconds);
+    _lockoutTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _lockoutSeconds <= 1) {
+        timer.cancel();
+        if (mounted) setState(() => _lockoutSeconds = 0);
+        return;
+      }
+      setState(() => _lockoutSeconds--);
+    });
   }
 
   Future<void> _handleLogin() async {
@@ -49,24 +67,38 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result.success) {
         if (result.data?['requiresOtp'] == true) {
+          final expiresIn = result.data?['otp_expires_in_seconds'] ?? 300;
           Navigator.pushNamed(
-            context, 
-            '${AppRouter.verifyEmail}?email=${_identifierController.text.trim()}',
+            context,
+            '${AppRouter.verifyEmail}?email=${Uri.encodeComponent(_identifierController.text.trim())}&login=true&expires_in=$expiresIn',
           );
         } else {
           Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
         }
       } else {
+        final retryAfter = int.tryParse(
+          result.data?['retry_after_seconds']?.toString() ?? '',
+        );
+        if (retryAfter != null && retryAfter > 0) {
+          _startLoginLockout(retryAfter);
+        }
         final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: colorScheme.error),
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: colorScheme.error,
+          ),
         );
       }
     } catch (e) {
       final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e is UnimplementedError ? 'Login is currently pending backend.' : 'Login failed: $e'),
+          content: Text(
+            e is UnimplementedError
+                ? 'Login is currently pending backend.'
+                : 'Login failed: $e',
+          ),
           backgroundColor: colorScheme.error,
         ),
       );
@@ -76,7 +108,73 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleGoogleLogin() async {
-    await GoogleAuthService().signIn();
+    if (_lockoutSeconds > 0) return;
+    setState(() => _isLoading = true);
+    try {
+      final result = await context.read<AuthProvider>().googleLogin(
+        forceAccountPicker: true,
+      );
+      if (!mounted) return;
+      if (result.success) {
+        final d = result.data ?? {};
+        if (d['requiresOtp'] == true) {
+          final user = d['user'] is Map ? (d['user'] as Map) : null;
+          final email = user?['email']?.toString() ?? '';
+          final expiresIn = d['otp_expires_in_seconds'] ?? 300;
+          Navigator.pushNamed(
+            context,
+            '${AppRouter.verifyEmail}?email=${Uri.encodeComponent(email)}&login=true&expires_in=$expiresIn',
+          );
+          return;
+        }
+        final isNew =
+            d['is_new_user'] == true ||
+            d['needs_profile_completion'] == true ||
+            d['isNewUser'] == true;
+        // Also treat missing role/barangay as incomplete even if flag absent (defensive)
+        final user = d['user'] is Map ? (d['user'] as Map) : null;
+        final roleMissing =
+            user != null &&
+            (user['role'] == null ||
+                user['role'].toString().isEmpty ||
+                user['role'].toString() == 'null');
+        final needsComplete = isNew || roleMissing;
+        if (needsComplete) {
+          // Direct to Complete Profile — role picker is inside that screen if not pre-selected
+          Navigator.pushNamed(context, AppRouter.completeProfile);
+        } else {
+          Navigator.pushReplacementNamed(
+            context,
+            context.read<AuthProvider>().getHomeRoute(),
+          );
+        }
+      } else {
+        final retryAfter = int.tryParse(
+          result.data?['retry_after_seconds']?.toString() ?? '',
+        );
+        if (retryAfter != null && retryAfter > 0) {
+          _startLoginLockout(retryAfter);
+        }
+        if (result.message != 'Google sign-in cancelled.') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Google sign-in failed: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -88,17 +186,8 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: colorScheme.surface,
       body: Column(
         children: [
-          // 1. Standardized Header
-          AppHeader(
-            showBackButton: true,
-            onBackPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              } else {
-                Navigator.pushReplacementNamed(context, AppRouter.onboarding);
-              }
-            },
-          ),
+          // 1. Standardized Header — no back button: onboarding only on first install
+          const AppHeader(showBackButton: false),
 
           // 2. Scrollable Content
           Expanded(
@@ -110,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 32),
-                    
+
                     // Logo
                     Container(
                       width: 96,
@@ -127,43 +216,70 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: Image.asset('assets/icon/app_icon.png', fit: BoxFit.cover),
+                      child: Image.asset(
+                        'assets/icon/app_icon.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    Text('Welcome Back', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
+                    Text(
+                      'Welcome Back',
+                      style: AppTypography.headlineLarge.copyWith(
+                        fontSize: 28,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'Log in to your HanapBuhay account',
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    
+
                     const SizedBox(height: 40),
 
                     // Google Login Button
-                    GoogleSignInButton(onPressed: _handleGoogleLogin),
-                    
+                    GoogleSignInButton(
+                      onPressed: _lockoutSeconds > 0
+                          ? null
+                          : _handleGoogleLogin,
+                    ),
+
                     const SizedBox(height: 24),
-                    
+
                     // Divider
                     Row(
                       children: [
-                        Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+                        Expanded(
+                          child: Divider(
+                            color: colorScheme.outlineVariant.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            'OR', 
+                            'OR',
                             style: AppTypography.labelSmall.copyWith(
                               color: colorScheme.onSurfaceVariant,
                               letterSpacing: 1.2,
-                            )
+                            ),
                           ),
                         ),
-                        Expanded(child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+                        Expanded(
+                          child: Divider(
+                            color: colorScheme.outlineVariant.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 24),
 
                     // Identifier Field
@@ -171,7 +287,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _identifierController,
                       label: 'Email Address',
                       hint: 'Enter your email',
-                      validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                      validator: (val) =>
+                          val == null || val.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: 20),
 
@@ -182,17 +299,29 @@ class _LoginScreenState extends State<LoginScreen> {
                       hint: 'Enter your password',
                       obscureText: _obscurePassword,
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off, size: 20, color: colorScheme.onSurfaceVariant),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          size: 20,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
-                      validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                      validator: (val) =>
+                          val == null || val.isEmpty ? 'Required' : null,
                     ),
-                    
+
                     // Forgot Password
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () => Navigator.pushNamed(context, AppRouter.forgotPassword),
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          AppRouter.forgotPassword,
+                        ),
                         child: Text(
                           'Forgot Password?',
                           style: AppTypography.labelSmall.copyWith(
@@ -202,7 +331,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -212,26 +341,53 @@ class _LoginScreenState extends State<LoginScreen> {
 
           // 3. Fixed Footer
           Container(
-            padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              16,
+              24,
+              MediaQuery.of(context).padding.bottom + 24,
+            ),
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
+              border: Border(
+                top: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                ),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (_lockoutSeconds > 0) ...[
+                  Text(
+                    'Too many failed attempts. Try again in '
+                    '${(_lockoutSeconds ~/ 60).toString().padLeft(2, '0')}:'
+                    '${(_lockoutSeconds % 60).toString().padLeft(2, '0')}.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: colorScheme.error,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 PrimaryButton(
-                  label: 'Log In',
+                  label: _lockoutSeconds > 0 ? 'Try Again Later' : 'Log In',
                   isLoading: _isLoading,
-                  onPressed: _handleLogin,
+                  onPressed: _lockoutSeconds > 0 ? null : _handleLogin,
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don't have an account? ", style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
+                    Text(
+                      "Don't have an account? ",
+                      style: AppTypography.bodySmall.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, AppRouter.registerRole),
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRouter.registerRole),
                       child: Text(
                         'Sign Up',
                         style: AppTypography.labelSmall.copyWith(
@@ -268,14 +424,32 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-        floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
+        labelStyle: AppTypography.bodyMedium.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+        floatingLabelStyle: AppTypography.labelSmall.copyWith(
+          color: colorScheme.primary,
+        ),
         filled: true,
         fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        ),
         suffixIcon: suffixIcon,
       ),
       validator: validator,

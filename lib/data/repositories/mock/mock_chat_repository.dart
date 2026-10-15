@@ -1,7 +1,9 @@
 import '../../models/chat_model.dart';
 import '../chat_repository.dart';
+import 'dart:async';
 
 class MockChatRepository implements ChatRepository {
+  final _unreadCountController = StreamController<int>.broadcast();
   final List<Conversation> _mockConversations = [
     Conversation(
       id: 'c1',
@@ -88,8 +90,13 @@ class MockChatRepository implements ChatRepository {
   @override
   Future<List<Conversation>> getConversations() async {
     await Future.delayed(const Duration(milliseconds: 600));
-    return _mockConversations;
+    final conversations = _mockConversations;
+    _unreadCountController.add(conversations.where((conversation) => conversation.isUnread).length);
+    return conversations;
   }
+
+  @override
+  Stream<int> getUnreadCount() => _unreadCountController.stream;
 
   @override
   Future<List<Message>> getMessages(String conversationId) async {
@@ -98,12 +105,12 @@ class MockChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> sendMessage(String conversationId, String senderId, {String? text, String? imageUrl}) async {
+  Future<void> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
     await Future.delayed(const Duration(milliseconds: 200));
     final newMessage = Message(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       conversationId: conversationId,
-      senderId: senderId,
+      senderId: senderId ?? 'current_user',
       text: text,
       imageUrl: imageUrl,
       timestamp: DateTime.now(),

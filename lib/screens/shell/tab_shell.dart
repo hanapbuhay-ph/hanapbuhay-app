@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/navigation/tab_top_bar.dart';
 import '../../widgets/navigation/app_bottom_nav.dart';
 import '../section_1_client/client_home_screen.dart';
 import '../section_1_client/booking_history_screen.dart';
@@ -23,6 +22,7 @@ class TabShell extends StatefulWidget {
 class _TabShellState extends State<TabShell> {
   late int _currentIndex;
   late int _previousIndex;
+  int _profileTabBuildCount = 0;
 
   @override
   void initState() {
@@ -36,6 +36,9 @@ class _TabShellState extends State<TabShell> {
     setState(() {
       _previousIndex = _currentIndex;
       _currentIndex = index;
+      if (index == 4) {
+        _profileTabBuildCount++;
+      }
     });
   }
 
@@ -49,14 +52,14 @@ class _TabShellState extends State<TabShell> {
             const BookingScheduleScreen(),
             const ChatInboxScreen(),
             const NotificationCenterScreen(),
-            const ProfileTabScreen(),
+            ProfileTabScreen(key: ValueKey('profile-tab-$_profileTabBuildCount')),
           ]
         : [
             const ClientHomeScreen(),
             const BookingHistoryScreen(),
             const ChatInboxScreen(),
             const NotificationCenterScreen(),
-            const ProfileTabScreen(),
+            ProfileTabScreen(key: ValueKey('profile-tab-$_profileTabBuildCount')),
           ];
 
     final bool slidingRight = _currentIndex > _previousIndex;
@@ -65,7 +68,6 @@ class _TabShellState extends State<TabShell> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
-          if (_currentIndex != 4) const TabTopBar(),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 280),

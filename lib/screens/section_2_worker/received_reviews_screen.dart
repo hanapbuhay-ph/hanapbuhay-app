@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_typography.dart';
 import '../../providers/worker_provider.dart';
 import '../../data/models/worker_model.dart';
-import '../../data/models/booking_model.dart';
+import '../../core/routing/app_router.dart';
 import '../../widgets/navigation/app_header.dart';
+import '../../widgets/user_avatar.dart';
 
 class ReceivedReviewsScreen extends StatefulWidget {
   const ReceivedReviewsScreen({super.key});
@@ -17,6 +17,7 @@ class ReceivedReviewsScreen extends StatefulWidget {
 class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
   Worker? _worker;
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -25,13 +26,26 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
   }
 
   Future<void> _loadData() async {
-    final workerProvider = context.read<WorkerProvider>();
-    // For demo/mock, assuming current worker is 'w1'
-    final worker = await workerProvider.getWorkerById(AppConstants.mockWorkerId);
     if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+    try {
+      final worker = await context.read<WorkerProvider>().getOwnWorkerProfile();
+      if (!mounted) return;
       setState(() {
         _worker = worker;
         _isLoading = false;
+        if (worker == null) _errorMessage = 'Unable to load your reviews.';
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _worker = null;
+        _isLoading = false;
+        _errorMessage = 'Unable to load your reviews: $error';
       });
     }
   }
@@ -51,10 +65,21 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
     if (_worker == null) {
       return Scaffold(
         backgroundColor: colorScheme.surface,
-        body: const Column(
+        body: Column(
           children: [
             AppHeader(title: 'My Reviews'),
-            Expanded(child: Center(child: Text('Profile not found'))),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_errorMessage ?? 'Unable to load your reviews.'),
+                    const SizedBox(height: 16),
+                    OutlinedButton(onPressed: _loadData, child: const Text('Try Again')),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -126,8 +151,13 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
+              final threshold = index + 1;
               return Icon(
-                index < worker.rating.floor() ? Icons.star : Icons.star_border,
+                worker.rating >= threshold
+                    ? Icons.star
+                    : worker.rating >= threshold - 0.5
+                        ? Icons.star_half
+                        : Icons.star_border,
                 color: Colors.amber,
                 size: 28,
               );
@@ -160,9 +190,16 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(
+              UserAvatar(
+                name: review.reviewerName,
                 radius: 20,
-                backgroundImage: NetworkImage(review.reviewerAvatar),
+                photoPath: review.reviewerAvatar,
+                onTap: review.reviewerId == null
+                    ? null
+                    : () => Navigator.pushNamed(
+                        context,
+                        '${AppRouter.clientProfile}/${review.reviewerId}',
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -193,10 +230,12 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            review.comment,
+            review.comment.trim().isEmpty ? 'No written comment.' : review.comment,
             style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface, height: 1.5),
           ),
           const SizedBox(height: 16),
+          // Note: WorkerReview.id is the rating record ID, not a booking ID.
+          // Display formatted date instead of attempting to show a booking code.
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -204,11 +243,12 @@ class _ReceivedReviewsScreenState extends State<ReceivedReviewsScreen> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              'Re: Booking #${Booking.formatBookingCode(review.id, review.date)}',
+                'Reviewed on ${review.date.day}/${review.date.month}/${review.date.year}'
+                  '${review.bookingId == null ? '' : ' • Booking #${review.bookingId}'}',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),

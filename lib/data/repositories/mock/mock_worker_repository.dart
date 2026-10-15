@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import '../../models/worker_model.dart';
 import '../worker_repository.dart';
 import '../../models/auth_result_model.dart';
@@ -8,6 +9,87 @@ import '../../models/trust_tier.dart';
 import '../../../core/constants/app_constants.dart';
 
 class MockWorkerRepository implements WorkerRepository {
+  @override
+  Future<FeedResponse> getFeed(FeedFilters filters) async {
+    // Mock implementation - returns mock job posts
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final mockPosts = _mockJobPosts.map((post) {
+      return JobPostListing(
+        worker: _workers[0], // Use first mock worker
+        post: post,
+      );
+    }).toList();
+
+    return FeedResponse(
+      posts: mockPosts,
+      currentPage: 1,
+      perPage: 15,
+      total: mockPosts.length,
+      lastPage: 1,
+    );
+  }
+
+  @override
+  Future<CategoryWorkerResponse> getCategoryWorkers(
+    String categoryId, {
+    CategoryWorkerFilters filters = const CategoryWorkerFilters(),
+  }) async {
+    // Mock implementation - returns mock job posts filtered by availability
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final mockPosts = _mockJobPosts.map((post) {
+      return JobPostListing(worker: _workers[0], post: post);
+    }).toList();
+
+    var listings = mockPosts;
+    if (filters.availableOnly) {
+      listings = listings.where((l) => l.worker.isAvailable).toList();
+    }
+
+    return CategoryWorkerResponse(
+      categoryId: categoryId,
+      categoryName: 'Category',
+      listings: listings,
+      total: listings.length,
+    );
+  }
+
+  @override
+  Future<List<JobPostListing>> searchWorkers({
+    String? search,
+    String? categoryId,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final query = search?.toLowerCase().trim() ?? '';
+    return _workers
+        .where(
+          (worker) =>
+              query.isEmpty ||
+              worker.name.toLowerCase().contains(query) ||
+              worker.specialty.toLowerCase().contains(query) ||
+              worker.services.any(
+                (service) => service.toLowerCase().contains(query),
+              ),
+        )
+        .map((worker) {
+          final post = worker.jobPosts.isNotEmpty
+              ? worker.jobPosts.first
+              : JobPost(
+                  id: 'legacy-${worker.id}',
+                  workerId: worker.id,
+                  category: worker.specialty,
+                  title: '${worker.specialty} Services',
+                  description: worker.bio,
+                  startingRate: worker.hourlyRate,
+                  rateType: RateType.perHour,
+                  isAvailable: worker.isAvailable,
+                );
+          return JobPostListing(worker: worker, post: post);
+        })
+        .toList();
+  }
+
   final List<JobPost> _mockJobPosts = [
     JobPost(
       id: 'jp1',
@@ -65,7 +147,13 @@ class MockWorkerRepository implements WorkerRepository {
       tags: ['Pipe Repair', 'Installation'],
       distance: '1.2 km',
       bio: 'With over 8 years of experience in residential plumbing and general maintenance, I specialize in quick, reliable pipe repairs and complete fixture installations. I take pride in leaving every workspace cleaner than I found it.',
-      services: ['Pipe Repair', 'Installation', 'Leak Detection', 'Drain Cleaning', 'Water Heater Repair'],
+      services: [
+        'Pipe Repair',
+        'Installation',
+        'Leak Detection',
+        'Drain Cleaning',
+        'Water Heater Repair',
+      ],
       isAvailable: true,
       responseTime: '15 mins',
       portfolioImages: [
@@ -214,19 +302,37 @@ class MockWorkerRepository implements WorkerRepository {
 
   List<Worker> _getFilteredAndSortedWorkers() {
     return _workers
-        .where((w) => w.trustTier != TrustTier.flagged && w.trustTier != TrustTier.revoked)
+        .where(
+          (w) =>
+              w.trustTier != TrustTier.flagged &&
+              w.trustTier != TrustTier.revoked,
+        )
         .toList()
-      ..sort((a, b) => b.trustTier.sortPriority.compareTo(a.trustTier.sortPriority));
+      ..sort(
+        (a, b) => b.trustTier.sortPriority.compareTo(a.trustTier.sortPriority),
+      );
   }
 
   @override
   Future<List<ServiceCategory>> getCategories() async {
     return [
-      ServiceCategory(id: '1', label: 'Electrical', icon: Icons.electrical_services),
+      ServiceCategory(
+        id: '1',
+        label: 'Electrical',
+        icon: Icons.electrical_services,
+      ),
       ServiceCategory(id: '2', label: 'Plumbing', icon: Icons.plumbing),
       ServiceCategory(id: '3', label: 'Tutoring', icon: Icons.school),
-      ServiceCategory(id: '4', label: 'Cleaning', icon: Icons.cleaning_services),
-      ServiceCategory(id: '5', label: 'Laundry', icon: Icons.local_laundry_service),
+      ServiceCategory(
+        id: '4',
+        label: 'Cleaning',
+        icon: Icons.cleaning_services,
+      ),
+      ServiceCategory(
+        id: '5',
+        label: 'Laundry',
+        icon: Icons.local_laundry_service,
+      ),
       ServiceCategory(id: '6', label: 'Gardening', icon: Icons.yard),
     ];
   }
@@ -254,6 +360,12 @@ class MockWorkerRepository implements WorkerRepository {
   }
 
   @override
+  Future<Worker?> getOwnWorkerProfile() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return _workers.isEmpty ? null : _workers.first;
+  }
+
+  @override
   Future<JobPostListing?> getJobPostDetail(String postId) async {
     await Future.delayed(const Duration(milliseconds: 300));
     for (final worker in _workers) {
@@ -276,56 +388,82 @@ class MockWorkerRepository implements WorkerRepository {
   }
 
   @override
+  @override
   Future<AuthResult> submitVerificationDocuments({
-    required String workerId,
-    required String govIdPath,
+    required String govIdFrontPath,
+    required String govIdBackPath,
     required String brgyCertPath,
     required String selfiePath,
+    String? skillCertPath,
   }) async {
     await Future.delayed(const Duration(seconds: 2));
-    final index = _workers.indexWhere((w) => w.id == workerId);
-    if (index != -1) {
-      final old = _workers[index];
-      _workers[index] = Worker(
-        id: old.id,
-        name: old.name,
-        avatarUrl: old.avatarUrl,
-        specialty: old.specialty,
-        rating: old.rating,
-        reviewCount: old.reviewCount,
-        barangay: old.barangay,
-        barangayCoordinates: old.barangayCoordinates,
-        hourlyRate: old.hourlyRate,
-        isVerified: false,
-        verificationStatus: VerificationStatus.pending,
-        tags: old.tags,
-        distance: old.distance,
-        bio: old.bio,
-        services: old.services,
-        isAvailable: old.isAvailable,
-        availabilityStatus: old.availabilityStatus,
-        responseTime: old.responseTime,
-        portfolioImages: old.portfolioImages,
-        reviews: old.reviews,
-        trustTier: old.trustTier,
-        completedJobsCount: old.completedJobsCount,
-        jobPosts: old.jobPosts,
-      );
-    }
-    return AuthResult.success(message: 'Verification submitted.');
+    return AuthResult.success(
+      message: 'Documents submitted for review.',
+      data: {'verification_status': 'pending'},
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getVerificationStatus() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return {
+      'verification_status': 'pending',
+      'trust_tier': null,
+      'remarks': null,
+      'documents': [
+        {'type': 'government_id_front', 'status': 'pending'},
+        {'type': 'government_id_back', 'status': 'pending'},
+        {'type': 'barangay_certificate', 'status': 'pending'},
+        {'type': 'selfie_with_id', 'status': 'pending'},
+      ],
+    };
+  }
+
+  @override
+  Future<List<JobPost>> getWorkerPosts({bool includeInactive = false}) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (includeInactive) return List.from(_mockJobPosts);
+    return _mockJobPosts.where((p) => p.isActive).toList();
+  }
+
+  @override
+  Future<AuthResult> updateAvailability(String availabilityStatus) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return AuthResult.success(message: 'Availability updated.');
   }
 
   @override
   Future<AuthResult> updateProfile({
     required String workerId,
-    required List<String> categories,
-    required List<String> photoPaths,
+    required List<String> categoryIds,
+    required List<String> newPhotoPaths,
+    required List<String> keepPhotoIds,
     required String bio,
   }) async {
     await Future.delayed(const Duration(seconds: 1));
     final index = _workers.indexWhere((w) => w.id == workerId);
     if (index != -1) {
       final old = _workers[index];
+      final photos = [
+        ...old.portfolioImages
+            .asMap()
+            .entries
+            .where(
+              (entry) =>
+                  entry.key < old.portfolioPhotoIds.length &&
+                  keepPhotoIds.contains(old.portfolioPhotoIds[entry.key]),
+            )
+            .map((entry) => entry.value),
+        ...newPhotoPaths,
+      ];
+      const categoryLabels = {
+        '1': 'Electrical',
+        '2': 'Plumbing',
+        '3': 'Tutoring',
+        '4': 'Cleaning',
+        '5': 'Laundry',
+        '6': 'Gardening',
+      };
       _workers[index] = Worker(
         id: old.id,
         name: old.name,
@@ -338,14 +476,19 @@ class MockWorkerRepository implements WorkerRepository {
         hourlyRate: old.hourlyRate,
         isVerified: old.isVerified,
         verificationStatus: old.verificationStatus,
-        tags: categories,
+        tags: categoryIds,
         distance: old.distance,
         bio: bio,
-        services: categories,
+        services: categoryIds.map((id) => categoryLabels[id] ?? id).toList(),
+        serviceCategoryIds: categoryIds,
         isAvailable: old.isAvailable,
         availabilityStatus: old.availabilityStatus,
         responseTime: old.responseTime,
-        portfolioImages: photoPaths,
+        portfolioImages: photos,
+        portfolioPhotoIds: List.generate(
+          photos.length,
+          (photoIndex) => 'mock-$photoIndex',
+        ),
         reviews: old.reviews,
         trustTier: old.trustTier,
         completedJobsCount: old.completedJobsCount,
@@ -478,7 +621,10 @@ class MockWorkerRepository implements WorkerRepository {
   }
 
   @override
-  Future<List<JobPostImage>> uploadPostImages(String postId, List<String> filePaths) async {
+  Future<List<JobPostImage>> uploadPostImages(
+    String postId,
+    List<String> filePaths,
+  ) async {
     await Future.delayed(const Duration(milliseconds: 500));
     JobPost? targetPost;
     int postIndex = _mockJobPosts.indexWhere((p) => p.id == postId);
@@ -494,7 +640,9 @@ class MockWorkerRepository implements WorkerRepository {
       }
     }
 
-    final currentImages = targetPost != null ? List<JobPostImage>.from(targetPost.images) : <JobPostImage>[];
+    final currentImages = targetPost != null
+        ? List<JobPostImage>.from(targetPost.images)
+        : <JobPostImage>[];
     final remainingSlots = 10 - currentImages.length;
     if (remainingSlots <= 0) {
       throw Exception('Maximum 10 images per post allowed.');
@@ -504,12 +652,14 @@ class MockWorkerRepository implements WorkerRepository {
     final newImages = <JobPostImage>[];
     for (var i = 0; i < toAdd.length; i++) {
       final order = currentImages.length + i;
-      newImages.add(JobPostImage(
-        id: 'img_${DateTime.now().millisecondsSinceEpoch}_$i',
-        imageUrl: toAdd[i],
-        thumbnailUrl: toAdd[i],
-        displayOrder: order,
-      ));
+      newImages.add(
+        JobPostImage(
+          id: 'img_${DateTime.now().millisecondsSinceEpoch}_$i',
+          imageUrl: toAdd[i],
+          thumbnailUrl: toAdd[i],
+          displayOrder: order,
+        ),
+      );
     }
     currentImages.addAll(newImages);
 
@@ -628,7 +778,10 @@ class MockWorkerRepository implements WorkerRepository {
   }
 
   @override
-  Future<AuthResult> reorderPostImages(String postId, List<String> imageIds) async {
+  Future<AuthResult> reorderPostImages(
+    String postId,
+    List<String> imageIds,
+  ) async {
     await Future.delayed(const Duration(milliseconds: 300));
     JobPost? targetPost;
     int postIndex = _mockJobPosts.indexWhere((p) => p.id == postId);

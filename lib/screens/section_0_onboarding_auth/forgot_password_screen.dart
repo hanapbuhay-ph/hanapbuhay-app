@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/auth_provider.dart';
@@ -11,17 +13,23 @@ import '../../widgets/buttons/primary_button.dart';
 enum ForgotPasswordStep { requestCode, verifyCode, resetPassword, success }
 
 class ForgotPasswordScreen extends StatefulWidget {
+  static const otpValiditySeconds = 5 * 60;
+
   const ForgotPasswordScreen({super.key});
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with TickerProviderStateMixin {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
+    with TickerProviderStateMixin {
   ForgotPasswordStep _currentStep = ForgotPasswordStep.requestCode;
-  
+
   final _identifierController = TextEditingController();
-  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -30,10 +38,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   String? _errorMessage;
+  String?
+  _resetToken; // received from verify-OTP response, required by reset-password
 
   // Timer for OTP
   Timer? _timer;
+  Timer? _otpExpiryTimer;
   int _secondsRemaining = 59;
+  int _otpSecondsRemaining = ForgotPasswordScreen.otpValiditySeconds;
   bool _canResend = false;
 
   AnimationController? _shakeController;
@@ -66,8 +78,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     _timer?.cancel();
+    _otpExpiryTimer?.cancel();
     _shakeController?.dispose();
     super.dispose();
+  }
+
+  void _startOtpExpiryTimer(int seconds) {
+    _otpExpiryTimer?.cancel();
+    setState(() => _otpSecondsRemaining = seconds);
+    _otpExpiryTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_otpSecondsRemaining <= 1) {
+        timer.cancel();
+        setState(() => _otpSecondsRemaining = 0);
+        return;
+      }
+      setState(() => _otpSecondsRemaining--);
+    });
   }
 
   void _startTimer() {
@@ -103,6 +129,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
       if (result.success) {
         setState(() => _currentStep = ForgotPasswordStep.verifyCode);
         _startTimer();
+        final expiresIn = int.tryParse(
+          result.data?['otp_expires_in_seconds']?.toString() ?? '',
+        );
+        _startOtpExpiryTimer(
+          expiresIn != null && expiresIn > 0
+              ? expiresIn
+              : ForgotPasswordScreen.otpValiditySeconds,
+        );
       } else {
         setState(() => _errorMessage = result.message);
       }
@@ -114,7 +148,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   }
 
   Future<void> _handleVerifyOtp() async {
-    if (_otp.length < 6) return;
+    if (_otp.length < 6 || _otpSecondsRemaining <= 0) return;
 
     setState(() {
       _isLoading = true;
@@ -123,8 +157,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
 
     try {
       final authProvider = context.read<AuthProvider>();
-      final result = await authProvider.verifyForgotPasswordOtp(_identifierController.text.trim(), _otp);
+      final result = await authProvider.verifyForgotPasswordOtp(
+        _identifierController.text.trim(),
+        _otp,
+      );
       if (result.success) {
+        // Backend returns { data: { reset_token: '...' } } — must be forwarded to reset step.
+        _resetToken = result.data?['reset_token']?.toString();
+        _otpExpiryTimer?.cancel();
         setState(() => _currentStep = ForgotPasswordStep.resetPassword);
       } else {
         _handleOtpError(result.message);
@@ -166,7 +206,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
 
     try {
       final authProvider = context.read<AuthProvider>();
-      final result = await authProvider.resetPassword(_identifierController.text.trim(), pass);
+      final result = await authProvider.resetPasswordWithToken(
+        email: _identifierController.text.trim(),
+        resetToken: _resetToken ?? '',
+        newPassword: pass,
+      );
       if (result.success) {
         setState(() => _currentStep = ForgotPasswordStep.success);
       } else {
@@ -222,14 +266,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
       children: [
         const SizedBox(height: 32),
         Container(
-          width: 80, height: 80,
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
-            color: colorScheme.surface, 
-            shape: BoxShape.circle, 
+            color: colorScheme.surface,
+            shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.08), 
-                blurRadius: 10, 
+                color: colorScheme.shadow.withValues(alpha: 0.08),
+                blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -238,12 +283,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           child: Image.asset('assets/icon/app_icon.png', fit: BoxFit.cover),
         ),
         const SizedBox(height: 24),
-        Text('Forgot Password?', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
+        Text(
+          'Forgot Password?',
+          style: AppTypography.headlineLarge.copyWith(
+            fontSize: 28,
+            color: colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 8),
         Text(
           'Enter your email address and we\'ll send you a code to reset your password.',
           textAlign: TextAlign.center,
-          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 40),
         _buildTextField(
@@ -263,22 +316,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
       children: [
         const SizedBox(height: 32),
         Container(
-          width: 96, height: 96,
-          decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
-          child: Icon(Icons.mark_email_unread_outlined, size: 48, color: colorScheme.primary),
+          width: 96,
+          height: 96,
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.mark_email_unread_outlined,
+            size: 48,
+            color: colorScheme.primary,
+          ),
         ),
         const SizedBox(height: 32),
-        Text('Verify your email', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
+        Text(
+          'Verify your email',
+          style: AppTypography.headlineLarge.copyWith(
+            fontSize: 28,
+            color: colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 12),
         RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
-            style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+            style: AppTypography.bodyMedium.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
             children: [
-              const TextSpan(text: 'We sent a verification code to your email address\n'),
+              const TextSpan(
+                text: 'We sent a verification code to your email address\n',
+              ),
               TextSpan(
                 text: _identifierController.text,
-                style: AppTypography.labelLarge.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800),
+                style: AppTypography.labelLarge.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ],
           ),
@@ -287,26 +361,59 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
         if (_shakeAnimation != null)
           AnimatedBuilder(
             animation: _shakeAnimation!,
-            builder: (context, child) => Transform.translate(offset: Offset(_shakeAnimation!.value, 0), child: child),
-            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(6, (index) => _buildOtpBox(index))),
+            builder: (context, child) => Transform.translate(
+              offset: Offset(_shakeAnimation!.value, 0),
+              child: child,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(6, (index) => _buildOtpBox(index)),
+            ),
           )
         else
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(6, (index) => _buildOtpBox(index))),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(6, (index) => _buildOtpBox(index)),
+          ),
         if (_errorMessage != null) ...[
           const SizedBox(height: 16),
-          Text(_errorMessage!, textAlign: TextAlign.center, style: AppTypography.bodySmall.copyWith(color: colorScheme.error)),
+          Text(
+            _errorMessage!,
+            textAlign: TextAlign.center,
+            style: AppTypography.bodySmall.copyWith(color: colorScheme.error),
+          ),
         ],
         const SizedBox(height: 40),
         Text(
-          _canResend ? "Didn't receive the code?" : "Resend code in 00:${_secondsRemaining.toString().padLeft(2, '0')}",
-          style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant),
+          _otpSecondsRemaining > 0
+              ? 'Code expires in ${(_otpSecondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_otpSecondsRemaining % 60).toString().padLeft(2, '0')}'
+              : 'This code has expired. Request a new one.',
+          style: AppTypography.bodySmall.copyWith(
+            color: _otpSecondsRemaining > 0
+                ? colorScheme.onSurfaceVariant
+                : colorScheme.error,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          _canResend
+              ? "Didn't receive the code?"
+              : "Resend code in 00:${_secondsRemaining.toString().padLeft(2, '0')}",
+          style: AppTypography.bodySmall.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 8),
         GestureDetector(
           onTap: _canResend ? _handleRequestCode : null,
           child: Text(
             'Resend Code',
-            style: AppTypography.labelLarge.copyWith(color: _canResend ? colorScheme.primary : colorScheme.outlineVariant, fontWeight: FontWeight.w800),
+            style: AppTypography.labelLarge.copyWith(
+              color: _canResend
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ],
@@ -318,14 +425,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     return Column(
       children: [
         const SizedBox(height: 32),
-        Text('HanapBuhay', style: AppTypography.headlineMedium.copyWith(color: colorScheme.primary, fontSize: 32, fontWeight: FontWeight.w800)),
+        Text(
+          'HanapBuhay',
+          style: AppTypography.headlineMedium.copyWith(
+            color: colorScheme.primary,
+            fontSize: 32,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         const SizedBox(height: 16),
-        Text('Create New Password', style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
+        Text(
+          'Create New Password',
+          style: AppTypography.headlineLarge.copyWith(
+            fontSize: 28,
+            color: colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 8),
         Text(
           'Your new password must be different from previous used passwords.',
           textAlign: TextAlign.center,
-          style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 40),
         _buildTextField(
@@ -334,8 +456,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           hint: 'Must be at least 8 characters',
           obscureText: _obscureNewPassword,
           suffixIcon: IconButton(
-            icon: Icon(_obscureNewPassword ? Icons.visibility : Icons.visibility_off, size: 20, color: colorScheme.onSurfaceVariant),
-            onPressed: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
+            icon: Icon(
+              _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            onPressed: () =>
+                setState(() => _obscureNewPassword = !_obscureNewPassword),
           ),
           errorText: _errorMessage,
         ),
@@ -346,8 +473,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           hint: 'Must match new password',
           obscureText: _obscureConfirmPassword,
           suffixIcon: IconButton(
-            icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off, size: 20, color: colorScheme.onSurfaceVariant),
-            onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+            icon: Icon(
+              _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            onPressed: () => setState(
+              () => _obscureConfirmPassword = !_obscureConfirmPassword,
+            ),
           ),
         ),
         const SizedBox(height: 32),
@@ -363,22 +496,40 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 96, height: 96,
-            decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
-            child: Icon(Icons.check_circle, size: 48, color: colorScheme.primary),
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.check_circle,
+              size: 48,
+              color: colorScheme.primary,
+            ),
           ),
           const SizedBox(height: 32),
-          Text('Password Reset Successful', textAlign: TextAlign.center, style: AppTypography.headlineLarge.copyWith(fontSize: 28, color: colorScheme.onSurface)),
+          Text(
+            'Password Reset Successful',
+            textAlign: TextAlign.center,
+            style: AppTypography.headlineLarge.copyWith(
+              fontSize: 28,
+              color: colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 12),
           Text(
             'You can now log in with your new password. Keep it safe!',
             textAlign: TextAlign.center,
-            style: AppTypography.bodyLarge.copyWith(color: colorScheme.onSurfaceVariant),
+            style: AppTypography.bodyLarge.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 48),
           PrimaryButton(
             label: 'Back to Login',
-            onPressed: () => Navigator.pushReplacementNamed(context, AppRouter.login),
+            onPressed: () =>
+                Navigator.pushReplacementNamed(context, AppRouter.login),
           ),
         ],
       ),
@@ -391,18 +542,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     VoidCallback? onPressed = _handleRequestCode;
 
     if (_currentStep == ForgotPasswordStep.verifyCode) {
-      label = 'Verify';
-      onPressed = _otp.length == 6 ? _handleVerifyOtp : null;
+      label = _otpSecondsRemaining > 0 ? 'Verify' : 'Code Expired';
+      onPressed = _otp.length == 6 && _otpSecondsRemaining > 0
+          ? _handleVerifyOtp
+          : null;
     } else if (_currentStep == ForgotPasswordStep.resetPassword) {
       label = 'Reset Password';
       onPressed = _handleResetPassword;
     }
 
     return Container(
-      padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        16,
+        24,
+        MediaQuery.of(context).padding.bottom + 24,
+      ),
       decoration: BoxDecoration(
-        color: colorScheme.surface, 
-        border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
+        color: colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
       ),
       child: PrimaryButton(
         label: label,
@@ -412,7 +574,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
     );
   }
 
-  Widget _buildTextField({required TextEditingController controller, required String label, String? hint, bool obscureText = false, Widget? suffixIcon, String? errorText}) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? errorText,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return TextFormField(
       controller: controller,
@@ -422,32 +591,75 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
         labelText: label,
         hintText: hint,
         errorText: errorText,
-        labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
-        floatingLabelStyle: AppTypography.labelSmall.copyWith(color: colorScheme.primary),
+        labelStyle: AppTypography.bodyMedium.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+        floatingLabelStyle: AppTypography.labelSmall.copyWith(
+          color: colorScheme.primary,
+        ),
         filled: true,
         fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.primary, width: 2)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        ),
         suffixIcon: suffixIcon,
       ),
     );
   }
 
+  void _handleOtpPaste(String pasted) {
+    final digits = pasted.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return;
+    final toFill = digits.length > 6 ? digits.substring(0, 6) : digits;
+    for (int i = 0; i < 6; i++) {
+      _otpControllers[i].text = i < toFill.length ? toFill[i] : '';
+    }
+    setState(() {});
+    if (toFill.length == 6) {
+      _otpFocusNodes[5].unfocus();
+      _handleVerifyOtp();
+    } else {
+      _otpFocusNodes[toFill.length.clamp(0, 5)].requestFocus();
+    }
+  }
+
   Widget _buildOtpBox(int index) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      width: 44, height: 56,
+      width: 44,
+      height: 56,
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _otpFocusNodes[index].hasFocus ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5), width: _otpFocusNodes[index].hasFocus ? 2 : 1),
+        border: Border.all(
+          color: _otpFocusNodes[index].hasFocus
+              ? colorScheme.primary
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: _otpFocusNodes[index].hasFocus ? 2 : 1,
+        ),
       ),
       child: KeyboardListener(
         focusNode: FocusNode(),
         onKeyEvent: (event) {
-          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace && _otpControllers[index].text.isEmpty && index > 0) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.backspace &&
+              _otpControllers[index].text.isEmpty &&
+              index > 0) {
             _otpFocusNodes[index - 1].requestFocus();
           }
         },
@@ -456,10 +668,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
           focusNode: _otpFocusNodes[index],
           textAlign: TextAlign.center,
           keyboardType: TextInputType.number,
-          inputFormatters: [LengthLimitingTextInputFormatter(1), FilteringTextInputFormatter.digitsOnly],
-          style: AppTypography.headlineMedium.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800),
-          decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.zero),
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          style: AppTypography.headlineMedium.copyWith(
+            color: colorScheme.primary,
+            fontWeight: FontWeight.w800,
+          ),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+          ),
           onChanged: (value) {
+            if (value.length > 1) {
+              _handleOtpPaste(value);
+              return;
+            }
             if (value.isNotEmpty) {
               if (index < 5) {
                 _otpFocusNodes[index + 1].requestFocus();

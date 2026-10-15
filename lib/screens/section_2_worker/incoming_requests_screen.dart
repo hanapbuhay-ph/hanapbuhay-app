@@ -9,6 +9,7 @@ import '../../core/theme/app_typography.dart';
 import '../../providers/booking_provider.dart';
 import '../../data/models/booking_model.dart';
 import '../../widgets/info/detail_info_row.dart';
+import '../../widgets/user_avatar.dart';
 
 class IncomingRequestsScreen extends StatefulWidget {
   const IncomingRequestsScreen({super.key});
@@ -219,13 +220,21 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                       // Header
                       Row(
                         children: [
-                          const CircleAvatar(radius: 28, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
+                          UserAvatar(
+                            name: request.clientName ?? 'Client',
+                            radius: 28,
+                            photoPath: request.clientPhotoUrl,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '${AppRouter.clientProfile}/${request.clientId}',
+                            ),
+                          ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Client Name', style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+                                Text(request.clientName ?? 'Client', style: AppTypography.headlineMedium.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
                                 const SizedBox(height: 4),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -249,7 +258,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                       const SizedBox(height: 16),
                       _buildDetailRow(colorScheme, Icons.calendar_today_outlined, 'Date & Time', '${AppFormatters.date(request.date)} • ${request.time}'),
                       const SizedBox(height: 14),
-                          _buildDetailRow(colorScheme, Icons.location_on_outlined, 'Location', '${AppConstants.municipalityName} (${request.barangay})'),
+                          _buildDetailRow(colorScheme, Icons.location_on_outlined, 'Location', '${AppConstants.municipalityName} (${request.clientBarangay ?? request.barangay})'),
                       const SizedBox(height: 14),
                       _buildDetailRow(colorScheme, Icons.build_outlined, 'Service', request.category),
                       if (request.notes.isNotEmpty) ...[
@@ -351,13 +360,21 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
         children: [
           Row(
             children: [
-              const CircleAvatar(radius: 24, backgroundImage: NetworkImage(AppConstants.mockClientAvatar)),
+              UserAvatar(
+                name: request.clientName ?? 'Client',
+                radius: 24,
+                photoPath: request.clientPhotoUrl,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  '${AppRouter.clientProfile}/${request.clientId}',
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Client Name', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
+                    Text(request.clientName ?? 'Client', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, color: colorScheme.onSurface)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
@@ -374,7 +391,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
           const SizedBox(height: 16),
           _buildInfoRow(Icons.calendar_today_outlined, AppFormatters.relativeDate(request.date), '${AppFormatters.date(request.date)} • ${request.time}'),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${request.barangay})', '~1.5 km away'),
+          _buildInfoRow(Icons.location_on_outlined, '${AppConstants.municipalityName} (${request.clientBarangay ?? request.barangay})', '~1.5 km away'),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
@@ -412,4 +429,3 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
   }
 
 }
-

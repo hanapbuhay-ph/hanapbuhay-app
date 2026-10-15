@@ -1,10 +1,22 @@
 enum NotificationType {
   bookingAccepted,
+  bookingDeclined,
+  bookingCancelled,
+  bookingStarted,
+  bookingToday,
+  bookingRescheduled,
   bookingUpdated,
   bookingCompleted,
+  trackingStarted,
+  trackingStopped,
   newChatMessage,
   verificationApproved,
   newRatingReceived,
+  reportReceived,
+  verificationResubmissionRequired,
+  jobPostCreated,
+  jobPostUpdated,
+  jobPostRemoved,
   system
 }
 

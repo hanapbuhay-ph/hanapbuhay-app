@@ -32,6 +32,35 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
     return Column(
         children: [
+          Container(
+            width: double.infinity,
+            color: theme.colorScheme.primary,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Notifications',
+                      style: AppTypography.headlineMedium.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Stay up to date with your bookings and activity.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: theme.colorScheme.onPrimary.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: FutureBuilder<List<AppNotification>>(
               future: _notificationsFuture,
@@ -148,7 +177,17 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
     switch (notification.type) {
       case NotificationType.bookingAccepted:
+      case NotificationType.bookingDeclined:
+      case NotificationType.bookingCancelled:
+      case NotificationType.bookingStarted:
+      case NotificationType.bookingToday:
+      case NotificationType.bookingRescheduled:
       case NotificationType.bookingUpdated:
+      case NotificationType.jobPostCreated:
+      case NotificationType.jobPostUpdated:
+      case NotificationType.jobPostRemoved:
+      case NotificationType.trackingStarted:
+      case NotificationType.trackingStopped:
         icon = Icons.work;
         color = colorScheme.primary;
         bgColor = colorScheme.primary.withValues(alpha: 0.1);
@@ -159,6 +198,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         bgColor = const Color(0xFFFFDDB5).withValues(alpha: 0.2);
         break;
       case NotificationType.verificationApproved:
+      case NotificationType.verificationResubmissionRequired:
         icon = Icons.verified_user;
         color = colorScheme.primary;
         bgColor = colorScheme.primary.withValues(alpha: 0.1);
@@ -172,6 +212,11 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         icon = Icons.star;
         color = Colors.amber;
         bgColor = Colors.amber.withValues(alpha: 0.1);
+        break;
+      case NotificationType.reportReceived:
+        icon = Icons.report_problem_outlined;
+        color = colorScheme.error;
+        bgColor = colorScheme.error.withValues(alpha: 0.1);
         break;
       default:
         icon = Icons.notifications;
@@ -224,28 +269,47 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
     switch (notification.type) {
       case NotificationType.bookingAccepted:
+      case NotificationType.bookingDeclined:
+      case NotificationType.bookingCancelled:
+      case NotificationType.bookingStarted:
+      case NotificationType.bookingToday:
+      case NotificationType.bookingRescheduled:
       case NotificationType.bookingUpdated:
       case NotificationType.bookingCompleted:
+      case NotificationType.trackingStarted:
+      case NotificationType.trackingStopped:
         final role = context.read<AuthProvider>().userRole;
+        if (notification.relatedId == null || notification.relatedId!.isEmpty) {
+          break;
+        }
         if (role == 'worker') {
           Navigator.pushNamed(context, '${AppRouter.jobDetail}/${notification.relatedId}');
         } else {
           Navigator.pushNamed(context, '${AppRouter.bookingDetail}/${notification.relatedId}');
         }
         break;
+      case NotificationType.jobPostCreated:
+      case NotificationType.jobPostUpdated:
+      case NotificationType.jobPostRemoved:
+        Navigator.pushNamed(context, AppRouter.manageJobPosts);
+        break;
       case NotificationType.newChatMessage:
         Navigator.pushNamed(context, '${AppRouter.chatThread}/${notification.relatedId}');
         break;
       case NotificationType.verificationApproved:
+      case NotificationType.verificationResubmissionRequired:
         Navigator.pushNamed(context, AppRouter.verificationStatus);
         break;
       case NotificationType.newRatingReceived:
         final role = context.read<AuthProvider>().userRole;
         if (role == 'worker') {
-           Navigator.pushNamed(context, AppRouter.bookingSchedule);
+           Navigator.pushNamed(context, AppRouter.receivedReviews);
         } else {
            Navigator.pushNamed(context, AppRouter.bookingHistory);
         }
+        break;
+      case NotificationType.reportReceived:
+        Navigator.pushNamed(context, AppRouter.reportStatus);
         break;
       default:
         break;

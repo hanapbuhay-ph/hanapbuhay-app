@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../core/constants/app_constants.dart';
+
 import '../../core/theme/app_typography.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/worker_provider.dart';
+import '../../data/models/service_category_model.dart';
 import '../../data/models/worker_model.dart';
 import '../../widgets/navigation/app_header.dart';
 import '../../widgets/buttons/primary_button.dart';
@@ -20,20 +22,22 @@ class PortfolioSkillsScreen extends StatefulWidget {
 class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   final ImagePicker _picker = ImagePicker();
   final _bioController = TextEditingController();
-  
+
   Worker? _worker;
   bool _isLoading = true;
   bool _isSaving = false;
+  String? _loadError;
 
   List<String> _selectedCategories = [];
-  List<String> _portfolioPaths = []; 
+  List<ServiceCategory> _categories = [];
+  List<String> _portfolioPaths = [];
+  List<String?> _portfolioPhotoIds = [];
   String _currentBio = '';
 
   List<String> _initialCategories = [];
   List<String> _initialPortfolioPaths = [];
+  List<String?> _initialPortfolioPhotoIds = [];
   String _initialBio = '';
-
-  final List<String> _allCategories = AppConstants.workerCategories;
 
   @override
   void initState() {
@@ -42,22 +46,76 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   }
 
   Future<void> _loadWorkerData() async {
-    final worker = await context.read<WorkerProvider>().getWorkerById(AppConstants.mockWorkerId);
-    if (mounted && worker != null) {
-      setState(() {
-        _worker = worker;
-        _selectedCategories = List.from(worker.services);
-        _portfolioPaths = List.from(worker.portfolioImages);
-        _currentBio = worker.bio;
-        _bioController.text = worker.bio;
+    setState(() {
+      _isLoading = true;
+      _loadError = null;
+    });
+    final authProvider = context.read<AuthProvider>();
+    final workerProvider = context.read<WorkerProvider>();
 
-        _initialCategories = List.from(_selectedCategories);
-        _initialPortfolioPaths = List.from(_portfolioPaths);
-        _initialBio = _currentBio;
+    try {
+      // GET /api/user does not currently include worker_profile; the worker
+      // detail endpoint accepts either the profile ID or owning user ID.
+      var profileId = authProvider.workerProfileId ?? authProvider.userId;
+      if (profileId == null) {
+        await authProvider.refreshProfile();
+        profileId = authProvider.workerProfileId ?? authProvider.userId;
+      }
+      if (profileId == null) {
+        throw StateError('Unable to determine your worker profile.');
+      }
 
-        _isLoading = false;
-      });
+      final results = await Future.wait([
+        workerProvider.getCategories(),
+        workerProvider.getWorkerById(profileId),
+      ]);
+      final categories = results[0] as List<ServiceCategory>;
+      final worker = results[1] as Worker?;
+      if (worker == null) {
+        throw StateError('Unable to load your worker profile.');
+      }
+      if (categories.isEmpty && worker.services.isNotEmpty) {
+        throw StateError('Unable to load service categories. Please retry.');
+      }
+
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          _worker = worker;
+          _applyWorker(worker);
+          _isLoading = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _loadError = error.toString();
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _applyWorker(Worker worker) {
+    _selectedCategories = worker.serviceCategoryIds.isNotEmpty
+        ? List.from(worker.serviceCategoryIds)
+        : _categories
+              .where((category) => worker.services.contains(category.label))
+              .map((category) => category.id)
+              .toList();
+    _portfolioPaths = List.from(worker.portfolioImages);
+    _portfolioPhotoIds = List<String?>.generate(
+      _portfolioPaths.length,
+      (index) => index < worker.portfolioPhotoIds.length
+          ? worker.portfolioPhotoIds[index]
+          : null,
+    );
+    _currentBio = worker.bio;
+    _bioController.text = _currentBio;
+    _initialCategories = List.from(_selectedCategories);
+    _initialPortfolioPaths = List.from(_portfolioPaths);
+    _initialPortfolioPhotoIds = List.from(_portfolioPhotoIds);
+    _initialBio = _currentBio;
   }
 
   @override
@@ -72,19 +130,30 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
     for (final cat in _selectedCategories) {
       if (!_initialCategories.contains(cat)) return true;
     }
-    if (_initialPortfolioPaths.length != _portfolioPaths.length) return true;
-    for (int i = 0; i < _portfolioPaths.length; i++) {
-      if (_initialPortfolioPaths[i] != _portfolioPaths[i]) return true;
+    if (!_sameValues(_initialPortfolioPaths, _portfolioPaths)) return true;
+    if (!_sameValues(_initialPortfolioPhotoIds, _portfolioPhotoIds)) {
+      return true;
     }
     return false;
   }
 
+  bool _sameValues<T>(List<T> first, List<T> second) =>
+      first.length == second.length &&
+      List.generate(
+        first.length,
+        (index) => first[index] == second[index],
+      ).every((equal) => equal);
+
   Future<void> _addPhoto() async {
     if (_portfolioPaths.length >= 6) return;
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
     if (image != null) {
       setState(() {
         _portfolioPaths.add(image.path);
+        _portfolioPhotoIds.add(null);
       });
     }
   }
@@ -92,15 +161,16 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
   void _removePhoto(int index) {
     setState(() {
       _portfolioPaths.removeAt(index);
+      _portfolioPhotoIds.removeAt(index);
     });
   }
 
-  void _toggleCategory(String category) {
+  void _toggleCategory(String categoryId) {
     setState(() {
-      if (_selectedCategories.contains(category)) {
-        _selectedCategories.remove(category);
+      if (_selectedCategories.contains(categoryId)) {
+        _selectedCategories.remove(categoryId);
       } else {
-        _selectedCategories.add(category);
+        _selectedCategories.add(categoryId);
       }
     });
   }
@@ -111,31 +181,70 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final theme = Theme.of(context);
-      final result = await context.read<WorkerProvider>().updateWorkerProfile(
-        workerId: _worker!.id,
-        categories: _selectedCategories,
-        photoPaths: _portfolioPaths,
+      final workerProvider = context.read<WorkerProvider>();
+      final newPhotoPaths = <String>[];
+      final keepPhotoIds = <String>[];
+      for (var index = 0; index < _portfolioPaths.length; index++) {
+        final photoId = _portfolioPhotoIds[index];
+        if (photoId != null && photoId.isNotEmpty) {
+          keepPhotoIds.add(photoId);
+        } else if (!_portfolioPaths[index].startsWith('http')) {
+          newPhotoPaths.add(_portfolioPaths[index]);
+        }
+      }
+      final result = await workerProvider.updateWorkerProfile(
+        workerId: _worker?.id ?? '',
+        categoryIds: _selectedCategories,
+        newPhotoPaths: newPhotoPaths,
+        keepPhotoIds: keepPhotoIds,
         bio: _currentBio,
       );
 
       if (mounted) {
+        final theme = Theme.of(context);
+        final fieldErrors = result.errors?.values;
+        final validationMessage = fieldErrors == null
+            ? result.message
+            : fieldErrors
+                  .map(
+                    (value) => value is List && value.isNotEmpty
+                        ? value.first.toString()
+                        : value.toString(),
+                  )
+                  .firstWhere(
+                    (message) => message.isNotEmpty,
+                    orElse: () => result.message,
+                  );
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: theme.colorScheme.primary),
+          SnackBar(
+            content: Text(validationMessage),
+            backgroundColor: result.success
+                ? theme.colorScheme.primary
+                : theme.colorScheme.error,
+          ),
         );
-        setState(() {
-          _initialCategories = List.from(_selectedCategories);
-          _initialPortfolioPaths = List.from(_portfolioPaths);
-          _initialBio = _currentBio;
-          _isSaving = false;
-        });
+        if (result.success) {
+          final refreshedWorker = await workerProvider.getWorkerById(
+            _worker!.id,
+          );
+          if (refreshedWorker == null) {
+            throw StateError('Profile was saved but could not be reloaded.');
+          }
+          if (mounted) {
+            setState(() => _applyWorker(refreshedWorker));
+          }
+        }
+        if (mounted) setState(() => _isSaving = false);
       }
     } catch (e) {
       if (mounted) {
         final theme = Theme.of(context);
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: theme.colorScheme.error),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: theme.colorScheme.error,
+          ),
         );
       }
     }
@@ -147,7 +256,40 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
     final colorScheme = theme.colorScheme;
 
     if (_isLoading) {
-      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
+      );
+    }
+
+    if (_loadError != null) {
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: Column(
+          children: [
+            const AppHeader(title: 'Portfolio & Skills'),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_loadError!, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      OutlinedButton(
+                        onPressed: _loadWorkerData,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return Scaffold(
@@ -159,7 +301,10 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
             child: Stack(
               children: [
                 SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,8 +335,16 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-        boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +352,14 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Service Categories', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16, color: colorScheme.onSurface)),
+              Text(
+                'Service Categories',
+                style: AppTypography.labelLarge.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: colorScheme.onSurface,
+                ),
+              ),
               Icon(Icons.edit_outlined, size: 18, color: colorScheme.primary),
             ],
           ),
@@ -207,25 +367,38 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 12,
-            children: _allCategories.map((cat) {
-              final isSelected = _selectedCategories.contains(cat);
+            children: _categories.map((cat) {
+              final isSelected = _selectedCategories.contains(cat.id);
               return GestureDetector(
-                onTap: () => _toggleCategory(cat),
+                onTap: () => _toggleCategory(cat.id),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surface,
+                    color: isSelected
+                        ? colorScheme.primary.withValues(alpha: 0.1)
+                        : colorScheme.surface,
                     borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: isSelected ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        cat,
+                        cat.label,
                         style: AppTypography.labelSmall.copyWith(
-                          color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w500,
                         ),
                       ),
                       if (isSelected) ...[
@@ -251,8 +424,16 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-        boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,19 +441,32 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Past Work', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16, color: colorScheme.onSurface)),
+              Text(
+                'Past Work',
+                style: AppTypography.labelLarge.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: colorScheme.onSurface,
+                ),
+              ),
               Text(
                 '${_portfolioPaths.length} / 6 Max',
-                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurfaceVariant),
+                style: AppTypography.bodySmall.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
           ResponsiveGrid(
             minimumItemWidth: 104,
-            itemCount: _portfolioPaths.length < 6 ? _portfolioPaths.length + 1 : 6,
+            itemCount: _portfolioPaths.length < 6
+                ? _portfolioPaths.length + 1
+                : 6,
             itemBuilder: (context, index) {
-              if (index == _portfolioPaths.length && _portfolioPaths.length < 6) {
+              if (index == _portfolioPaths.length &&
+                  _portfolioPaths.length < 6) {
                 return _buildAddPhotoTile();
               }
               return _buildPhotoTile(index);
@@ -309,40 +503,75 @@ class _PortfolioSkillsScreenState extends State<PortfolioSkillsScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
-        boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Professional Bio', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 16, color: colorScheme.onSurface)),
+          Text(
+            'Professional Bio',
+            style: AppTypography.labelLarge.copyWith(
+              fontWeight: FontWeight.w800,
+              fontSize: 16,
+              color: colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 16),
           Stack(
             children: [
               TextFormField(
                 controller: _bioController,
                 maxLines: 5,
-                maxLength: 500,
-                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
+                maxLength:
+                    1000, // backend allows 1000 chars (not 500 as docs say)
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurface,
+                ),
                 onChanged: (val) => setState(() => _currentBio = val),
                 decoration: InputDecoration(
                   hintText: 'Tell clients about your experience, specialties, and work ethic...',
-                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                  hintStyle: TextStyle(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
                   filled: true,
-                  fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  counterText: '', 
+                  fillColor: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.1,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  counterText: '',
                 ),
               ),
               Positioned(
                 bottom: 8,
                 right: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: colorScheme.surface.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(4)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                   child: Text(
-                    '${_currentBio.length}/500',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
+                    '${_currentBio.length}/1000',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),

@@ -4,17 +4,20 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/theme/app_colors.dart';
 
 class LiveTrackingMap extends StatefulWidget {
+  /// Static fallback positions (barangay centers) shown before live GPS kicks in.
   final LatLng clientLocation;
   final LatLng workerLocation;
-  final bool isTracking;
-  final VoidCallback? onArrival;
+
+  /// Live GPS overrides — when non-null these replace the static pins.
+  final LatLng? liveClientLocation;
+  final LatLng? liveWorkerLocation;
 
   const LiveTrackingMap({
     super.key,
     required this.clientLocation,
     required this.workerLocation,
-    this.isTracking = false,
-    this.onArrival,
+    this.liveClientLocation,
+    this.liveWorkerLocation,
   });
 
   @override
@@ -23,72 +26,54 @@ class LiveTrackingMap extends StatefulWidget {
 
 class LiveTrackingMapState extends State<LiveTrackingMap> {
   final Completer<GoogleMapController> _controller = Completer();
-  LatLng? _simulatedWorkerPos;
-  Timer? _timer;
-  double _progress = 0.0;
 
   @override
-  void initState() {
-    super.initState();
-    _simulatedWorkerPos = widget.workerLocation;
-    if (widget.isTracking) {
-      _startSimulation();
-    }
-  }
-
-  @override
-  void didUpdateWidget(LiveTrackingMap oldWidget) {
+  void didUpdateWidget(covariant LiveTrackingMap oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isTracking && !oldWidget.isTracking) {
-      _startSimulation();
-    } else if (!widget.isTracking && oldWidget.isTracking) {
-      _timer?.cancel();
+
+    final liveWorkerMoved =
+        widget.liveWorkerLocation != null &&
+        widget.liveWorkerLocation != oldWidget.liveWorkerLocation;
+    final liveClientMoved =
+        widget.liveClientLocation != null &&
+        widget.liveClientLocation != oldWidget.liveClientLocation;
+
+    if (liveWorkerMoved || liveClientMoved) {
+      _animateTo(liveWorkerMoved
+          ? widget.liveWorkerLocation!
+          : widget.liveClientLocation!);
     }
-  }
-
-  void _startSimulation() {
-    _timer?.cancel();
-    _progress = 0.0;
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (!mounted) return;
-      setState(() {
-        _progress += 0.01; // Reach in 10 seconds
-        if (_progress >= 1.0) {
-          _progress = 1.0;
-          _timer?.cancel();
-          widget.onArrival?.call();
-        }
-        
-        final lat = widget.workerLocation.latitude + (widget.clientLocation.latitude - widget.workerLocation.latitude) * _progress;
-        final lng = widget.workerLocation.longitude + (widget.clientLocation.longitude - widget.workerLocation.longitude) * _progress;
-        _simulatedWorkerPos = LatLng(lat, lng);
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   void centerMap() async {
+    await _animateTo(
+      widget.liveWorkerLocation ??
+          widget.liveClientLocation ??
+          widget.clientLocation,
+    );
+  }
+
+  Future<void> _animateTo(LatLng location) async {
+    if (!_controller.isCompleted) return;
     final controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newLatLngZoom(widget.clientLocation, 14));
+    await controller.animateCamera(CameraUpdate.newLatLngZoom(location, 16));
   }
 
   @override
   Widget build(BuildContext context) {
+    final clientPos = widget.liveClientLocation ?? widget.clientLocation;
+    final workerPos = widget.liveWorkerLocation ?? widget.workerLocation;
+
     final markers = {
       Marker(
         markerId: const MarkerId('client'),
-        position: widget.clientLocation,
-        infoWindow: const InfoWindow(title: 'Service Location'),
+        position: clientPos,
+        infoWindow: const InfoWindow(title: 'Client'),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
       ),
       Marker(
         markerId: const MarkerId('worker'),
-        position: _simulatedWorkerPos ?? widget.workerLocation,
+        position: workerPos,
         infoWindow: const InfoWindow(title: 'Worker'),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
       ),
@@ -96,11 +81,13 @@ class LiveTrackingMapState extends State<LiveTrackingMap> {
 
     return GoogleMap(
       initialCameraPosition: CameraPosition(
-        target: widget.clientLocation,
-        zoom: 14, // Slightly closer default
+        target: widget.liveWorkerLocation ??
+            widget.liveClientLocation ??
+            clientPos,
+        zoom: 16,
       ),
       markers: markers,
-      onMapCreated: (controller) => _controller.complete(controller),
+      onMapCreated: (c) => _controller.complete(c),
       zoomControlsEnabled: true,
       zoomGesturesEnabled: true,
       scrollGesturesEnabled: true,
@@ -110,7 +97,7 @@ class LiveTrackingMapState extends State<LiveTrackingMap> {
       polylines: {
         Polyline(
           polylineId: const PolylineId('route'),
-          points: [widget.workerLocation, widget.clientLocation],
+          points: [workerPos, clientPos],
           color: AppColors.primary.withValues(alpha: 0.3),
           width: 4,
           patterns: [PatternItem.dash(10), PatternItem.gap(10)],
