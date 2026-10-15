@@ -4,18 +4,24 @@ import '../models/job_post_model.dart';
 
 /// Filter options for the worker feed (Client Home Screen)
 class FeedFilters {
+  final String? search;
   final String? categoryId;
+  final List<String> categoryIds;
   final String? barangayId;
   final String?
   rateType; // hourly, daily, weekly, monthly, per_session, per_project
+  final List<String> rateTypes;
   final String? verification; // all, verified, unverified
   final String? availability; // all, available
   final int page;
 
   const FeedFilters({
+    this.search,
     this.categoryId,
+    this.categoryIds = const [],
     this.barangayId,
     this.rateType,
+    this.rateTypes = const [],
     this.verification = 'all',
     this.availability = 'all',
     this.page = 1,
@@ -23,13 +29,26 @@ class FeedFilters {
 
   Map<String, String> toQueryParams() {
     final params = <String, String>{};
-    if (categoryId != null) params['category_id'] = categoryId!;
+    if (search != null && search!.trim().isNotEmpty) {
+      params['search'] = search!.trim();
+    }
+    if (categoryIds.isNotEmpty) {
+      params['category_ids'] = categoryIds.join(',');
+    } else if (categoryId != null) {
+      params['category_id'] = categoryId!;
+    }
     if (barangayId != null) params['barangay_id'] = barangayId!;
-    if (rateType != null) params['rate_type'] = rateType!;
-    if (verification != null && verification != 'all')
+    if (rateTypes.isNotEmpty) {
+      params['rate_types'] = rateTypes.map((type) => type).join(',');
+    } else if (rateType != null) {
+      params['rate_type'] = rateType!;
+    }
+    if (verification != null && verification != 'all') {
       params['verification'] = verification!;
-    if (availability != null && availability != 'all')
+    }
+    if (availability != null && availability != 'all') {
       params['availability'] = availability!;
+    }
     params['page'] = page.toString();
     return params;
   }

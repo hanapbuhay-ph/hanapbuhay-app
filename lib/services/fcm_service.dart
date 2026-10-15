@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../core/api/api_client.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -38,8 +39,10 @@ class FcmService {
       },
     );
 
-    final androidPlugin = _localNotifications.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     await androidPlugin?.createNotificationChannel(_channel);
     await androidPlugin?.requestNotificationsPermission();
 
@@ -60,26 +63,35 @@ class FcmService {
 
   static Future<void> _showForegroundNotification(RemoteMessage message) async {
     final notification = message.notification;
-    final title = notification?.title ?? message.data['title']?.toString();
-    final body = notification?.body ?? message.data['body']?.toString();
-    if (title == null || body == null) return;
+    final title =
+        notification?.title ??
+        message.data['title']?.toString() ??
+        'HanapBuhay';
+    final body = notification?.body ?? message.data['body']?.toString() ?? '';
 
-    await _localNotifications.show(
-      message.hashCode,
-      title,
-      body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channel.id,
-          _channel.name,
-          channelDescription: _channel.description,
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: 'ic_stat_notification',
+    try {
+      await _localNotifications.show(
+        message.messageId?.hashCode ?? message.hashCode,
+        title,
+        body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channel.id,
+            _channel.name,
+            channelDescription: _channel.description,
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: 'ic_stat_notification',
+          ),
         ),
-      ),
-      payload: jsonEncode(message.data),
-    );
+        payload: jsonEncode(message.data),
+      );
+    } catch (error, stackTrace) {
+      debugPrint(
+        '[FcmService] Failed to show foreground notification: '
+        '$error\n$stackTrace',
+      );
+    }
   }
 
   static Future<void> _openNotificationTarget(String? payload) async {
@@ -110,7 +122,9 @@ class FcmService {
     }
 
     if (bookingId == null || bookingId.isEmpty) return;
-    final route = role == 'worker' ? AppRouter.jobDetail : AppRouter.bookingDetail;
+    final route = role == 'worker'
+        ? AppRouter.jobDetail
+        : AppRouter.bookingDetail;
     navigator.pushNamed('$route/$bookingId');
   }
 
@@ -138,7 +152,8 @@ class FcmService {
         '/user/fcm-token',
         body: {
           'fcm_token': fcmToken,
-          'device_type': 'android',  // Required by backend (RegisterDeviceRequest.php)
+          'device_type':
+              'android', // Required by backend (RegisterDeviceRequest.php)
         },
         requiresAuth: true,
       );

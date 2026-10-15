@@ -31,6 +31,7 @@ class Booking {
   final String? cancellationReason;
   final int? serviceCategoryId;
   final int? workerUserId;
+  final String? workerProfileId;
   final String? clientName;
   final String? clientPhotoUrl;
   final LatLng? clientBarangayCoordinates;
@@ -62,12 +63,13 @@ class Booking {
     this.cancellationReason,
     this.serviceCategoryId,
     this.workerUserId,
+    this.workerProfileId,
     this.clientName,
     this.clientPhotoUrl,
     this.clientBarangayCoordinates,
     this.clientBarangay,
-  })  : _apiBookingCode = apiBookingCode,
-        createdAt = createdAt ?? DateTime.now();
+  }) : _apiBookingCode = apiBookingCode,
+       createdAt = createdAt ?? DateTime.now();
 
   String get bookingCode {
     if (_apiBookingCode != null && _apiBookingCode!.isNotEmpty) {
@@ -109,35 +111,67 @@ class Booking {
         status = BookingStatus.pending;
     }
 
-    final wj = json['worker'] is Map ? json['worker'] as Map<String, dynamic> : null;
-    final wUserId = wj != null ? (wj['id'] ?? json['worker_id']) : json['worker_id'];
+    final wj = json['worker'] is Map
+        ? json['worker'] as Map<String, dynamic>
+        : null;
+    final wUserId = wj != null
+        ? (wj['id'] ?? json['worker_id'])
+        : json['worker_id'];
+    final workerProfile = wj?['worker_profile'] is Map
+        ? wj!['worker_profile'] as Map<String, dynamic>
+        : null;
+    final workerProfileId =
+        wj?['worker_profile_id']?.toString() ??
+        workerProfile?['id']?.toString() ??
+        json['worker_profile_id']?.toString();
     final wName = wj?['name']?.toString();
     final wPhoto = AppConstants.getPhotoUrl(
       wj?['profile_photo_url']?.toString() ??
           wj?['profile_photo_path']?.toString(),
     );
 
-    final wbJ = wj?['barangay'] is Map ? wj!['barangay'] as Map<String, dynamic> : null;
-    final wbName = wbJ?['name']?.toString() ?? (wj?['barangay']?.toString() ?? '');
-    final wbLat = wbJ != null ? double.tryParse(wbJ['latitude']?.toString() ?? '') : null;
-    final wbLng = wbJ != null ? double.tryParse(wbJ['longitude']?.toString() ?? '') : null;
-    final wbCoord = (wbLat != null && wbLng != null) ? LatLng(wbLat, wbLng) : null;
+    final wbJ = wj?['barangay'] is Map
+        ? wj!['barangay'] as Map<String, dynamic>
+        : null;
+    final wbName =
+        wbJ?['name']?.toString() ?? (wj?['barangay']?.toString() ?? '');
+    final wbLat = wbJ != null
+        ? double.tryParse(wbJ['latitude']?.toString() ?? '')
+        : null;
+    final wbLng = wbJ != null
+        ? double.tryParse(wbJ['longitude']?.toString() ?? '')
+        : null;
+    final wbCoord = (wbLat != null && wbLng != null)
+        ? LatLng(wbLat, wbLng)
+        : null;
 
-    final cj = json['client'] is Map ? json['client'] as Map<String, dynamic> : null;
+    final cj = json['client'] is Map
+        ? json['client'] as Map<String, dynamic>
+        : null;
     final cName = cj?['name']?.toString();
     final cPhoto = AppConstants.getOptionalPhotoUrl(
       cj?['profile_photo_url']?.toString() ??
           cj?['profile_photo_path']?.toString(),
     );
 
-    final cbJ = cj?['barangay'] is Map ? cj!['barangay'] as Map<String, dynamic> : null;
+    final cbJ = cj?['barangay'] is Map
+        ? cj!['barangay'] as Map<String, dynamic>
+        : null;
     final cbName = cbJ?['name']?.toString();
-    final cbLat = cbJ != null ? double.tryParse(cbJ['latitude']?.toString() ?? '') : null;
-    final cbLng = cbJ != null ? double.tryParse(cbJ['longitude']?.toString() ?? '') : null;
-    final cbCoord = (cbLat != null && cbLng != null) ? LatLng(cbLat, cbLng) : null;
+    final cbLat = cbJ != null
+        ? double.tryParse(cbJ['latitude']?.toString() ?? '')
+        : null;
+    final cbLng = cbJ != null
+        ? double.tryParse(cbJ['longitude']?.toString() ?? '')
+        : null;
+    final cbCoord = (cbLat != null && cbLng != null)
+        ? LatLng(cbLat, cbLng)
+        : null;
 
     final scJson = json['service_category'];
-    final scName = scJson is Map ? (scJson['name']?.toString() ?? '') : (scJson?.toString() ?? '');
+    final scName = scJson is Map
+        ? (scJson['name']?.toString() ?? '')
+        : (scJson?.toString() ?? '');
     final scId = scJson is Map ? (scJson['id'] as num?)?.toInt() : null;
 
     final schedAt = json['scheduled_at'] != null
@@ -145,9 +179,15 @@ class Booking {
         : DateTime.now();
     final tm = AppFormatters.time(schedAt);
 
-    final sAt = json['started_at'] != null ? DateTime.tryParse(json['started_at'].toString()) : null;
-    final cAt = json['completed_at'] != null ? DateTime.tryParse(json['completed_at'].toString()) : null;
-    final crAt = json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now() : DateTime.now();
+    final sAt = json['started_at'] != null
+        ? DateTime.tryParse(json['started_at'].toString())
+        : null;
+    final cAt = json['completed_at'] != null
+        ? DateTime.tryParse(json['completed_at'].toString())
+        : null;
+    final crAt = json['created_at'] != null
+        ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
+        : DateTime.now();
     final tl = _buildTimeline(status, crAt, sAt, cAt);
 
     return Booking(
@@ -173,7 +213,10 @@ class Booking {
       completedAt: cAt,
       cancellationReason: json['cancellation_reason']?.toString(),
       serviceCategoryId: scId,
-      workerUserId: wUserId is num ? wUserId.toInt() : int.tryParse(wUserId?.toString() ?? ''),
+      workerUserId: wUserId is num
+          ? wUserId.toInt()
+          : int.tryParse(wUserId?.toString() ?? ''),
+      workerProfileId: workerProfileId,
       clientName: cName,
       clientPhotoUrl: cPhoto,
       clientBarangayCoordinates: cbCoord,
@@ -182,15 +225,38 @@ class Booking {
   }
 
   static List<BookingTimelineStep> _buildTimeline(
-    BookingStatus status, DateTime createdAt, DateTime? startedAt, DateTime? completedAt,
+    BookingStatus status,
+    DateTime createdAt,
+    DateTime? startedAt,
+    DateTime? completedAt,
   ) {
-    final isA = status == BookingStatus.accepted || status == BookingStatus.active || status == BookingStatus.completed;
-    final isAC = status == BookingStatus.active || status == BookingStatus.completed;
+    final isA =
+        status == BookingStatus.accepted ||
+        status == BookingStatus.active ||
+        status == BookingStatus.completed;
+    final isAC =
+        status == BookingStatus.active || status == BookingStatus.completed;
     return [
-      BookingTimelineStep(label: 'Requested', timestamp: createdAt, isCompleted: true),
-      BookingTimelineStep(label: 'Accepted', timestamp: isA ? (startedAt?.subtract(const Duration(hours: 1))) : null, isCompleted: isA),
-      BookingTimelineStep(label: 'Active', timestamp: startedAt, isCompleted: isAC),
-      BookingTimelineStep(label: 'Completed', timestamp: completedAt, isCompleted: status == BookingStatus.completed),
+      BookingTimelineStep(
+        label: 'Requested',
+        timestamp: createdAt,
+        isCompleted: true,
+      ),
+      BookingTimelineStep(
+        label: 'Accepted',
+        timestamp: isA ? (startedAt?.subtract(const Duration(hours: 1))) : null,
+        isCompleted: isA,
+      ),
+      BookingTimelineStep(
+        label: 'Active',
+        timestamp: startedAt,
+        isCompleted: isAC,
+      ),
+      BookingTimelineStep(
+        label: 'Completed',
+        timestamp: completedAt,
+        isCompleted: status == BookingStatus.completed,
+      ),
     ];
   }
 }
@@ -200,14 +266,11 @@ class BookingTimelineStep {
   final DateTime? timestamp;
   final bool isCompleted;
 
-  BookingTimelineStep({required this.label, this.timestamp, this.isCompleted = false});
+  BookingTimelineStep({
+    required this.label,
+    this.timestamp,
+    this.isCompleted = false,
+  });
 }
 
-enum BookingStatus {
-  pending,
-  accepted,
-  active,
-  completed,
-  cancelled,
-  declined,
-}
+enum BookingStatus { pending, accepted, active, completed, cancelled, declined }

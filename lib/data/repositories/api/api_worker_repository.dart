@@ -16,14 +16,11 @@ class ApiWorkerRepository implements WorkerRepository {
       '/feed?${_queryString(f.toQueryParams())}',
       requiresAuth: true,
     );
-    if (res['success'] != true)
-      return const FeedResponse(
-        posts: [],
-        currentPage: 1,
-        perPage: 15,
-        total: 0,
-        lastPage: 1,
+    if (res['success'] != true) {
+      throw Exception(
+        res['message']?.toString() ?? 'Unable to load worker listings.',
       );
+    }
     final p = (res['data']?['posts'] as List<dynamic>? ?? [])
         .map((i) => JobPostListing.fromJson(i))
         .toList();

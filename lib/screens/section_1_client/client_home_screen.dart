@@ -35,6 +35,12 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     _categoriesFuture = workerProvider.getCategories();
   }
 
+  void _reloadFeed() {
+    setState(() {
+      _filteredWorkersFuture = context.read<WorkerProvider>().getFeed();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -428,6 +434,34 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(color: colorScheme.primary),
+          );
+        }
+        if (snapshot.hasError) {
+          return Column(
+            children: [
+              const SizedBox(height: 32),
+              Icon(Icons.cloud_off_outlined, size: 48, color: colorScheme.error),
+              const SizedBox(height: 12),
+              Text(
+                'Could not load worker listings',
+                style: AppTypography.headlineSmall.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                snapshot.error.toString().replaceFirst('Exception: ', ''),
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _reloadFeed,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try again'),
+              ),
+            ],
           );
         }
         final listings = snapshot.data?.posts ?? [];

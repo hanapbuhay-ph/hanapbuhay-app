@@ -97,7 +97,7 @@ class WorkerProvider extends ChangeNotifier {
 
   /// Get feed with current filters applied
   /// This calls the real backend GET /api/feed endpoint
-  Future<FeedResponse> getFeed({int page = 1}) async {
+  Future<FeedResponse> getFeed({int page = 1, String? search}) async {
     // Build filters from current state
     String? verificationFilter;
     if (_quickFilter == 'Verified') {
@@ -109,13 +109,12 @@ class WorkerProvider extends ChangeNotifier {
     }
 
     final filters = FeedFilters(
-      categoryId: _selectedCategories.isNotEmpty
-          ? _selectedCategories.first
-          : null,
+      search: search,
+      categoryIds: _selectedCategories,
       barangayId: _selectedBarangay,
-      rateType: _selectedRateTypes.isNotEmpty
-          ? _selectedRateTypes.first.apiValue
-          : null,
+      rateTypes: _selectedRateTypes
+          .map((rateType) => rateType.apiValue)
+          .toList(),
       verification: verificationFilter,
       availability: _onlyAvailableNow ? 'available' : 'all',
       page: page,

@@ -1,11 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../providers/worker_provider.dart';
-import '../../providers/auth_provider.dart';
-import '../../data/models/trust_tier.dart';
 import '../../data/models/job_post_model.dart';
+import '../../data/models/trust_tier.dart';
 import '../../data/models/barangay_model.dart';
 import '../../widgets/navigation/app_bottom_nav.dart';
 import '../../widgets/navigation/app_back_button.dart';
@@ -30,46 +31,111 @@ class WorkerSearchScreen extends StatefulWidget {
 
 class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _resultsScrollController = ScrollController();
   List<JobPostListing> _filteredListings = [];
+  Timer? _searchDebounce;
+  int _requestVersion = 0;
+  int _totalResults = 0;
+  int _currentPage = 1;
+  int _lastPage = 1;
   bool _isLoading = true;
-  String? _selectedCategory;
+  bool _isLoadingMore = false;
+  String? _loadError;
+  String? _loadMoreError;
 
   @override
   void initState() {
     super.initState();
     _searchController.text = widget.initialQuery ?? '';
-    _selectedCategory = widget.initialCategory;
-    
-    if (_selectedCategory != null) {
-      // Sync initial category with provider
-      Future.delayed(Duration.zero, () {
-        if (mounted) {
-          context.read<WorkerProvider>().setAdvancedFilters(categories: [_selectedCategory!]);
-          _fetchWorkers();
-        }
-      });
-    } else {
-      _fetchWorkers();
+    if (widget.initialCategory != null) {
+      context.read<WorkerProvider>().setAdvancedFilters(
+        categories: [widget.initialCategory!],
+      );
     }
-    
+    _resultsScrollController.addListener(_handleResultsScroll);
+    _fetchWorkers();
+
     if (widget.showFilterOnInit) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showFilterSheet();
+        if (mounted) _showFilterSheet();
       });
     }
   }
 
-  Future<void> _fetchWorkers() async {
-    setState(() => _isLoading = true);
-    final workerProvider = context.read<WorkerProvider>();
-    final authProvider = context.read<AuthProvider>();
-    
-    final query = _searchController.text.trim();
-    _filteredListings = query.isNotEmpty
-        ? await workerProvider.searchWorkers(search: query, categoryId: _selectedCategory)
-        : await workerProvider.getFilteredWorkers(userBarangayName: authProvider.userBarangay);
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    _resultsScrollController
+      ..removeListener(_handleResultsScroll)
+      ..dispose();
+    super.dispose();
+  }
 
-    setState(() => _isLoading = false);
+  void _handleSearchChanged(String _) {
+    if (mounted) setState(() {});
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _fetchWorkers(),
+    );
+  }
+
+  void _handleResultsScroll() {
+    if (_resultsScrollController.position.extentAfter < 300 &&
+        !_isLoading &&
+        !_isLoadingMore &&
+        _currentPage < _lastPage) {
+      _fetchWorkers(loadMore: true);
+    }
+  }
+
+  Future<void> _fetchWorkers({bool loadMore = false}) async {
+    final requestVersion = ++_requestVersion;
+    final page = loadMore ? _currentPage + 1 : 1;
+    if (!mounted) return;
+    if (!loadMore && _resultsScrollController.hasClients) {
+      _resultsScrollController.jumpTo(0);
+    }
+    setState(() {
+      _loadError = null;
+      _loadMoreError = null;
+      if (loadMore) {
+        _isLoadingMore = true;
+      } else {
+        _isLoading = true;
+      }
+    });
+
+    try {
+      final response = await context.read<WorkerProvider>().getFeed(
+        page: page,
+        search: _searchController.text.trim(),
+      );
+      if (!mounted || requestVersion != _requestVersion) return;
+      setState(() {
+        _filteredListings = loadMore
+            ? [..._filteredListings, ...response.posts]
+            : response.posts;
+        _totalResults = response.total;
+        _currentPage = response.currentPage;
+        _lastPage = response.lastPage;
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    } catch (error) {
+      if (!mounted || requestVersion != _requestVersion) return;
+      setState(() {
+        final message = error.toString().replaceFirst('Exception: ', '');
+        if (loadMore) {
+          _loadMoreError = message;
+        } else {
+          _loadError = message;
+        }
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    }
   }
 
   void _showFilterSheet() {
@@ -78,7 +144,9 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const _AdvancedFilterBottomSheet(),
-    ).then((_) => _fetchWorkers());
+    ).then((_) {
+      if (mounted) _fetchWorkers();
+    });
   }
 
   @override
@@ -93,11 +161,17 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
         children: [
           _buildHeader(filterCount),
           Expanded(
-            child: _isLoading 
-              ? Center(child: CircularProgressIndicator(color: theme.colorScheme.primary))
-              : _filteredListings.isEmpty 
-                  ? _buildEmptyState()
-                  : _buildResultsList(),
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: theme.colorScheme.primary,
+                    ),
+                  )
+                : _loadError != null
+                ? _buildErrorState()
+                : _filteredListings.isEmpty
+                ? _buildEmptyState()
+                : _buildResultsList(),
           ),
         ],
       ),
@@ -129,12 +203,24 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                 ),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: (_) => _fetchWorkers(),
+                  onChanged: _handleSearchChanged,
                   style: TextStyle(color: colorScheme.onSurface),
                   decoration: InputDecoration(
                     hintText: 'Search for workers...',
                     hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
                     prefixIcon: Icon(Icons.search, color: colorScheme.primary, size: 20),
+                    suffixIcon: _searchController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Clear search',
+                            onPressed: () {
+                              _searchDebounce?.cancel();
+                              _searchController.clear();
+                              setState(() {});
+                              _fetchWorkers();
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -189,7 +275,8 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 24),
         physics: const BouncingScrollPhysics(),
-        itemCount: _filteredListings.length + 1,
+        controller: _resultsScrollController,
+        itemCount: _filteredListings.length + 2,
         itemBuilder: (context, index) {
         if (index == 0) {
           return Padding(
@@ -199,15 +286,68 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
               children: [
                 Text('Available Listings', style: AppTypography.headlineMedium.copyWith(color: theme.colorScheme.onSurface)),
                 Text(
-                  'Showing ${_filteredListings.length} results',
+                  'Showing $_totalResults results',
                   style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
               ],
             ),
           );
         }
-          return _buildWorkerCard(_filteredListings[index - 1]);
+          if (index <= _filteredListings.length) {
+            return _buildWorkerCard(_filteredListings[index - 1]);
+          }
+          return _isLoadingMore
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : _loadMoreError != null
+              ? TextButton.icon(
+                  onPressed: () => _fetchWorkers(loadMore: true),
+                  icon: const Icon(Icons.refresh),
+                  label: Text('Could not load more: $_loadMoreError'),
+                )
+              : const SizedBox(height: 16);
         },
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 48,
+              color: colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Could not load worker listings',
+              style: AppTypography.headlineMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _loadError ?? 'Please check your connection and try again.',
+              style: AppTypography.bodyMedium.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            TextButton.icon(
+              onPressed: _fetchWorkers,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try again'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -252,7 +392,11 @@ class _WorkerSearchScreenState extends State<WorkerSearchScreen> {
                         children: [
                           Text(worker.name, style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 18, color: colorScheme.onSurface)),
                           const SizedBox(width: 4),
-                          Icon(worker.trustTier.info.icon, color: worker.trustTier.info.color, size: 18),
+                          Icon(
+                            worker.trustTier.info.icon,
+                            color: worker.trustTier.info.color,
+                            size: 18,
+                          ),
                         ],
                       ),
                       Text(post.title, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -381,6 +525,7 @@ class _AdvancedFilterBottomSheet extends StatefulWidget {
 }
 
 class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> {
+  late Future<List<ServiceCategory>> _categoriesFuture;
   late List<String> _selectedCategories;
   String? _selectedBarangay;
   late List<RateType> _selectedRateTypes;
@@ -390,6 +535,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
   void initState() {
     super.initState();
     final workerProvider = context.read<WorkerProvider>();
+    _categoriesFuture = workerProvider.getCategories();
     _selectedCategories = List.from(workerProvider.selectedCategories);
     _selectedBarangay = workerProvider.selectedBarangay;
     _selectedRateTypes = List.from(workerProvider.selectedRateTypes);
@@ -442,7 +588,7 @@ class _AdvancedFilterBottomSheetState extends State<_AdvancedFilterBottomSheet> 
                   Text('Service Category', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   FutureBuilder<List<ServiceCategory>>(
-                    future: workerProvider.getCategories(),
+                    future: _categoriesFuture,
                     builder: (context, snapshot) {
                       final categories = snapshot.data ?? [];
                       return Wrap(

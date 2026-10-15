@@ -1,9 +1,10 @@
 class AppConstants {
   static const String apiBaseUrl = 'https://hanapbuhay-api.onrender.com/api';
 
-  /// Base URL for the Laravel public `storage/` disk (no trailing slash).
-  /// Storage-relative photo paths returned by the API are prepended with this.
-  static const String storageBaseUrl = 'http://127.0.0.1:8000/storage';
+  /// Base URL for Laravel's public `storage/` disk (without a trailing slash).
+  /// Derive it from the configured API host so it works on devices and locally.
+  static String get storageBaseUrl =>
+      '${apiBaseUrl.replaceFirst('/api', '')}/storage';
 
   static const String appName = 'HanapBuhay';
 
@@ -16,7 +17,8 @@ class AppConstants {
   static const String municipalityName = 'Trinidad';
   static const String mockWorkerAvatar = 'https://i.pravatar.cc/150?u=w1';
   static const String mockClientAvatar = 'https://i.pravatar.cc/150?u=client';
-  static const String mockClientProfileAvatar = 'https://i.pravatar.cc/150?u=client123';
+  static const String mockClientProfileAvatar =
+      'https://i.pravatar.cc/150?u=client123';
   static const String defaultAvatar = 'https://i.pravatar.cc/150?u=client';
 
   static const List<String> workerCategories = [
