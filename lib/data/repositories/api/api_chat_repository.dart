@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import '../../models/chat_model.dart';
 import '../chat_repository.dart';
 import '../../../core/api/api_client.dart';
@@ -12,7 +13,7 @@ class ApiChatRepository implements ChatRepository {
   Future<List<Conversation>> getConversations() async {
     try {
       final res = await ApiClient.get('/messages', requiresAuth: true);
-      
+
       if (res['success'] != true) {
         print('[ApiChatRepository] getConversations failed: ${res['message']}');
         return [];
@@ -24,11 +25,16 @@ class ApiChatRepository implements ChatRepository {
       final conversationsData = data['conversations'] ?? data;
       if (conversationsData is! List) return [];
 
-      final conversations = conversationsData.map((item) {
-        return _parseConversation(item);
-      }).whereType<Conversation>().toList();
+      final conversations = conversationsData
+          .map((item) {
+            return _parseConversation(item);
+          })
+          .whereType<Conversation>()
+          .toList();
 
-      _unreadCountController.add(conversations.where((conversation) => conversation.isUnread).length);
+      _unreadCountController.add(
+        conversations.where((conversation) => conversation.isUnread).length,
+      );
 
       return conversations;
     } catch (e) {
@@ -42,48 +48,62 @@ class ApiChatRepository implements ChatRepository {
 
   @override
   Future<List<Message>> getMessages(String conversationId) async {
-    try {
-      // API expects bookingId for chat thread: GET /api/messages/{bookingId}
-      final res = await ApiClient.get('/messages/$conversationId', requiresAuth: true);
-      
-      if (res['success'] != true) {
-        print('[ApiChatRepository] getMessages failed: ${res['message']}');
-        return [];
-      }
+    // API expects bookingId for chat thread: GET /api/messages/{bookingId}
+    final res = await ApiClient.get(
+      '/messages/$conversationId',
+      requiresAuth: true,
+    );
 
-      final data = res['data'];
-      if (data == null) return [];
-
-      final messagesData = data['messages'] ?? data;
-      if (messagesData is! List) return [];
-
-      final messages = messagesData.map((item) {
-        return _parseMessage(item, conversationId);
-      }).whereType<Message>().toList();
-
-      return messages;
-    } catch (e) {
-      print('[ApiChatRepository] getMessages error: $e');
-      return [];
+    if (res['success'] != true) {
+      throw StateError(
+        res['message']?.toString() ?? 'The chat history could not be loaded.',
+      );
     }
+
+    final data = res['data'];
+    if (data is! Map || data['messages'] is! List) {
+      throw const FormatException(
+        'The server returned an invalid chat history response.',
+      );
+    }
+
+    final messages = <Message>[];
+    for (final item in data['messages'] as List) {
+      final message = _parseMessage(item, conversationId);
+      if (message == null) {
+        throw const FormatException(
+          'The server returned an invalid message in the chat history.',
+        );
+      }
+      messages.add(message);
+    }
+
+    return messages;
   }
 
   @override
-  Future<Message> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
+  Future<Message> sendMessage(
+    String conversationId, {
+    String? senderId,
+    String? text,
+    String? imageUrl,
+  }) async {
     try {
       // API: POST /api/messages/{bookingId}
       // Always uses multipart/form-data
       // IMPORTANT: Backend expects 'message' field (not 'content' as in docs)
       // See: MessageController.php line 140 → $request->input('message')
-      
+
       final fields = <String, String>{};
       if (text != null && text.isNotEmpty) {
-        fields['message'] = text;  // ← Backend expects 'message', not 'content'
+        fields['message'] = text; // ← Backend expects 'message', not 'content'
       }
 
       Map<String, List<String>>? files;
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        files = <String, List<String>>{'attachment': [imageUrl]};
+        files = <String, List<String>>{
+          'attachment': [imageUrl],
+        };
       }
 
       final res = await ApiClient.postMultipart(
@@ -149,20 +169,26 @@ class ApiChatRepository implements ChatRepository {
         return null;
       }
 
-      final otherPartyMap = otherParty is Map ? otherParty : const <String, dynamic>{};
+      final otherPartyMap = otherParty is Map
+          ? otherParty
+          : const <String, dynamic>{};
       final otherUserId = otherPartyMap['id']?.toString() ?? '';
       final otherUserName = otherPartyMap['name']?.toString() ?? 'User';
       final otherUserRole = otherPartyMap['role']?.toString();
-      final rawAvatar = otherPartyMap['profile_photo_url']?.toString() ?? otherPartyMap['profile_photo']?.toString() ?? otherPartyMap['avatar']?.toString();
+      final rawAvatar =
+          otherPartyMap['profile_photo_url']?.toString() ??
+          otherPartyMap['profile_photo']?.toString() ??
+          otherPartyMap['avatar']?.toString();
       final otherUserAvatar = (rawAvatar != null && rawAvatar.isNotEmpty)
           ? AppConstants.getPhotoUrl(rawAvatar)
           : null;
-      
+
       final lastMessage = item['last_message']?.toString() ?? '';
       final lastMessageTimeStr = item['last_message_at']?.toString();
       final unreadCount = (item['unread_count'] as num?)?.toInt() ?? 0;
       final isOnline = otherPartyMap['is_online'] == true;
-      final availabilityStatus = otherPartyMap['availability_status']?.toString();
+      final availabilityStatus = otherPartyMap['availability_status']
+          ?.toString();
 
       final lastMessageTime = lastMessageTimeStr != null
           ? DateTime.tryParse(lastMessageTimeStr) ?? DateTime.now()
@@ -173,7 +199,8 @@ class ApiChatRepository implements ChatRepository {
         otherUserId: otherUserId,
         otherUserName: otherUserName,
         otherUserRole: otherUserRole ?? 'User',
-        otherUserAvatar: otherUserAvatar ?? 'https://i.pravatar.cc/150?u=$otherUserId',
+        otherUserAvatar:
+            otherUserAvatar ?? 'https://i.pravatar.cc/150?u=$otherUserId',
         lastMessage: lastMessage,
         lastMessageTime: lastMessageTime,
         isUnread: unreadCount > 0,
@@ -195,7 +222,8 @@ class ApiChatRepository implements ChatRepository {
 
       final id = item['id']?.toString();
       final senderId = item['sender_id']?.toString();
-      final content = item['content']?.toString() ?? item['message']?.toString();
+      final content =
+          item['content']?.toString() ?? item['message']?.toString();
       final attachmentUrl = item['attachment_url']?.toString();
       final createdAtStr = item['created_at']?.toString();
       final isRead = item['is_read'] == true || item['read_at'] != null;

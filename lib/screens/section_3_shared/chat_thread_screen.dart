@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../../providers/chat_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_typography.dart';
@@ -28,6 +30,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   Conversation? _conversation;
   List<Message> _messages = [];
   bool _isLoading = true;
+  String? _loadError;
   bool _isSending = false;
   bool _hasText = false;
   bool _isRefreshingMessages = false;
@@ -50,59 +53,71 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   Future<void> _loadData() async {
-    final chatProvider = context.read<ChatProvider>();
-    final conversations = await chatProvider.getConversations();
-    final conversation = conversations.firstWhere(
-      (c) => c.id == widget.conversationId,
-      orElse: () => Conversation(
-        id: widget.conversationId,
-        otherUserId: '',
-        otherUserName: 'Chat',
-        otherUserRole: '',
-        otherUserAvatar: '',
-        lastMessage: '',
-        lastMessageTime: DateTime.now(),
-      ),
-    );
-    final messages = await chatProvider.getMessages(widget.conversationId);
+    try {
+      final chatProvider = context.read<ChatProvider>();
+      final conversations = await chatProvider.getConversations();
+      final conversation = conversations.firstWhere(
+        (c) => c.id == widget.conversationId,
+        orElse: () => Conversation(
+          id: widget.conversationId,
+          otherUserId: '',
+          otherUserName: 'Chat',
+          otherUserRole: '',
+          otherUserAvatar: '',
+          lastMessage: '',
+          lastMessageTime: DateTime.now(),
+        ),
+      );
+      final messages = await chatProvider.getMessages(widget.conversationId);
 
-    if (mounted) {
-      setState(() {
-        _conversation = conversation;
-        _messages = messages;
-        _isLoading = false;
-      });
-      chatProvider.markAsRead(widget.conversationId);
-      _scrollToBottom();
-      _newMessageHandler = _handleNewMessage;
-      _pusherService.onNewMessage = _newMessageHandler;
-      try {
-        await _pusherService.subscribe(widget.conversationId);
-      } catch (error) {
-        if (_pusherService.onNewMessage == _newMessageHandler) {
-          _pusherService.onNewMessage = null;
+      if (mounted) {
+        setState(() {
+          _conversation = conversation;
+          _messages = messages;
+          _isLoading = false;
+          _loadError = null;
+        });
+        chatProvider.markAsRead(widget.conversationId);
+        _scrollToBottom();
+        _newMessageHandler = _handleNewMessage;
+        _pusherService.onNewMessage = _newMessageHandler;
+        try {
+          await _pusherService.subscribe(widget.conversationId);
+        } catch (error) {
+          if (_pusherService.onNewMessage == _newMessageHandler) {
+            _pusherService.onNewMessage = null;
+          }
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Live chat connection failed: $error')),
+            );
+          }
+          return;
         }
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Live chat connection failed: $error')),
-          );
+        _hasBookingSubscription = true;
+        if (!mounted) {
+          _hasBookingSubscription = false;
+          await _pusherService.unsubscribe(widget.conversationId);
+          return;
         }
-        return;
+        try {
+          await _refreshMessages();
+        } catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Could not refresh chat messages: $error'),
+              ),
+            );
+          }
+        }
       }
-      _hasBookingSubscription = true;
-      if (!mounted) {
-        _hasBookingSubscription = false;
-        await _pusherService.unsubscribe(widget.conversationId);
-        return;
-      }
-      try {
-        await _refreshMessages();
-      } catch (error) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not refresh chat messages: $error')),
-          );
-        }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loadError = 'Could not load chat messages: $error';
+        });
       }
     }
   }
@@ -122,14 +137,20 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     try {
       do {
         _refreshPending = false;
-        final updated = await context
-            .read<ChatProvider>()
-            .getMessages(widget.conversationId);
+        final updated = await context.read<ChatProvider>().getMessages(
+          widget.conversationId,
+        );
         if (mounted) {
           setState(() => _messages = updated);
           _scrollToBottom();
         }
       } while (_refreshPending && mounted);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not refresh chat messages: $error')),
+        );
+      }
     } finally {
       _isRefreshingMessages = false;
     }
@@ -191,7 +212,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final XFile? image = await _picker.pickImage(source: source, imageQuality: 70);
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 70,
+    );
     if (image != null) _handleSend(imageUrl: image.path);
   }
 
@@ -203,14 +227,17 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final isLast = index == _messages.length - 1;
     final nextIsDifferent = !isLast && _isMe(_messages[index + 1]);
     final nextIsSameSender = !isLast && !_isMe(_messages[index + 1]);
-    return isLast || nextIsDifferent || (!nextIsSameSender && index == _messages.length - 1);
+    return isLast ||
+        nextIsDifferent ||
+        (!nextIsSameSender && index == _messages.length - 1);
   }
 
   // First message in a consecutive group shows the sender name
   bool _showSenderName(int index) {
     if (_isMe(_messages[index])) return false;
     if (index == 0) return true;
-    return _isMe(_messages[index - 1]) || _messages[index - 1].senderId != _messages[index].senderId;
+    return _isMe(_messages[index - 1]) ||
+        _messages[index - 1].senderId != _messages[index].senderId;
   }
 
   String _formatTime(DateTime dt) {
@@ -238,7 +265,51 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     if (_isLoading) {
-      return Scaffold(body: Center(child: CircularProgressIndicator(color: colorScheme.primary)));
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
+      );
+    }
+
+    if (_loadError != null) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: BackButton(color: colorScheme.onSurface),
+          title: const Text('Chat'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: colorScheme.error),
+                const SizedBox(height: 12),
+                Text(
+                  _loadError!,
+                  textAlign: TextAlign.center,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _isLoading = true;
+                      _loadError = null;
+                    });
+                    _loadData();
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     return Scaffold(
@@ -251,15 +322,29 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 ? _buildEmptyState()
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
+                    ),
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final message = _messages[index];
                       final isMe = _isMe(message);
                       final showAvatar = _showAvatar(index);
                       final showName = _showSenderName(index);
-                      final isLastInGroup = showAvatar || (isMe && (index == _messages.length - 1 || !_isMe(_messages[index + 1])));
-                      return _buildMessageRow(message, isMe, showAvatar, showName, isLastInGroup, index);
+                      final isLastInGroup =
+                          showAvatar ||
+                          (isMe &&
+                              (index == _messages.length - 1 ||
+                                  !_isMe(_messages[index + 1])));
+                      return _buildMessageRow(
+                        message,
+                        isMe,
+                        showAvatar,
+                        showName,
+                        isLastInGroup,
+                        index,
+                      );
                     },
                   ),
           ),
@@ -275,11 +360,25 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.chat_bubble_outline_rounded, size: 56, color: colorScheme.outlineVariant),
+          Icon(
+            Icons.chat_bubble_outline_rounded,
+            size: 56,
+            color: colorScheme.outlineVariant,
+          ),
           const SizedBox(height: 12),
-          Text('No messages yet', style: AppTypography.bodyLarge.copyWith(color: colorScheme.onSurfaceVariant)),
+          Text(
+            'No messages yet',
+            style: AppTypography.bodyLarge.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text('Say hello!', style: AppTypography.bodySmall.copyWith(color: colorScheme.outlineVariant)),
+          Text(
+            'Say hello!',
+            style: AppTypography.bodySmall.copyWith(
+              color: colorScheme.outlineVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -307,16 +406,29 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               '${AppRouter.clientProfile}/${conv.otherUserId}',
             );
           } else {
-            Navigator.pushNamed(context, '${AppRouter.workerProfile}/${conv.otherUserId}');
+            Navigator.pushNamed(
+              context,
+              '${AppRouter.workerProfile}/${conv.otherUserId}',
+            );
           }
         },
         child: Row(
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundImage: conv.isSupport || avatarUrl == null ? null : NetworkImage(avatarUrl),
-              backgroundColor: conv.isSupport ? colorScheme.primary : colorScheme.surfaceContainerHighest,
-              child: conv.isSupport ? Icon(Icons.support_agent, size: 20, color: colorScheme.onPrimary) : null,
+              backgroundImage: conv.isSupport || avatarUrl == null
+                  ? null
+                  : NetworkImage(avatarUrl),
+              backgroundColor: conv.isSupport
+                  ? colorScheme.primary
+                  : colorScheme.surfaceContainerHighest,
+              child: conv.isSupport
+                  ? Icon(
+                      Icons.support_agent,
+                      size: 20,
+                      color: colorScheme.onPrimary,
+                    )
+                  : null,
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -325,12 +437,20 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 children: [
                   Text(
                     conv.otherUserName,
-                    style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w800, fontSize: 15, color: colorScheme.onSurface),
+                    style: AppTypography.bodyLarge.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                   if (conv.bookingId != null)
                     Text(
                       'Booking #${conv.bookingId}',
-                      style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   if (!conv.isSupport)
                     Text(
@@ -339,7 +459,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                           : (conv.isOnline ? 'Online' : 'Offline'),
                       style: TextStyle(
                         fontSize: 10,
-                        color: conv.isOnline ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                        color: conv.isOnline
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -358,10 +480,17 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 _navigateToProfile();
               case 'report_user':
                 if (conv.bookingId != null) {
-                  Navigator.pushNamed(context, '${AppRouter.fileReport}/${conv.bookingId}');
+                  Navigator.pushNamed(
+                    context,
+                    '${AppRouter.fileReport}/${conv.bookingId}',
+                  );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Reporting is only available for booking-related conversations.')),
+                    const SnackBar(
+                      content: Text(
+                        'Reporting is only available for booking-related conversations.',
+                      ),
+                    ),
                   );
                 }
               case 'clear_chat':
@@ -370,8 +499,14 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
           },
           itemBuilder: (context) => [
             if (!conv.isSupport)
-              const PopupMenuItem(value: 'view_profile', child: Text('View Profile')),
-            const PopupMenuItem(value: 'report_user', child: Text('Report User')),
+              const PopupMenuItem(
+                value: 'view_profile',
+                child: Text('View Profile'),
+              ),
+            const PopupMenuItem(
+              value: 'report_user',
+              child: Text('Report User'),
+            ),
             const PopupMenuItem(value: 'clear_chat', child: Text('Clear Chat')),
           ],
         ),
@@ -388,7 +523,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         '${AppRouter.clientProfile}/${conv.otherUserId}',
       );
     } else {
-      Navigator.pushNamed(context, '${AppRouter.workerProfile}/${conv.otherUserId}');
+      Navigator.pushNamed(
+        context,
+        '${AppRouter.workerProfile}/${conv.otherUserId}',
+      );
     }
   }
 
@@ -400,7 +538,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         title: const Text('Clear Chat'),
         content: const Text('Are you sure you want to clear all messages?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text('Clear', style: TextStyle(color: colorScheme.error)),
@@ -414,7 +555,14 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     }
   }
 
-  Widget _buildMessageRow(Message message, bool isMe, bool showAvatar, bool showName, bool isLastInGroup, int index) {
+  Widget _buildMessageRow(
+    Message message,
+    bool isMe,
+    bool showAvatar,
+    bool showName,
+    bool isLastInGroup,
+    int index,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     final avatarUrl = _conversation!.otherUserAvatar.isNotEmpty
         ? AppConstants.getPhotoUrl(_conversation!.otherUserAvatar)
@@ -434,7 +582,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         top: showName ? 8 : 0,
       ),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // Other party avatar placeholder (keeps alignment consistent)
@@ -444,9 +594,17 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               child: showAvatar
                   ? CircleAvatar(
                       radius: 14,
-                      backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                      backgroundImage: avatarUrl != null
+                          ? NetworkImage(avatarUrl)
+                          : null,
                       backgroundColor: colorScheme.surfaceContainerHighest,
-                      child: avatarUrl == null ? Icon(Icons.person, size: 14, color: colorScheme.onSurfaceVariant) : null,
+                      child: avatarUrl == null
+                          ? Icon(
+                              Icons.person,
+                              size: 14,
+                              color: colorScheme.onSurfaceVariant,
+                            )
+                          : null,
                     )
                   : null,
             ),
@@ -455,23 +613,36 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
           Flexible(
             child: Column(
-              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 if (showName)
                   Padding(
                     padding: const EdgeInsets.only(left: 4, bottom: 3),
                     child: Text(
                       _conversation!.otherUserName,
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 Container(
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.72,
+                  ),
                   padding: message.imageUrl != null
                       ? const EdgeInsets.all(4)
-                      : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      : const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                   decoration: BoxDecoration(
-                    color: isMe ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+                    color: isMe
+                        ? colorScheme.primary
+                        : colorScheme.surfaceContainerHighest,
                     borderRadius: radius,
                   ),
                   child: message.imageUrl != null
@@ -479,7 +650,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                       : Text(
                           message.text ?? '',
                           style: AppTypography.bodyMedium.copyWith(
-                            color: isMe ? colorScheme.onPrimary : colorScheme.onSurface,
+                            color: isMe
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface,
                             height: 1.4,
                           ),
                         ),
@@ -491,14 +664,19 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                     children: [
                       Text(
                         _formatTime(message.timestamp),
-                        style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       if (isMe) ...[
                         const SizedBox(width: 3),
                         Icon(
                           Icons.done_all,
                           size: 13,
-                          color: message.isRead ? colorScheme.primary : colorScheme.outlineVariant,
+                          color: message.isRead
+                              ? colorScheme.primary
+                              : colorScheme.outlineVariant,
                         ),
                       ],
                     ],
@@ -521,7 +699,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         borderRadius: BorderRadius.circular(14),
         child: path.startsWith('http')
             ? Image.network(path, height: 200, width: 180, fit: BoxFit.cover)
-            : Image.file(File(path), height: 200, width: 180, fit: BoxFit.cover),
+            : Image.file(
+                File(path),
+                height: 200,
+                width: 180,
+                fit: BoxFit.cover,
+              ),
       ),
     );
   }
@@ -560,20 +743,35 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(8, 8, 8, MediaQuery.of(context).padding.bottom + 8),
+      padding: EdgeInsets.fromLTRB(
+        8,
+        8,
+        8,
+        MediaQuery.of(context).padding.bottom + 8,
+      ),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        border: Border(top: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.2))),
+        border: Border(
+          top: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+          ),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            icon: Icon(Icons.photo_outlined, color: colorScheme.onSurfaceVariant),
+            icon: Icon(
+              Icons.photo_outlined,
+              color: colorScheme.onSurfaceVariant,
+            ),
             onPressed: () => _pickImage(ImageSource.gallery),
           ),
           IconButton(
-            icon: Icon(Icons.camera_alt_outlined, color: colorScheme.onSurfaceVariant),
+            icon: Icon(
+              Icons.camera_alt_outlined,
+              color: colorScheme.onSurfaceVariant,
+            ),
             onPressed: () => _pickImage(ImageSource.camera),
           ),
           Expanded(
@@ -583,17 +781,26 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 controller: _messageController,
                 maxLines: null,
                 textCapitalization: TextCapitalization.sentences,
-                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurface),
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colorScheme.onSurface,
+                ),
                 decoration: InputDecoration(
                   hintText: 'Message...',
-                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                  hintStyle: TextStyle(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                  ),
                   filled: true,
-                  fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                  fillColor: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.4,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(22),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                 ),
               ),
             ),
@@ -605,23 +812,33 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 ? Padding(
                     padding: const EdgeInsets.all(12),
                     child: SizedBox(
-                      width: 20, height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.primary,
+                      ),
                     ),
                   )
                 : GestureDetector(
                     key: const ValueKey('send'),
-                    onTap: _hasText ? () => _handleSend(text: _messageController.text) : null,
+                    onTap: _hasText
+                        ? () => _handleSend(text: _messageController.text)
+                        : null,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: _hasText ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+                        color: _hasText
+                            ? colorScheme.primary
+                            : colorScheme.surfaceContainerHighest,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.send_rounded,
-                        color: _hasText ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                        color: _hasText
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurfaceVariant,
                         size: 20,
                       ),
                     ),
