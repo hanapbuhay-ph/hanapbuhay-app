@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/constants/app_constants.dart';
 import '../../data/models/chat_model.dart';
+import '../../services/pusher_service.dart';
 
 class ChatThreadScreen extends StatefulWidget {
   final String conversationId;
@@ -28,8 +30,13 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   bool _isLoading = true;
   bool _isSending = false;
   bool _hasText = false;
+  bool _isRefreshingMessages = false;
+  bool _refreshPending = false;
 
   String? _currentUserId;
+  final PusherService _pusherService = PusherService.instance;
+  void Function(NewMessageEvent)? _newMessageHandler;
+  bool _hasBookingSubscription = false;
 
   @override
   void initState() {
@@ -67,6 +74,64 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       });
       chatProvider.markAsRead(widget.conversationId);
       _scrollToBottom();
+      _newMessageHandler = _handleNewMessage;
+      _pusherService.onNewMessage = _newMessageHandler;
+      try {
+        await _pusherService.subscribe(widget.conversationId);
+      } catch (error) {
+        if (_pusherService.onNewMessage == _newMessageHandler) {
+          _pusherService.onNewMessage = null;
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Live chat connection failed: $error')),
+          );
+        }
+        return;
+      }
+      _hasBookingSubscription = true;
+      if (!mounted) {
+        _hasBookingSubscription = false;
+        await _pusherService.unsubscribe(widget.conversationId);
+        return;
+      }
+      try {
+        await _refreshMessages();
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not refresh chat messages: $error')),
+          );
+        }
+      }
+    }
+  }
+
+  void _handleNewMessage(NewMessageEvent event) {
+    if (event.bookingId.toString() != widget.conversationId) return;
+    unawaited(_refreshMessages());
+  }
+
+  Future<void> _refreshMessages() async {
+    if (_isRefreshingMessages) {
+      _refreshPending = true;
+      return;
+    }
+
+    _isRefreshingMessages = true;
+    try {
+      do {
+        _refreshPending = false;
+        final updated = await context
+            .read<ChatProvider>()
+            .getMessages(widget.conversationId);
+        if (mounted) {
+          setState(() => _messages = updated);
+          _scrollToBottom();
+        }
+      } while (_refreshPending && mounted);
+    } finally {
+      _isRefreshingMessages = false;
     }
   }
 
@@ -135,6 +200,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
   @override
   void dispose() {
+    if (_pusherService.onNewMessage == _newMessageHandler) {
+      _pusherService.onNewMessage = null;
+    }
+    if (_hasBookingSubscription) {
+      unawaited(_pusherService.unsubscribe(widget.conversationId));
+    }
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();

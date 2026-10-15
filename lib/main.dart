@@ -52,17 +52,27 @@ class HanapBuhayApp extends StatefulWidget {
   State<HanapBuhayApp> createState() => _HanapBuhayAppState();
 }
 
-class _HanapBuhayAppState extends State<HanapBuhayApp> {
+class _HanapBuhayAppState extends State<HanapBuhayApp>
+    with WidgetsBindingObserver {
   final _presence = PresenceService();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _presence.start();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<NotificationProvider>().refreshUnreadCount();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _presence.dispose();
     super.dispose();
   }

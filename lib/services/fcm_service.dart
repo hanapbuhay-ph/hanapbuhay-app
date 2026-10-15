@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import '../core/api/api_client.dart';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../core/routing/app_router.dart';
 
 /// FCM Token Registration Service
@@ -11,6 +14,8 @@ import '../core/routing/app_router.dart';
 class FcmService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+  static final StreamController<void> _notificationReceivedController =
+      StreamController<void>.broadcast();
   static String? _pendingNotificationPayload;
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'hanapbuhay_notifications',
@@ -18,6 +23,9 @@ class FcmService {
     description: 'Booking, tracking, and account notifications.',
     importance: Importance.high,
   );
+
+  static Stream<void> get onNotificationReceived =>
+      _notificationReceivedController.stream;
 
   static Future<void> initializeNotifications() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -35,8 +43,12 @@ class FcmService {
     await androidPlugin?.createNotificationChannel(_channel);
     await androidPlugin?.requestNotificationsPermission();
 
-    FirebaseMessaging.onMessage.listen(_showForegroundNotification);
+    FirebaseMessaging.onMessage.listen((message) {
+      _notificationReceivedController.add(null);
+      unawaited(_showForegroundNotification(message));
+    });
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      _notificationReceivedController.add(null);
       _openNotificationTarget(jsonEncode(message.data));
     });
 
@@ -63,7 +75,7 @@ class FcmService {
           channelDescription: _channel.description,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: 'ic_stat_notification',
         ),
       ),
       payload: jsonEncode(message.data),

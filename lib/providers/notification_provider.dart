@@ -1,14 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import '../data/repositories/notification_repository.dart';
 import '../data/repositories/api/api_notification_repository.dart';
 import '../data/models/notification_model.dart';
+import '../services/fcm_service.dart';
 
 class NotificationProvider extends ChangeNotifier {
   final NotificationRepository _repository;
+  late final StreamSubscription<void> _notificationSubscription;
   Future<List<AppNotification>>? _notificationsRequest;
   Future<void>? _initialUnreadCountLoad;
 
-  NotificationProvider(this._repository);
+  NotificationProvider(this._repository) {
+    _notificationSubscription = FcmService.onNotificationReceived.listen((_) {
+      unawaited(refreshUnreadCount());
+    });
+  }
 
   Future<List<AppNotification>> getNotifications() {
     final existingRequest = _notificationsRequest;
@@ -48,21 +57,32 @@ class NotificationProvider extends ChangeNotifier {
     return _repository.getUnreadCount();
   }
 
-  Future<void> _loadInitialUnreadCount() async {
+  Future<void> refreshUnreadCount() async {
     try {
       await getNotifications();
     } catch (error, stackTrace) {
       debugPrint(
-        '[NotificationProvider] Failed to load unread notification count: '
+        '[NotificationProvider] Failed to refresh unread notification count: '
         '$error\n$stackTrace',
       );
     }
   }
 
-  Future<NotificationPreferences> getPreferences() => _repository.getPreferences();
+  Future<void> _loadInitialUnreadCount() async {
+    await refreshUnreadCount();
+  }
+
+  Future<NotificationPreferences> getPreferences() =>
+      _repository.getPreferences();
 
   Future<void> updatePreferences(NotificationPreferences preferences) async {
     await _repository.updatePreferences(preferences);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    unawaited(_notificationSubscription.cancel());
+    super.dispose();
   }
 }

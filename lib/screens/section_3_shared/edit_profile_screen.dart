@@ -69,7 +69,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   /// Safety guard: only keep a barangay id that actually exists in the loaded list.
   int? _safeBarangayId(int? id) {
     if (id == null) return null;
-    return _barangays.any((b) => b['id'] == id) ? id : null;
+    return _barangays.any((b) => _barangayId(b) == id) ? id : null;
+  }
+
+  int? _barangayId(Map<String, dynamic> barangay) {
+    final id = barangay['id'];
+    return id is int ? id : int.tryParse(id?.toString() ?? '');
+  }
+
+  List<Map<String, dynamic>> _deduplicateBarangays(
+    List<Map<String, dynamic>> barangays, {
+    int? preferredId,
+  }) {
+    final unique = <String, Map<String, dynamic>>{};
+
+    for (final barangay in barangays) {
+      final name = barangay['name']?.toString().trim() ?? '';
+      if (name.isEmpty) continue;
+
+      final key = name.toLowerCase();
+      final existing = unique[key];
+      final id = _barangayId(barangay);
+      final existingId = existing == null ? null : _barangayId(existing);
+      if (existing == null ||
+          id == preferredId ||
+          (existingId != preferredId &&
+              id != null &&
+              (existingId == null || id < existingId))) {
+        unique[key] = {...barangay, 'name': name};
+      }
+    }
+
+    final result = unique.values.toList()
+      ..sort(
+        (a, b) => (a['name'] as String).toLowerCase().compareTo(
+          (b['name'] as String).toLowerCase(),
+        ),
+      );
+    return result;
   }
 
   Future<void> _loadBarangays() async {
@@ -83,7 +120,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             .toList();
         if (!mounted) return;
         setState(() {
-          _barangays = list;
+          _barangays = _deduplicateBarangays(
+            list,
+            preferredId: _selectedBarangayId,
+          );
           _barangaysLoading = false;
           _selectedBarangayId = _safeBarangayId(_selectedBarangayId);
         });
@@ -445,9 +485,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             items: _barangays.map((b) {
               final name = b['name']?.toString() ?? '';
               return DropdownMenuItem<int?>(
-                value: b['id'] is int
-                    ? (b['id'] as int)
-                    : int.tryParse(b['id']?.toString() ?? ''),
+                value: _barangayId(b),
                 child: Text(
                   name,
                   style: AppTypography.bodyMedium.copyWith(
@@ -463,7 +501,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ? null
                     : _barangays
                           .firstWhere(
-                            (b) => b['id'] == value,
+                            (b) => _barangayId(b) == value,
                             orElse: () => const {},
                           )['name']
                           ?.toString();
