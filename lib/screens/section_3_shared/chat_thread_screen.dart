@@ -155,16 +155,38 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     _messageController.clear();
     setState(() => _isSending = true);
 
-    final chatProvider = context.read<ChatProvider>();
-    await chatProvider.sendMessage(widget.conversationId, text: msgText, imageUrl: imageUrl);
+    try {
+      final sentMessage = await context.read<ChatProvider>().sendMessage(
+        widget.conversationId,
+        senderId: _currentUserId,
+        text: msgText,
+        imageUrl: imageUrl,
+      );
+      if (!mounted) return;
 
-    final updated = await chatProvider.getMessages(widget.conversationId);
-    if (mounted) {
       setState(() {
-        _messages = updated;
-        _isSending = false;
+        final sentIndex = _messages.indexWhere(
+          (message) => message.id == sentMessage.id,
+        );
+        if (sentIndex == -1) {
+          _messages = [..._messages, sentMessage];
+        } else {
+          _messages[sentIndex] = sentMessage;
+        }
       });
       _scrollToBottom();
+    } catch (error) {
+      if (!mounted) return;
+      if (msgText != null && msgText.isNotEmpty) {
+        _messageController.text = msgText;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Message could not be sent: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
     }
   }
 

@@ -69,7 +69,7 @@ class ApiChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
+  Future<Message> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
     try {
       // API: POST /api/messages/{bookingId}
       // Always uses multipart/form-data
@@ -94,8 +94,20 @@ class ApiChatRepository implements ChatRepository {
       );
 
       if (res['success'] != true) {
-        print('[ApiChatRepository] sendMessage failed: ${res['message']}');
+        throw StateError(
+          res['message']?.toString() ?? 'The message could not be sent.',
+        );
       }
+
+      final data = res['data'];
+      final messageData = data is Map ? data['message'] : null;
+      final sentMessage = _parseMessage(messageData, conversationId);
+      if (sentMessage == null) {
+        throw const FormatException(
+          'The server sent the message but returned an invalid message response.',
+        );
+      }
+      return sentMessage;
     } catch (e) {
       print('[ApiChatRepository] sendMessage error: $e');
       rethrow;

@@ -28,9 +28,10 @@ class ChatProvider extends ChangeNotifier {
     return fallbackBookingId;
   }
   
-  Future<void> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
-    await _repository.sendMessage(conversationId, senderId: senderId, text: text, imageUrl: imageUrl);
+  Future<Message> sendMessage(String conversationId, {String? senderId, String? text, String? imageUrl}) async {
+    final message = await _repository.sendMessage(conversationId, senderId: senderId, text: text, imageUrl: imageUrl);
     notifyListeners();
+    return message;
   }
 
   Future<void> markAsRead(String conversationId) async {
