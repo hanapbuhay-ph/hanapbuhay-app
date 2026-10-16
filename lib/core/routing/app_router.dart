@@ -138,7 +138,17 @@ class AppRouter {
           builder: (_) => CompleteProfileScreen(role: role),
         );
       case forgotPassword:
-        return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+        final email = uri.queryParameters['email'];
+        final expiresInSeconds =
+            int.tryParse(uri.queryParameters['expires_in'] ?? '') ??
+            ForgotPasswordScreen.otpValiditySeconds;
+        return MaterialPageRoute(
+          builder: (_) => ForgotPasswordScreen(
+            initialEmail: email,
+            resumeVerification: uri.queryParameters['resume'] == 'verify',
+            otpExpiresInSeconds: expiresInSeconds,
+          ),
+        );
       case securitySettings:
         return MaterialPageRoute(
           builder: (_) => const SecuritySettingsScreen(),

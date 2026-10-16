@@ -202,169 +202,176 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: Column(
-        children: [
-          const AppHeader(),
+    return PopScope<Object?>(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop && widget.isLoginChallenge) {
+          unawaited(context.read<AuthProvider>().clearPendingLoginOtp());
+        }
+      },
+      child: Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: Column(
+          children: [
+            const AppHeader(),
 
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  const SizedBox(height: 48),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 48),
 
-                  Container(
-                    width: 96,
-                    height: 96,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.mark_email_unread_outlined,
-                      size: 48,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  Text(
-                    widget.isLoginChallenge
-                        ? 'Verify your login'
-                        : 'Verify your email',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.headlineLarge.copyWith(
-                      fontSize: 28,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                    Container(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
                       ),
-                      children: [
-                        TextSpan(
-                          text: widget.isLoginChallenge
-                              ? 'We sent a verification code to\n'
-                              : 'We sent a verification code to your email address\n',
+                      child: Icon(
+                        Icons.mark_email_unread_outlined,
+                        size: 48,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    Text(
+                      widget.isLoginChallenge
+                          ? 'Verify your login'
+                          : 'Verify your email',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.headlineLarge.copyWith(
+                        fontSize: 28,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                         ),
-                        TextSpan(
-                          text: widget.email,
-                          style: AppTypography.labelLarge.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.w800,
+                        children: [
+                          TextSpan(
+                            text: widget.isLoginChallenge
+                                ? 'We sent a verification code to\n'
+                                : 'We sent a verification code to your email address\n',
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  AnimatedBuilder(
-                    animation: _shakeAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(_shakeAnimation.value, 0),
-                        child: child,
-                      );
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: List.generate(
-                        6,
-                        (index) => _buildOtpBox(index),
+                          TextSpan(
+                            text: widget.email,
+                            style: AppTypography.labelLarge.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
 
-                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 40),
+
+                    AnimatedBuilder(
+                      animation: _shakeAnimation,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(_shakeAnimation.value, 0),
+                          child: child,
+                        );
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: List.generate(
+                          6,
+                          (index) => _buildOtpBox(index),
+                        ),
+                      ),
+                    ),
+
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        _errorMessage!,
+                        textAlign: TextAlign.center,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: colorScheme.error,
+                        ),
+                      ),
+                    ],
+
                     const SizedBox(height: 16),
                     Text(
-                      _errorMessage!,
-                      textAlign: TextAlign.center,
+                      _otpSecondsRemaining > 0
+                          ? 'Code expires in ${(_otpSecondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_otpSecondsRemaining % 60).toString().padLeft(2, '0')}'
+                          : 'This code has expired. Request a new one.',
                       style: AppTypography.bodySmall.copyWith(
-                        color: colorScheme.error,
+                        color: _otpSecondsRemaining > 0
+                            ? colorScheme.onSurfaceVariant
+                            : colorScheme.error,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    Text(
+                      _canResend
+                          ? "Didn't receive the code?"
+                          : "Resend code in 00:${_secondsRemaining.toString().padLeft(2, '0')}",
+                      style: AppTypography.bodySmall.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    GestureDetector(
+                      onTap: _canResend ? _handleResend : null,
+                      child: Text(
+                        'Resend Code',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: _canResend
+                              ? colorScheme.primary
+                              : colorScheme.outlineVariant,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ],
-
-                  const SizedBox(height: 16),
-                  Text(
-                    _otpSecondsRemaining > 0
-                        ? 'Code expires in ${(_otpSecondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_otpSecondsRemaining % 60).toString().padLeft(2, '0')}'
-                        : 'This code has expired. Request a new one.',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: _otpSecondsRemaining > 0
-                          ? colorScheme.onSurfaceVariant
-                          : colorScheme.error,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  Text(
-                    _canResend
-                        ? "Didn't receive the code?"
-                        : "Resend code in 00:${_secondsRemaining.toString().padLeft(2, '0')}",
-                    style: AppTypography.bodySmall.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  GestureDetector(
-                    onTap: _canResend ? _handleResend : null,
-                    child: Text(
-                      'Resend Code',
-                      style: AppTypography.labelLarge.copyWith(
-                        color: _canResend
-                            ? colorScheme.primary
-                            : colorScheme.outlineVariant,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          Container(
-            padding: EdgeInsets.fromLTRB(
-              24,
-              16,
-              24,
-              MediaQuery.of(context).padding.bottom + 24,
-            ),
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              border: Border(
-                top: BorderSide(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
                 ),
               ),
             ),
-            child: PrimaryButton(
-              label: 'Verify',
-              showArrow: true,
-              isLoading: _isLoading,
-              onPressed: _otp.length == 6 && _otpSecondsRemaining > 0
-                  ? _handleVerify
-                  : null,
+
+            Container(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                16,
+                24,
+                MediaQuery.of(context).padding.bottom + 24,
+              ),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                border: Border(
+                  top: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+              child: PrimaryButton(
+                label: 'Verify',
+                showArrow: true,
+                isLoading: _isLoading,
+                onPressed: _otp.length == 6 && _otpSecondsRemaining > 0
+                    ? _handleVerify
+                    : null,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

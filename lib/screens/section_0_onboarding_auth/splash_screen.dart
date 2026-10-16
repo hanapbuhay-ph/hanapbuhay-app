@@ -34,6 +34,20 @@ class _SplashScreenState extends State<SplashScreen> {
     // Navigation logic
     if (authProvider.isAuthenticated) {
       Navigator.pushReplacementNamed(context, authProvider.getHomeRoute());
+    } else if (authProvider.pendingLoginOtpEmail != null) {
+      final email = authProvider.pendingLoginOtpEmail!;
+      final expiresIn = authProvider.pendingLoginOtpSecondsRemaining;
+      Navigator.pushReplacementNamed(
+        context,
+        '${AppRouter.verifyEmail}?email=${Uri.encodeComponent(email)}&login=true&expires_in=$expiresIn',
+      );
+    } else if (authProvider.pendingPasswordResetOtpEmail != null) {
+      final email = authProvider.pendingPasswordResetOtpEmail!;
+      final expiresIn = authProvider.pendingPasswordResetOtpSecondsRemaining;
+      Navigator.pushReplacementNamed(
+        context,
+        '${AppRouter.forgotPassword}?resume=verify&email=${Uri.encodeComponent(email)}&expires_in=$expiresIn',
+      );
     } else if (authProvider.hasSeenOnboarding) {
       Navigator.pushReplacementNamed(context, AppRouter.login);
     } else {

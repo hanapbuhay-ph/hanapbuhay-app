@@ -15,6 +15,13 @@ import '../core/api/api_client.dart'; // ignore: unused_import - used in logout(
 import '../core/utils/philippine_mobile_number.dart';
 
 class AuthProvider extends ChangeNotifier {
+  static const _pendingLoginOtpEmailKey = 'pending_login_otp_email';
+  static const _pendingLoginOtpExpiresAtKey = 'pending_login_otp_expires_at';
+  static const _pendingPasswordResetOtpEmailKey =
+      'pending_password_reset_otp_email';
+  static const _pendingPasswordResetOtpExpiresAtKey =
+      'pending_password_reset_otp_expires_at';
+
   final AuthRepository _authRepository;
   final SecureStorageService _storage = SecureStorageService();
 
@@ -63,6 +70,34 @@ class AuthProvider extends ChangeNotifier {
   bool _twoFactorEnabled = true;
   bool get twoFactorEnabled => _twoFactorEnabled;
 
+  String? _pendingLoginOtpEmail;
+  String? get pendingLoginOtpEmail => _pendingLoginOtpEmail;
+
+  int get pendingLoginOtpSecondsRemaining {
+    final expiresAt = _pendingLoginOtpExpiresAt;
+    if (expiresAt == null) return 0;
+    return ((expiresAt - DateTime.now().millisecondsSinceEpoch) / 1000)
+        .ceil()
+        .clamp(0, 1 << 31)
+        .toInt();
+  }
+
+  int? _pendingLoginOtpExpiresAt;
+
+  String? _pendingPasswordResetOtpEmail;
+  String? get pendingPasswordResetOtpEmail => _pendingPasswordResetOtpEmail;
+
+  int get pendingPasswordResetOtpSecondsRemaining {
+    final expiresAt = _pendingPasswordResetOtpExpiresAt;
+    if (expiresAt == null) return 0;
+    return ((expiresAt - DateTime.now().millisecondsSinceEpoch) / 1000)
+        .ceil()
+        .clamp(0, 1 << 31)
+        .toInt();
+  }
+
+  int? _pendingPasswordResetOtpExpiresAt;
+
   bool _isAdminRole(String? role) => role == 'admin' || role == 'super_admin';
 
   String getHomeRoute() {
@@ -92,6 +127,14 @@ class AuthProvider extends ChangeNotifier {
     _workerProfileId = prefs.getString('worker_profile_id');
     _signInMethod = prefs.getString('sign_in_method');
     _twoFactorEnabled = prefs.getBool('2fa_enabled') ?? true;
+    _pendingLoginOtpEmail = prefs.getString(_pendingLoginOtpEmailKey);
+    _pendingLoginOtpExpiresAt = prefs.getInt(_pendingLoginOtpExpiresAtKey);
+    _pendingPasswordResetOtpEmail = prefs.getString(
+      _pendingPasswordResetOtpEmailKey,
+    );
+    _pendingPasswordResetOtpExpiresAt = prefs.getInt(
+      _pendingPasswordResetOtpExpiresAtKey,
+    );
 
     if (_isAuthenticated && _isAdminRole(_userRole)) {
       await logout();
@@ -204,12 +247,17 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<AuthResult> login(String email, String password) async {
+    await clearPendingLoginOtp();
+    await clearPendingPasswordResetOtp();
     final deviceName = await DeviceInfoService.displayName();
     final result = await _authRepository.login(
       email,
       password,
       deviceName: deviceName,
     );
+    if (result.success && result.data?['requiresOtp'] == true) {
+      await savePendingLoginOtp(email, result.data?['otp_expires_in_seconds']);
+    }
     if (result.success) {
       final userData = result.data?['user'] as Map<String, dynamic>?;
       final token = result.data?['token']?.toString() ?? '';
@@ -312,6 +360,7 @@ class AuthProvider extends ChangeNotifier {
       deviceName: deviceName,
     );
     if (result.success) {
+      await clearPendingLoginOtp();
       final userData = result.data?['user'] as Map<String, dynamic>?;
       final token = result.data?['token']?.toString() ?? '';
       if (token.isNotEmpty) {
@@ -337,13 +386,20 @@ class AuthProvider extends ChangeNotifier {
     return result;
   }
 
-  Future<AuthResult> resendLoginOtp(String email) =>
-      _authRepository.resendLoginOtp(email);
+  Future<AuthResult> resendLoginOtp(String email) async {
+    final result = await _authRepository.resendLoginOtp(email);
+    if (result.success) {
+      await savePendingLoginOtp(email, result.data?['otp_expires_in_seconds']);
+    }
+    return result;
+  }
 
   Future<AuthResult> googleLogin({
     String? roleForNewUser,
     bool forceAccountPicker = true,
   }) async {
+    await clearPendingLoginOtp();
+    await clearPendingPasswordResetOtp();
     final account = await GoogleAuthService().signIn(
       forceAccountPicker: forceAccountPicker,
     );
@@ -373,6 +429,16 @@ class AuthProvider extends ChangeNotifier {
           },
         },
       );
+    }
+    if (result.success && result.data?['requiresOtp'] == true) {
+      final user = result.data?['user'];
+      final email = user is Map ? user['email']?.toString() : null;
+      if (email != null && email.isNotEmpty) {
+        await savePendingLoginOtp(
+          email,
+          result.data?['otp_expires_in_seconds'],
+        );
+      }
     }
     if (result.success) {
       final data = result.data ?? {};
@@ -536,6 +602,61 @@ class AuthProvider extends ChangeNotifier {
     FcmService.initializeAndRegister();
   }
 
+  Future<void> savePendingLoginOtp(String email, dynamic expiresIn) async {
+    final parsedExpiry = int.tryParse(expiresIn?.toString() ?? '');
+    final expirySeconds = parsedExpiry != null && parsedExpiry > 0
+        ? parsedExpiry
+        : 300;
+    final prefs = await SharedPreferences.getInstance();
+    _pendingLoginOtpEmail = email;
+    _pendingLoginOtpExpiresAt = DateTime.now()
+        .add(Duration(seconds: expirySeconds))
+        .millisecondsSinceEpoch;
+    await prefs.setString(_pendingLoginOtpEmailKey, email);
+    await prefs.setInt(
+      _pendingLoginOtpExpiresAtKey,
+      _pendingLoginOtpExpiresAt!,
+    );
+    notifyListeners();
+  }
+
+  Future<void> savePendingPasswordResetOtp(
+    String email,
+    dynamic expiresIn,
+  ) async {
+    final parsedExpiry = int.tryParse(expiresIn?.toString() ?? '');
+    final expirySeconds = parsedExpiry != null && parsedExpiry > 0
+        ? parsedExpiry
+        : 300;
+    final prefs = await SharedPreferences.getInstance();
+    _pendingPasswordResetOtpEmail = email;
+    _pendingPasswordResetOtpExpiresAt = DateTime.now()
+        .add(Duration(seconds: expirySeconds))
+        .millisecondsSinceEpoch;
+    await prefs.setString(_pendingPasswordResetOtpEmailKey, email);
+    await prefs.setInt(
+      _pendingPasswordResetOtpExpiresAtKey,
+      _pendingPasswordResetOtpExpiresAt!,
+    );
+    notifyListeners();
+  }
+
+  Future<void> clearPendingPasswordResetOtp() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pendingPasswordResetOtpEmailKey);
+    await prefs.remove(_pendingPasswordResetOtpExpiresAtKey);
+    _pendingPasswordResetOtpEmail = null;
+    _pendingPasswordResetOtpExpiresAt = null;
+  }
+
+  Future<void> clearPendingLoginOtp() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pendingLoginOtpEmailKey);
+    await prefs.remove(_pendingLoginOtpExpiresAtKey);
+    _pendingLoginOtpEmail = null;
+    _pendingLoginOtpExpiresAt = null;
+  }
+
   Future<AuthResult> updateProfile({
     required String name,
     required String mobileNumber,
@@ -566,14 +687,29 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<AuthResult> forgotPassword(String identifier) async {
-    return await _authRepository.forgotPassword(identifier);
+    final result = await _authRepository.forgotPassword(identifier);
+    if (result.success) {
+      await clearPendingLoginOtp();
+      await savePendingPasswordResetOtp(
+        identifier,
+        result.data?['otp_expires_in_seconds'],
+      );
+    }
+    return result;
   }
 
   Future<AuthResult> verifyForgotPasswordOtp(
     String identifier,
     String otp,
   ) async {
-    return await _authRepository.verifyForgotPasswordOtp(identifier, otp);
+    final result = await _authRepository.verifyForgotPasswordOtp(
+      identifier,
+      otp,
+    );
+    if (result.success) {
+      await clearPendingPasswordResetOtp();
+    }
+    return result;
   }
 
   Future<AuthResult> resetPassword(
@@ -697,6 +833,8 @@ class AuthProvider extends ChangeNotifier {
       } catch (_) {}
     }
     await _storage.deleteToken();
+    await clearPendingLoginOtp();
+    await clearPendingPasswordResetOtp();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_id');
     await prefs.remove('user_role');

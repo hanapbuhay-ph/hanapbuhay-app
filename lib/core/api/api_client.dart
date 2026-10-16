@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../constants/app_constants.dart';
 import '../../services/secure_storage_service.dart';
 
@@ -10,10 +12,14 @@ import '../../services/secure_storage_service.dart';
 class ApiClient {
   static const String _baseUrl = AppConstants.apiBaseUrl;
   static final _storage = SecureStorageService();
+  static final _routeObserver = _CurrentRouteObserver();
+  static bool _handlingUnauthorized = false;
 
   /// Global navigator key used by [ApiClient] to force a (re)login on a 401.
   /// Wired into `MaterialApp.navigatorKey` in main.dart.
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+  static NavigatorObserver get routeObserver => _routeObserver;
 
   /// GET request
   static Future<Map<String, dynamic>> get(
@@ -23,7 +29,7 @@ class ApiClient {
     try {
       final headers = await _buildHeaders(requiresAuth);
       final uri = Uri.parse('$_baseUrl$endpoint');
-      
+
       final response = await http.get(uri, headers: headers);
       return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
@@ -40,13 +46,13 @@ class ApiClient {
     try {
       final headers = await _buildHeaders(requiresAuth);
       final uri = Uri.parse('$_baseUrl$endpoint');
-      
+
       final response = await http.post(
         uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
       );
-      
+
       return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
       return _handleError(e);
@@ -63,7 +69,7 @@ class ApiClient {
     try {
       final uri = Uri.parse('$_baseUrl$endpoint');
       final request = http.MultipartRequest('POST', uri);
-      
+
       // Add auth header if required
       if (requiresAuth) {
         final token = await _storage.getToken();
@@ -71,24 +77,26 @@ class ApiClient {
           request.headers['Authorization'] = 'Bearer $token';
         }
       }
-      
+
       request.headers['Accept'] = 'application/json';
-      
+
       // Add fields
       request.fields.addAll(fields);
-      
+
       // Add files if provided (each key may hold multiple paths)
       if (files != null) {
         for (var entry in files.entries) {
           for (final path in entry.value) {
-            request.files.add(await http.MultipartFile.fromPath(entry.key, path));
+            request.files.add(
+              await http.MultipartFile.fromPath(entry.key, path),
+            );
           }
         }
       }
-      
+
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-      
+
       return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
       return _handleError(e);
@@ -104,13 +112,13 @@ class ApiClient {
     try {
       final headers = await _buildHeaders(requiresAuth);
       final uri = Uri.parse('$_baseUrl$endpoint');
-      
+
       final response = await http.put(
         uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
       );
-      
+
       return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
       return _handleError(e);
@@ -125,7 +133,7 @@ class ApiClient {
     try {
       final headers = await _buildHeaders(requiresAuth);
       final uri = Uri.parse('$_baseUrl$endpoint');
-      
+
       final response = await http.delete(uri, headers: headers);
       return _handleResponse(response, requiresAuth: requiresAuth);
     } catch (e) {
@@ -174,33 +182,65 @@ class ApiClient {
   /// Clears the stored auth token + user role and forces navigation to the
   /// Login screen (clearing the entire navigation stack). Defined here only.
   static Future<void> _handleUnauthorized() async {
+    if (_handlingUnauthorized) return;
+    _handlingUnauthorized = true;
+
     try {
       await _storage.deleteToken();
-    } catch (_) {}
-
-    try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('user_role');
-    } catch (_) {}
 
-    final navigator = navigatorKey.currentState;
-    if (navigator == null) return;
+      final currentRouteName = _routeObserver.currentRouteName;
+      if (isAuthenticationRoute(currentRouteName)) return;
 
-    // Don't force navigation if the user is already on the Login screen.
-    final currentRoute = ModalRoute.of(navigator.context);
-    if (currentRoute?.settings.name == AppConstants.loginRoute) return;
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) return;
+      navigator.pushNamedAndRemoveUntil(
+        AppConstants.loginRoute,
+        (route) => false,
+      );
+    } finally {
+      _handlingUnauthorized = false;
+    }
+  }
 
-    navigator.pushNamedAndRemoveUntil(
+  static bool isAuthenticationRoute(String? routeName) {
+    final path = Uri.tryParse(routeName ?? '')?.path;
+    return const {
       AppConstants.loginRoute,
-      (route) => false,
-    );
+      '/onboarding',
+      '/welcome',
+      '/register-role',
+      '/register-account',
+      '/verify-email',
+      '/forgot-password',
+    }.contains(path);
   }
 
   /// Handle errors
   static Map<String, dynamic> _handleError(dynamic error) {
-    return {
-      'success': false,
-      'message': 'Network error: ${error.toString()}',
-    };
+    return {'success': false, 'message': 'Network error: ${error.toString()}'};
+  }
+}
+
+class _CurrentRouteObserver extends NavigatorObserver {
+  String? currentRouteName;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    currentRouteName = route.settings.name ?? currentRouteName;
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    currentRouteName = previousRoute?.settings.name ?? currentRouteName;
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    currentRouteName = newRoute?.settings.name ?? currentRouteName;
   }
 }

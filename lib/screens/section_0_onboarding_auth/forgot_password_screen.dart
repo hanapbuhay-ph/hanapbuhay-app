@@ -15,7 +15,16 @@ enum ForgotPasswordStep { requestCode, verifyCode, resetPassword, success }
 class ForgotPasswordScreen extends StatefulWidget {
   static const otpValiditySeconds = 5 * 60;
 
-  const ForgotPasswordScreen({super.key});
+  final String? initialEmail;
+  final bool resumeVerification;
+  final int otpExpiresInSeconds;
+
+  const ForgotPasswordScreen({
+    super.key,
+    this.initialEmail,
+    this.resumeVerification = false,
+    this.otpExpiresInSeconds = otpValiditySeconds,
+  });
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -54,6 +63,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   @override
   void initState() {
     super.initState();
+    if (widget.resumeVerification && widget.initialEmail != null) {
+      _currentStep = ForgotPasswordStep.verifyCode;
+      _identifierController.text = widget.initialEmail!;
+    }
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -64,6 +77,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       TweenSequenceItem(tween: Tween<double>(begin: -10, end: 10), weight: 1),
       TweenSequenceItem(tween: Tween<double>(begin: 10, end: 0), weight: 1),
     ]).animate(_shakeController!);
+    if (widget.resumeVerification) {
+      _startTimer();
+      _startOtpExpiryTimer(widget.otpExpiresInSeconds);
+    }
   }
 
   @override
@@ -228,20 +245,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: Column(
-        children: [
-          const AppHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              physics: const BouncingScrollPhysics(),
-              child: _buildCurrentStep(),
+    return PopScope<Object?>(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop && _currentStep == ForgotPasswordStep.verifyCode) {
+          unawaited(
+            context.read<AuthProvider>().clearPendingPasswordResetOtp(),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: Column(
+          children: [
+            const AppHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                physics: const BouncingScrollPhysics(),
+                child: _buildCurrentStep(),
+              ),
             ),
-          ),
-          if (_currentStep != ForgotPasswordStep.success) _buildFooter(),
-        ],
+            if (_currentStep != ForgotPasswordStep.success) _buildFooter(),
+          ],
+        ),
       ),
     );
   }

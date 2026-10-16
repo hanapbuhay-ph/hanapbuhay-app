@@ -85,6 +85,7 @@ class _HanapBuhayAppState extends State<HanapBuhayApp>
       title: 'HanapBuhay',
       debugShowCheckedModeBanner: false,
       navigatorKey: ApiClient.navigatorKey,
+      navigatorObservers: [ApiClient.routeObserver],
       onGenerateRoute: AppRouter.onGenerateRoute,
       initialRoute: AppRouter.splash,
       theme: AppTheme.lightTheme,
