@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -28,10 +30,18 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
         ChangeNotifierProvider(create: (_) => WorkerProvider(workerRepository)),
         ChangeNotifierProvider(
-          create: (_) => BookingProvider(bookingRepository),
+          create: (context) => BookingProvider(
+            bookingRepository,
+            isAuthenticated: () => context.read<AuthProvider>().isAuthenticated,
+          ),
         ),
         ChangeNotifierProvider(create: (_) => ReportProvider(reportRepository)),
-        ChangeNotifierProvider(create: (_) => ChatProvider(chatRepository)),
+        ChangeNotifierProvider(
+          create: (context) => ChatProvider(
+            chatRepository,
+            isAuthenticated: () => context.read<AuthProvider>().isAuthenticated,
+          ),
+        ),
         ChangeNotifierProvider(
           create: (context) => NotificationProvider(
             notificationRepository,
@@ -58,6 +68,8 @@ class HanapBuhayApp extends StatefulWidget {
 class _HanapBuhayAppState extends State<HanapBuhayApp>
     with WidgetsBindingObserver {
   final _presence = PresenceService();
+  AuthProvider? _observedAuthProvider;
+  bool _wasAuthenticated = false;
 
   @override
   void initState() {
@@ -67,17 +79,47 @@ class _HanapBuhayAppState extends State<HanapBuhayApp>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authProvider = context.read<AuthProvider>();
+    if (identical(_observedAuthProvider, authProvider)) return;
+
+    _observedAuthProvider?.removeListener(_handleAuthChanged);
+    _observedAuthProvider = authProvider..addListener(_handleAuthChanged);
+    _handleAuthChanged();
+  }
+
+  void _handleAuthChanged() {
+    final isAuthenticated = context.read<AuthProvider>().isAuthenticated;
+    if (!isAuthenticated) {
+      _wasAuthenticated = false;
+      return;
+    }
+    if (_wasAuthenticated) return;
+    _wasAuthenticated = true;
+    _refreshBadgeCounts();
+  }
+
+  void _refreshBadgeCounts() {
+    if (!mounted || context.read<AuthProvider>().isAuthenticated == false) {
+      return;
+    }
+    unawaited(context.read<BookingProvider>().refreshPendingCount());
+    unawaited(context.read<ChatProvider>().refreshUnreadCount());
+    unawaited(context.read<NotificationProvider>().refreshUnreadCount());
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (context.read<AuthProvider>().isAuthenticated) {
-        context.read<NotificationProvider>().refreshUnreadCount();
-      }
+      _refreshBadgeCounts();
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _observedAuthProvider?.removeListener(_handleAuthChanged);
     _presence.dispose();
     super.dispose();
   }
