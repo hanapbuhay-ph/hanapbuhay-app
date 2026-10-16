@@ -33,7 +33,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ReportProvider(reportRepository)),
         ChangeNotifierProvider(create: (_) => ChatProvider(chatRepository)),
         ChangeNotifierProvider(
-          create: (_) => NotificationProvider(notificationRepository),
+          create: (context) => NotificationProvider(
+            notificationRepository,
+            isAuthenticated: () => context.read<AuthProvider>().isAuthenticated,
+          ),
         ),
         ChangeNotifierProvider(create: (_) => SavedPostsProvider()),
       ],
@@ -66,7 +69,9 @@ class _HanapBuhayAppState extends State<HanapBuhayApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      context.read<NotificationProvider>().refreshUnreadCount();
+      if (context.read<AuthProvider>().isAuthenticated) {
+        context.read<NotificationProvider>().refreshUnreadCount();
+      }
     }
   }
 

@@ -186,12 +186,20 @@ class ApiClient {
     _handlingUnauthorized = true;
 
     try {
+      final token = await _storage.getToken();
+      if (token == null || token.isEmpty) return;
+
       await _storage.deleteToken();
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('user_role');
 
       final currentRouteName = _routeObserver.currentRouteName;
-      if (isAuthenticationRoute(currentRouteName)) return;
+      if (!shouldRedirectToLogin(
+        hasAuthToken: true,
+        routeName: currentRouteName,
+      )) {
+        return;
+      }
 
       final navigator = navigatorKey.currentState;
       if (navigator == null) return;
@@ -217,6 +225,13 @@ class ApiClient {
     }.contains(path);
   }
 
+  static bool shouldRedirectToLogin({
+    required bool hasAuthToken,
+    required String? routeName,
+  }) {
+    return hasAuthToken && !isAuthenticationRoute(routeName);
+  }
+
   /// Handle errors
   static Map<String, dynamic> _handleError(dynamic error) {
     return {'success': false, 'message': 'Network error: ${error.toString()}'};
@@ -229,18 +244,18 @@ class _CurrentRouteObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
-    currentRouteName = route.settings.name ?? currentRouteName;
+    currentRouteName = route.settings.name;
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
-    currentRouteName = previousRoute?.settings.name ?? currentRouteName;
+    currentRouteName = previousRoute?.settings.name;
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    currentRouteName = newRoute?.settings.name ?? currentRouteName;
+    currentRouteName = newRoute?.settings.name;
   }
 }

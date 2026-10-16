@@ -9,11 +9,12 @@ import '../services/fcm_service.dart';
 
 class NotificationProvider extends ChangeNotifier {
   final NotificationRepository _repository;
+  final bool Function()? isAuthenticated;
   late final StreamSubscription<void> _notificationSubscription;
   Future<List<AppNotification>>? _notificationsRequest;
   Future<void>? _initialUnreadCountLoad;
 
-  NotificationProvider(this._repository) {
+  NotificationProvider(this._repository, {this.isAuthenticated}) {
     _notificationSubscription = FcmService.onNotificationReceived.listen((_) {
       unawaited(refreshUnreadCount());
     });
@@ -58,6 +59,7 @@ class NotificationProvider extends ChangeNotifier {
   }
 
   Future<void> refreshUnreadCount() async {
+    if (isAuthenticated?.call() == false) return;
     try {
       await getNotifications();
     } catch (error, stackTrace) {

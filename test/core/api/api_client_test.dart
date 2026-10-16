@@ -12,6 +12,22 @@ void main() {
   });
 
   test('401s still redirect away from authenticated app screens', () {
-    expect(ApiClient.isAuthenticationRoute('/client-home'), isFalse);
+    expect(
+      ApiClient.shouldRedirectToLogin(
+        hasAuthToken: true,
+        routeName: '/client-home',
+      ),
+      isTrue,
+    );
+  });
+
+  test('401s without an auth token do not redirect guest auth flows', () {
+    expect(
+      ApiClient.shouldRedirectToLogin(
+        hasAuthToken: false,
+        routeName: '/verify-email?login=true',
+      ),
+      isFalse,
+    );
   });
 }

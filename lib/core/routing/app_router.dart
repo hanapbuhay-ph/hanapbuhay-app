@@ -102,22 +102,34 @@ class AppRouter {
 
     switch (path) {
       case splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const SplashScreen(),
+        );
       case onboarding:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const OnboardingSlidesScreen(),
         );
       case welcome:
-        return MaterialPageRoute(builder: (_) => const WelcomeScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const WelcomeScreen(),
+        );
       case login:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const LoginScreen(),
+        );
       case registerRole:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const RegistrationRoleScreen(),
         );
       case registerAccount:
         final role = uri.queryParameters['role'] ?? 'client';
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => RegistrationAccountScreen(role: role),
         );
       case verifyEmail:
@@ -126,6 +138,7 @@ class AppRouter {
         final otpExpiresInSeconds =
             int.tryParse(uri.queryParameters['expires_in'] ?? '') ?? 300;
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => EmailVerificationScreen(
             email: email,
             isLoginChallenge: isLoginChallenge,
@@ -143,6 +156,7 @@ class AppRouter {
             int.tryParse(uri.queryParameters['expires_in'] ?? '') ??
             ForgotPasswordScreen.otpValiditySeconds;
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => ForgotPasswordScreen(
             initialEmail: email,
             resumeVerification: uri.queryParameters['resume'] == 'verify',
