@@ -21,6 +21,8 @@ class AuthProvider extends ChangeNotifier {
       'pending_password_reset_otp_email';
   static const _pendingPasswordResetOtpExpiresAtKey =
       'pending_password_reset_otp_expires_at';
+  static const _pendingPasswordResetOtpConfirmedKey =
+      'pending_password_reset_otp_confirmed';
 
   final AuthRepository _authRepository;
   final SecureStorageService _storage = SecureStorageService();
@@ -129,12 +131,19 @@ class AuthProvider extends ChangeNotifier {
     _twoFactorEnabled = prefs.getBool('2fa_enabled') ?? true;
     _pendingLoginOtpEmail = prefs.getString(_pendingLoginOtpEmailKey);
     _pendingLoginOtpExpiresAt = prefs.getInt(_pendingLoginOtpExpiresAtKey);
-    _pendingPasswordResetOtpEmail = prefs.getString(
-      _pendingPasswordResetOtpEmailKey,
-    );
-    _pendingPasswordResetOtpExpiresAt = prefs.getInt(
-      _pendingPasswordResetOtpExpiresAtKey,
-    );
+    if (prefs.getBool(_pendingPasswordResetOtpConfirmedKey) ?? false) {
+      _pendingPasswordResetOtpEmail = prefs.getString(
+        _pendingPasswordResetOtpEmailKey,
+      );
+      _pendingPasswordResetOtpExpiresAt = prefs.getInt(
+        _pendingPasswordResetOtpExpiresAtKey,
+      );
+    } else {
+      await prefs.remove(_pendingPasswordResetOtpEmailKey);
+      await prefs.remove(_pendingPasswordResetOtpExpiresAtKey);
+      _pendingPasswordResetOtpEmail = null;
+      _pendingPasswordResetOtpExpiresAt = null;
+    }
 
     if (_isAuthenticated && _isAdminRole(_userRole)) {
       await logout();
@@ -638,6 +647,7 @@ class AuthProvider extends ChangeNotifier {
       _pendingPasswordResetOtpExpiresAtKey,
       _pendingPasswordResetOtpExpiresAt!,
     );
+    await prefs.setBool(_pendingPasswordResetOtpConfirmedKey, true);
     notifyListeners();
   }
 
@@ -645,6 +655,7 @@ class AuthProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_pendingPasswordResetOtpEmailKey);
     await prefs.remove(_pendingPasswordResetOtpExpiresAtKey);
+    await prefs.remove(_pendingPasswordResetOtpConfirmedKey);
     _pendingPasswordResetOtpEmail = null;
     _pendingPasswordResetOtpExpiresAt = null;
   }
@@ -690,10 +701,7 @@ class AuthProvider extends ChangeNotifier {
     final result = await _authRepository.forgotPassword(identifier);
     if (result.success) {
       await clearPendingLoginOtp();
-      await savePendingPasswordResetOtp(
-        identifier,
-        result.data?['otp_expires_in_seconds'],
-      );
+      await clearPendingPasswordResetOtp();
     }
     return result;
   }

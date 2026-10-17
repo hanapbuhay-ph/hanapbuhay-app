@@ -44,6 +44,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _resetRequestSubmitted = false;
+  int _resetCodeExpiresInSeconds = ForgotPasswordScreen.otpValiditySeconds;
+  DateTime? _resetCodeExpiresAt;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   String? _errorMessage;
@@ -144,16 +147,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       final authProvider = context.read<AuthProvider>();
       final result = await authProvider.forgotPassword(identifier);
       if (result.success) {
-        setState(() => _currentStep = ForgotPasswordStep.verifyCode);
-        _startTimer();
         final expiresIn = int.tryParse(
           result.data?['otp_expires_in_seconds']?.toString() ?? '',
         );
-        _startOtpExpiryTimer(
-          expiresIn != null && expiresIn > 0
-              ? expiresIn
-              : ForgotPasswordScreen.otpValiditySeconds,
-        );
+        final duration = expiresIn != null && expiresIn > 0
+            ? expiresIn
+            : ForgotPasswordScreen.otpValiditySeconds;
+
+        if (_currentStep == ForgotPasswordStep.verifyCode) {
+          _resetCodeExpiresAt = DateTime.now().add(Duration(seconds: duration));
+          await authProvider.savePendingPasswordResetOtp(identifier, duration);
+          setState(() => _resetCodeExpiresInSeconds = duration);
+          _startTimer();
+          _startOtpExpiryTimer(duration);
+        } else {
+          setState(() {
+            _resetRequestSubmitted = true;
+            _resetCodeExpiresInSeconds = duration;
+            _resetCodeExpiresAt = DateTime.now().add(
+              Duration(seconds: duration),
+            );
+          });
+        }
       } else {
         setState(() => _errorMessage = result.message);
       }
@@ -162,6 +177,40 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _continueToVerification() async {
+    final email = _identifierController.text.trim();
+    final remainingSeconds = _resetCodeExpiresAt == null
+        ? _resetCodeExpiresInSeconds
+        : (_resetCodeExpiresAt!.difference(DateTime.now()).inMilliseconds /
+                  1000)
+              .ceil()
+              .clamp(0, _resetCodeExpiresInSeconds)
+              .toInt();
+    if (remainingSeconds > 0) {
+      await context.read<AuthProvider>().savePendingPasswordResetOtp(
+        email,
+        remainingSeconds,
+      );
+    }
+    if (!mounted) return;
+
+    setState(() {
+      _currentStep = ForgotPasswordStep.verifyCode;
+      _errorMessage = null;
+      _resetCodeExpiresInSeconds = remainingSeconds;
+    });
+    _startTimer();
+    _startOtpExpiryTimer(remainingSeconds);
+  }
+
+  void _useDifferentEmail() {
+    setState(() {
+      _resetRequestSubmitted = false;
+      _errorMessage = null;
+      _identifierController.clear();
+    });
   }
 
   Future<void> _handleVerifyOtp() async {
@@ -318,19 +367,40 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         const SizedBox(height: 8),
         Text(
-          'Enter your email address and we\'ll send you a code to reset your password.',
+          _resetRequestSubmitted
+              ? 'If an account is eligible for password reset, a code will be sent. Check your email. If you have a code, continue below.'
+              : 'Enter your email address. If an account is eligible for password reset, we\'ll send it a code.',
           textAlign: TextAlign.center,
           style: AppTypography.bodyMedium.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 40),
-        _buildTextField(
-          controller: _identifierController,
-          label: 'Email',
-          hint: 'e.g., name@email.com',
-          errorText: _errorMessage,
-        ),
+        if (_resetRequestSubmitted)
+          Column(
+            children: [
+              Text(
+                _identifierController.text.trim(),
+                textAlign: TextAlign.center,
+                style: AppTypography.labelLarge.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: _useDifferentEmail,
+                child: const Text('Use a different email'),
+              ),
+            ],
+          )
+        else
+          _buildTextField(
+            controller: _identifierController,
+            label: 'Email',
+            hint: 'e.g., name@email.com',
+            errorText: _errorMessage,
+          ),
         const SizedBox(height: 32),
       ],
     );
@@ -567,7 +637,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     String label = 'Send Reset Code';
     VoidCallback? onPressed = _handleRequestCode;
 
-    if (_currentStep == ForgotPasswordStep.verifyCode) {
+    if (_currentStep == ForgotPasswordStep.requestCode &&
+        _resetRequestSubmitted) {
+      label = 'I have a code';
+      onPressed = _continueToVerification;
+    } else if (_currentStep == ForgotPasswordStep.verifyCode) {
       label = _otpSecondsRemaining > 0 ? 'Verify' : 'Code Expired';
       onPressed = _otp.length == 6 && _otpSecondsRemaining > 0
           ? _handleVerifyOtp

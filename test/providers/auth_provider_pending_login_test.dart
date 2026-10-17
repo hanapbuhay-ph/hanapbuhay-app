@@ -43,12 +43,29 @@ void main() {
         'client@example.com',
       );
       expect(prefs.getInt('pending_password_reset_otp_expires_at'), isNotNull);
+      expect(prefs.getBool('pending_password_reset_otp_confirmed'), isTrue);
 
       await provider.clearPendingPasswordResetOtp();
 
       expect(provider.pendingPasswordResetOtpEmail, isNull);
       expect(prefs.getString('pending_password_reset_otp_email'), isNull);
       expect(prefs.getInt('pending_password_reset_otp_expires_at'), isNull);
+      expect(prefs.getBool('pending_password_reset_otp_confirmed'), isNull);
+    },
+  );
+
+  test(
+    'does not persist password reset OTP until user chooses to verify',
+    () async {
+      final provider = AuthProvider(MockAuthRepository());
+      addTearDown(provider.dispose);
+
+      final result = await provider.forgotPassword('client@example.com');
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(result.success, isTrue);
+      expect(provider.pendingPasswordResetOtpEmail, isNull);
+      expect(prefs.getString('pending_password_reset_otp_email'), isNull);
     },
   );
 }
